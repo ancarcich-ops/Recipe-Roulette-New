@@ -274,6 +274,8 @@ const MealPrepApp = () => {
   const [showRecipeSelector, setShowRecipeSelector] = useState(null);
   const [showShoppingList, setShowShoppingList] = useState(false);
   const [checkedItems, setCheckedItems] = useState(new Set());
+  const [recipeSearch, setRecipeSearch] = useState('');
+  const [communitySearch, setCommunitySearch] = useState('');
   const [showAddRecipeModal, setShowAddRecipeModal] = useState(false);
   const [showAddToCalendar, setShowAddToCalendar] = useState(null);
   const [recipeSearchQuery, setRecipeSearchQuery] = useState('');
@@ -1090,7 +1092,20 @@ const MealPrepApp = () => {
                   </div>
                 </div>
 
-                {/* All Recipes folder card first */}
+                {/* Search bar */}
+                <div style={{position:'relative',marginBottom:'24px'}}>
+                  <span style={{position:'absolute',left:'14px',top:'50%',transform:'translateY(-50%)',color:'#555',pointerEvents:'none',fontSize:'16px'}}>🔍</span>
+                  <input
+                    type="text"
+                    placeholder="Search recipes..."
+                    value={recipeSearch}
+                    onChange={e => { setRecipeSearch(e.target.value); if (e.target.value) setActiveFolder('all'); }}
+                    style={{width:'100%',padding:'11px 14px 11px 42px',background:'#1a1a1a',border:'1px solid #262626',borderRadius:'10px',fontSize:'14px',color:'#fff',outline:'none',boxSizing:'border-box'}}
+                  />
+                  {recipeSearch && (
+                    <button onClick={() => setRecipeSearch('')} style={{position:'absolute',right:'12px',top:'50%',transform:'translateY(-50%)',background:'none',border:'none',cursor:'pointer',color:'#555',fontSize:'18px',lineHeight:1}}>×</button>
+                  )}
+                </div>
                 <div style={{display:'grid',gridTemplateColumns:isMobile?'1fr':'repeat(auto-fill, minmax(280px, 1fr))',gap:'16px'}}>
 
                   {/* All Recipes special card */}
@@ -1162,14 +1177,17 @@ const MealPrepApp = () => {
 
                 {/* Recipe grid */}
                 {(() => {
-                  const recipesToShow = activeFolder === 'all'
+                  const base = activeFolder === 'all'
                     ? filterRecipes(allMyRecipes)
                     : (() => { const f = folders.find(f => f.id === activeFolder); return f ? f.recipes.map(rid => allMyRecipes.find(r => r.id === rid)).filter(Boolean) : []; })();
+                  const recipesToShow = recipeSearch.trim()
+                    ? base.filter(r => r.name.toLowerCase().includes(recipeSearch.toLowerCase()) || (r.tags||[]).some(t => t.toLowerCase().includes(recipeSearch.toLowerCase())) || (r.ingredients||[]).some(i => i.toLowerCase().includes(recipeSearch.toLowerCase())))
+                    : base;
                   return recipesToShow.length === 0 ? (
                     <div style={{textAlign:'center',padding:'60px',background:'#1a1a1a',borderRadius:'12px',border:'2px dashed #262626'}}>
-                      <p style={{fontSize:'36px',margin:'0 0 10px 0'}}>📭</p>
-                      <p style={{color:'#999',fontSize:'16px',fontWeight:600,margin:'0 0 6px 0'}}>No recipes here yet</p>
-                      <p style={{color:'#555',fontSize:'13px',margin:0}}>Save recipes to this folder using the bookmark button on any recipe card</p>
+                      <p style={{fontSize:'36px',margin:'0 0 10px 0'}}>{recipeSearch ? '🔍' : '📭'}</p>
+                      <p style={{color:'#999',fontSize:'16px',fontWeight:600,margin:'0 0 6px 0'}}>{recipeSearch ? `No recipes match "${recipeSearch}"` : 'No recipes here yet'}</p>
+                      <p style={{color:'#555',fontSize:'13px',margin:0}}>{recipeSearch ? 'Try a different search term' : 'Save recipes to this folder using the bookmark button on any recipe card'}</p>
                     </div>
                   ) : (
                     <div style={{display:'grid',gridTemplateColumns:isMobile?'1fr':'repeat(auto-fill, minmax(260px, 1fr))',gap:'18px'}}>
@@ -1215,13 +1233,34 @@ const MealPrepApp = () => {
               <h2 style={{fontSize:isMobile?'24px':'30px',fontWeight:700,color:'#fff',margin:'0 0 4px 0'}}>Community Recipes</h2>
               <p style={{color:'#666',margin:0}}>{filterRecipes(communityRecipes).length} recipes</p>
             </div>
+            {/* Community search bar */}
+            <div style={{position:'relative',marginBottom:'16px'}}>
+              <span style={{position:'absolute',left:'14px',top:'50%',transform:'translateY(-50%)',color:'#555',pointerEvents:'none',fontSize:'16px'}}>🔍</span>
+              <input
+                type="text"
+                placeholder="Search community recipes..."
+                value={communitySearch}
+                onChange={e => setCommunitySearch(e.target.value)}
+                style={{width:'100%',padding:'11px 14px 11px 42px',background:'#1a1a1a',border:'1px solid #262626',borderRadius:'10px',fontSize:'14px',color:'#fff',outline:'none',boxSizing:'border-box'}}
+              />
+              {communitySearch && (
+                <button onClick={() => setCommunitySearch('')} style={{position:'absolute',right:'12px',top:'50%',transform:'translateY(-50%)',background:'none',border:'none',cursor:'pointer',color:'#555',fontSize:'18px',lineHeight:1}}>×</button>
+              )}
+            </div>
             <FilterBar showAuthor />
             <div style={{display:'grid',gridTemplateColumns:isMobile?'1fr':'repeat(auto-fill, minmax(260px, 1fr))',gap:'18px'}}>
-              {filterRecipes(communityRecipes).length === 0 ? (
+              {(communitySearch.trim()
+                ? filterRecipes(communityRecipes).filter(r => r.name.toLowerCase().includes(communitySearch.toLowerCase()) || (r.tags||[]).some(t => t.toLowerCase().includes(communitySearch.toLowerCase())) || r.author.toLowerCase().includes(communitySearch.toLowerCase()))
+                : filterRecipes(communityRecipes)
+              ).length === 0 ? (
                 <div style={{gridColumn:'1/-1',textAlign:'center',padding:'60px',background:'#1a1a1a',borderRadius:'12px',border:'1px solid #262626'}}>
-                  <p style={{color:'#999'}}>No recipes match your filters</p>
+                  <p style={{fontSize:'32px',margin:'0 0 10px 0'}}>{communitySearch ? '🔍' : '🍽'}</p>
+                  <p style={{color:'#999'}}>{communitySearch ? `No recipes match "${communitySearch}"` : 'No recipes match your filters'}</p>
                 </div>
-              ) : filterRecipes(communityRecipes).map(recipe => (
+              ) : (communitySearch.trim()
+                ? filterRecipes(communityRecipes).filter(r => r.name.toLowerCase().includes(communitySearch.toLowerCase()) || (r.tags||[]).some(t => t.toLowerCase().includes(communitySearch.toLowerCase())) || r.author.toLowerCase().includes(communitySearch.toLowerCase()))
+                : filterRecipes(communityRecipes)
+              ).map(recipe => (
                 <div key={recipe.id} style={{background:'#1a1a1a',borderRadius:'12px',overflow:'hidden',border:'1px solid #262626'}}>
                   <div onClick={() => setSelectedRecipe(recipe)} style={{cursor:'pointer'}}>
                     <div style={{height:'170px',backgroundImage:`url(${recipe.image})`,backgroundSize:'cover',backgroundPosition:'center',position:'relative'}}>

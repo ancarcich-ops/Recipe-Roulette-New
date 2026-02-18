@@ -595,23 +595,23 @@ const MealPrepApp = () => {
   if (!session) return <AuthScreen />;
 
   return (
-    <div style={{minHeight:'100vh',background:'#0a0a0a',fontFamily:'system-ui, sans-serif',color:'#fff'}}>
+    <div style={{minHeight:'100vh',background:'#0a0a0a',fontFamily:'system-ui, sans-serif',color:'#fff',overflowX:'hidden'}}>
 
       {/* Header */}
       <div style={{background:'rgba(0,0,0,0.95)',borderBottom:'1px solid #262626',position:'sticky',top:0,zIndex:100}}>
         <div style={{maxWidth:'1400px',margin:'0 auto',padding:isMobile?'10px 12px':'10px 24px',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
           <div style={{display:'flex',alignItems:'center',gap:'12px'}}>
-            <img src="https://www.dropbox.com/scl/fi/odkvuob40yhyittqba8k5/ChatGPT-Image-Feb-16-2026-06_37_13-PM.png?rlkey=k89onj2ds29ikovgm8b70dniv&st=p7vuda88&dl=1" alt="Logo" style={{width:'80px',height:'80px',objectFit:'contain'}} />
+            <img src="https://www.dropbox.com/scl/fi/odkvuob40yhyittqba8k5/ChatGPT-Image-Feb-16-2026-06_37_13-PM.png?rlkey=k89onj2ds29ikovgm8b70dniv&st=p7vuda88&dl=1" alt="Logo" style={{width:isMobile?'50px':'80px',height:isMobile?'50px':'80px',objectFit:'contain'}} />
             <div>
               <h1 style={{margin:0,fontSize:isMobile?'20px':'26px',fontWeight:700,color:'#fff'}}>Recipe Roulette</h1>
               <p style={{margin:0,fontSize:'12px',color:'#666'}}>Plan together, eat better</p>
             </div>
           </div>
           <div style={{display:'flex',alignItems:'center',gap:'8px'}}>
-            <nav style={{display:'flex',gap:'6px'}}>
+            <nav style={{display:'flex',gap:isMobile?'4px':'6px',overflowX:'auto',WebkitOverflowScrolling:'touch',maxWidth:isMobile?'calc(100vw - 200px)':'none'}}>
               {[{id:'home',label:'Home'},{id:'calendar',label:'My Meals'},{id:'recipes',label:'Recipe Book'},{id:'community',label:'Community'},{id:'settings',label:'Settings'}].map(item => (
                 <button key={item.id} onClick={() => setCurrentView(item.id)}
-                  style={{padding:'8px 16px',background:currentView===item.id?'#ffffff':'transparent',color:currentView===item.id?'#000':'#999',border:currentView===item.id?'none':'1px solid #262626',borderRadius:'8px',cursor:'pointer',fontWeight:600,fontSize:'13px'}}>
+                  style={{padding:isMobile?'6px 10px':'8px 16px',background:currentView===item.id?'#ffffff':'transparent',color:currentView===item.id?'#000':'#999',border:currentView===item.id?'none':'1px solid #262626',borderRadius:'8px',cursor:'pointer',fontWeight:600,fontSize:isMobile?'11px':'13px',whiteSpace:'nowrap',flexShrink:0}}>
                   {item.label}
                 </button>
               ))}
@@ -801,7 +801,7 @@ const MealPrepApp = () => {
                       const disabled = isSlotDisabled(dayIndex, mealType);
                       const meal = mealPlan[dayIndex][mealType];
                       return (
-                        <div key={mealType} onDragOver={handleDragOver} onDrop={() => handleDrop(dayIndex, mealType)}
+                        <div key={mealType} onDragOver={(e) => handleDragOver(e)} onDrop={(e) => handleDrop(e, dayIndex, mealType)}
                           style={{background:'#1a1a1a',borderRadius:'8px',padding:'8px',marginBottom:'8px',minHeight:'68px',border:disabled?'2px solid #333':'2px dashed #262626',position:'relative',opacity:disabled?0.5:1}}>
                           {!meal && (
                             <button onClick={() => toggleSlotDisabled(dayIndex, mealType)}
@@ -813,7 +813,7 @@ const MealPrepApp = () => {
                           {disabled ? (
                             <p style={{margin:0,fontSize:'10px',color:'#555',textAlign:'center',paddingTop:'6px'}}>Disabled</p>
                           ) : meal ? (
-                            <div draggable onDragStart={() => handleDragStart(dayIndex, mealType, meal)} onClick={() => setSelectedRecipe(meal)}
+                            <div draggable={true} onDragStart={(e) => handleDragStart(e, dayIndex, mealType, meal)} onClick={() => setSelectedRecipe(meal)}
                               style={{background:'#fff',borderRadius:'6px',padding:'6px',position:'relative',cursor:'pointer'}}>
                               <button onClick={e => { e.stopPropagation(); removeMealFromPlan(dayIndex, mealType); }}
                                 style={{position:'absolute',top:'3px',right:'3px',background:'rgba(0,0,0,0.4)',border:'none',borderRadius:'50%',width:'16px',height:'16px',display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',padding:0}}>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+\import React, { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import { Heart, X, Wand2, Clock, Archive, ShoppingCart, Plus, LogOut, User, Camera, Edit2, Check } from 'lucide-react';
 
@@ -207,6 +207,15 @@ const AuthScreen = () => {
 
 
 const MealPrepApp = () => {
+  // Mobile detection
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth <= 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
   const [session, setSession] = useState(null);
   const [loadingSession, setLoadingSession] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -590,11 +599,11 @@ const MealPrepApp = () => {
 
       {/* Header */}
       <div style={{background:'rgba(0,0,0,0.95)',borderBottom:'1px solid #262626',position:'sticky',top:0,zIndex:100}}>
-        <div style={{maxWidth:'1400px',margin:'0 auto',padding:'10px 24px',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+        <div style={{maxWidth:'1400px',margin:'0 auto',padding:isMobile?'10px 12px':'10px 24px',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
           <div style={{display:'flex',alignItems:'center',gap:'12px'}}>
             <img src="https://www.dropbox.com/scl/fi/odkvuob40yhyittqba8k5/ChatGPT-Image-Feb-16-2026-06_37_13-PM.png?rlkey=k89onj2ds29ikovgm8b70dniv&st=p7vuda88&dl=1" alt="Logo" style={{width:'80px',height:'80px',objectFit:'contain'}} />
             <div>
-              <h1 style={{margin:0,fontSize:'26px',fontWeight:700,color:'#fff'}}>Recipe Roulette</h1>
+              <h1 style={{margin:0,fontSize:isMobile?'20px':'26px',fontWeight:700,color:'#fff'}}>Recipe Roulette</h1>
               <p style={{margin:0,fontSize:'12px',color:'#666'}}>Plan together, eat better</p>
             </div>
           </div>
@@ -618,7 +627,7 @@ const MealPrepApp = () => {
                     : <span style={{fontSize:'14px',fontWeight:700,color:'#fff'}}>{(profile.displayName || session.user.email).charAt(0).toUpperCase()}</span>
                   }
                 </div>
-                <span style={{fontSize:'13px',fontWeight:600,color:'#fff',maxWidth:'110px',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>
+                <span style={{fontSize:isMobile?'12px':'13px',fontWeight:600,color:'#fff',maxWidth:isMobile?'80px':'110px',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',display:isMobile?'none':'block'}}>
                   {profile.displayName || session.user.email.split('@')[0]}
                 </span>
               </button>
@@ -627,16 +636,16 @@ const MealPrepApp = () => {
         </div>
       </div>
 
-      <div style={{maxWidth:'1400px',margin:'0 auto',padding:'28px 24px'}}>
+      <div style={{maxWidth:'1400px',margin:'0 auto',padding:isMobile?'16px 12px':'28px 24px'}}>
 
 
         {/* HOME FEED */}
         {currentView === 'home' && (
-          <div style={{maxWidth:'680px', margin:'0 auto'}}>
+          <div style={{maxWidth:isMobile?'100%':'680px', margin:'0 auto'}}>
 
             {/* Greeting */}
             <div style={{marginBottom:'28px'}}>
-              <h2 style={{fontSize:'28px',fontWeight:700,color:'#fff',margin:'0 0 4px 0'}}>
+              <h2 style={{fontSize:isMobile?'22px':'28px',fontWeight:700,color:'#fff',margin:'0 0 4px 0'}}>
                 {(() => { const h = new Date().getHours(); return `Good ${h < 12 ? 'morning' : h < 17 ? 'afternoon' : 'evening'}, ${session.user.email.split('@')[0]} 👋`; })()}
               </h2>
               <p style={{color:'#666',margin:0,fontSize:'14px'}}>Here's what's cooking today</p>
@@ -768,7 +777,7 @@ const MealPrepApp = () => {
           <div>
             <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'24px'}}>
               <div>
-                <h2 style={{fontSize:'30px',fontWeight:700,color:'#fff',margin:'0 0 4px 0'}}>Weekly Meal Plan</h2>
+                <h2 style={{fontSize:isMobile?'24px':'30px',fontWeight:700,color:'#fff',margin:'0 0 4px 0'}}>Weekly Meal Plan</h2>
                 <p style={{color:'#666',margin:0,fontSize:'13px'}}>Drag meals to rearrange • Click to view details</p>
               </div>
               <div style={{display:'flex',gap:'10px'}}>
@@ -835,7 +844,7 @@ const MealPrepApp = () => {
               <div>
                 <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'24px'}}>
                   <div>
-                    <h2 style={{fontSize:'30px',fontWeight:700,color:'#fff',margin:'0 0 4px 0'}}>Recipe Book</h2>
+                    <h2 style={{fontSize:isMobile?'24px':'30px',fontWeight:700,color:'#fff',margin:'0 0 4px 0'}}>Recipe Book</h2>
                     <p style={{color:'#666',margin:0}}>{folders.length} folders • {allMyRecipes.length} recipes</p>
                   </div>
                   <div style={{display:'flex',gap:'10px'}}>
@@ -849,7 +858,7 @@ const MealPrepApp = () => {
                 </div>
 
                 {/* All Recipes folder card first */}
-                <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill, minmax(280px, 1fr))',gap:'16px'}}>
+                <div style={{display:'grid',gridTemplateColumns:isMobile?'1fr':'repeat(auto-fill, minmax(280px, 1fr))',gap:'16px'}}>
 
                   {/* All Recipes special card */}
                   <div onClick={() => setActiveFolder('all')} style={{background:'#1a1a1a',borderRadius:'16px',overflow:'hidden',border:'1px solid #262626',cursor:'pointer',transition:'border-color 0.15s'}}>
@@ -902,7 +911,7 @@ const MealPrepApp = () => {
                       ←
                     </button>
                     <div>
-                      <h2 style={{fontSize:'26px',fontWeight:700,color:'#fff',margin:'0 0 2px 0'}}>
+                      <h2 style={{fontSize:isMobile?'20px':'26px',fontWeight:700,color:'#fff',margin:'0 0 2px 0'}}>
                         {activeFolder === 'all' ? '📚 All Recipes' : (() => { const f = folders.find(f => f.id === activeFolder); return f ? `${f.emoji} ${f.name}` : ''; })()}
                       </h2>
                       <p style={{margin:0,fontSize:'13px',color:'#666'}}>
@@ -930,7 +939,7 @@ const MealPrepApp = () => {
                       <p style={{color:'#555',fontSize:'13px',margin:0}}>Save recipes to this folder using the bookmark button on any recipe card</p>
                     </div>
                   ) : (
-                    <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill, minmax(260px, 1fr))',gap:'18px'}}>
+                    <div style={{display:'grid',gridTemplateColumns:isMobile?'1fr':'repeat(auto-fill, minmax(260px, 1fr))',gap:'18px'}}>
                       {recipesToShow.map(recipe => (
                         <div key={recipe.id} style={{background:'#1a1a1a',borderRadius:'12px',overflow:'hidden',border:'1px solid #262626'}}>
                           <div onClick={() => setSelectedRecipe(recipe)} style={{cursor:'pointer'}}>
@@ -946,13 +955,13 @@ const MealPrepApp = () => {
                             </div>
                           </div>
                           <div style={{padding:'8px 14px 14px',display:'flex',gap:'6px',flexWrap:'wrap'}}>
-                            <button onClick={e => { e.stopPropagation(); setShowRatingModal(recipe); }} style={{flex:'1 1 auto',padding:'7px',background:userRatings[recipe.id]?'#1a1a1a':'#262626',color:userRatings[recipe.id]?'#fbbf24':'#999',border:'1px solid #333',borderRadius:'6px',fontSize:'11px',fontWeight:600,cursor:'pointer'}}>
+                            <button onClick={e => { e.stopPropagation(); setShowRatingModal(recipe); }} style={{flex:isMobile?'1 1 100%':'1 1 auto',padding:'7px',background:userRatings[recipe.id]?'#1a1a1a':'#262626',color:userRatings[recipe.id]?'#fbbf24':'#999',border:'1px solid #333',borderRadius:'6px',fontSize:'11px',fontWeight:600,cursor:'pointer'}}>
                               {userRatings[recipe.id] ? `★ ${userRatings[recipe.id].rating}` : '☆ Rate'}
                             </button>
-                            <button onClick={e => { e.stopPropagation(); setShowSaveToFolderModal(recipe); }} style={{flex:'1 1 auto',padding:'7px',background:'#1a1a1a',color:'#fff',border:'1px solid #333',borderRadius:'6px',fontSize:'11px',fontWeight:600,cursor:'pointer'}}>
+                            <button onClick={e => { e.stopPropagation(); setShowSaveToFolderModal(recipe); }} style={{flex:isMobile?'1 1 48%':'1 1 auto',padding:'7px',background:'#1a1a1a',color:'#fff',border:'1px solid #333',borderRadius:'6px',fontSize:'11px',fontWeight:600,cursor:'pointer'}}>
                               🗂 Folder
                             </button>
-                            <button onClick={e => { e.stopPropagation(); setShowAddToCalendar(recipe); }} style={{flex:'1 1 auto',padding:'7px',background:'#fff',color:'#000',border:'none',borderRadius:'6px',fontSize:'11px',fontWeight:600,cursor:'pointer'}}>
+                            <button onClick={e => { e.stopPropagation(); setShowAddToCalendar(recipe); }} style={{flex:isMobile?'1 1 48%':'1 1 auto',padding:'7px',background:'#fff',color:'#000',border:'none',borderRadius:'6px',fontSize:'11px',fontWeight:600,cursor:'pointer'}}>
                               📅 Cal
                             </button>
                           </div>
@@ -970,11 +979,11 @@ const MealPrepApp = () => {
         {currentView === 'community' && (
           <div>
             <div style={{marginBottom:'20px'}}>
-              <h2 style={{fontSize:'30px',fontWeight:700,color:'#fff',margin:'0 0 4px 0'}}>Community Recipes</h2>
+              <h2 style={{fontSize:isMobile?'24px':'30px',fontWeight:700,color:'#fff',margin:'0 0 4px 0'}}>Community Recipes</h2>
               <p style={{color:'#666',margin:0}}>{filterRecipes(communityRecipes).length} recipes</p>
             </div>
             <FilterBar showAuthor />
-            <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill, minmax(260px, 1fr))',gap:'18px'}}>
+            <div style={{display:'grid',gridTemplateColumns:isMobile?'1fr':'repeat(auto-fill, minmax(260px, 1fr))',gap:'18px'}}>
               {filterRecipes(communityRecipes).length === 0 ? (
                 <div style={{gridColumn:'1/-1',textAlign:'center',padding:'60px',background:'#1a1a1a',borderRadius:'12px',border:'1px solid #262626'}}>
                   <p style={{color:'#999'}}>No recipes match your filters</p>
@@ -1026,7 +1035,7 @@ const MealPrepApp = () => {
         {/* SETTINGS */}
         {currentView === 'settings' && (
           <div>
-            <h2 style={{fontSize:'30px',fontWeight:700,color:'#fff',margin:'0 0 6px 0'}}>Settings</h2>
+            <h2 style={{fontSize:isMobile?'24px':'30px',fontWeight:700,color:'#fff',margin:'0 0 6px 0'}}>Settings</h2>
             <p style={{color:'#999',margin:'0 0 24px 0'}}>Toggle which meals to plan each day</p>
             <div style={{background:'#1a1a1a',borderRadius:'8px',padding:'28px',border:'1px solid #262626'}}>
               <h3 style={{margin:'0 0 20px 0',fontSize:'18px',fontWeight:700,color:'#fff'}}>Weekly Meal Schedule</h3>
@@ -1113,7 +1122,7 @@ const MealPrepApp = () => {
             style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.6)',zIndex:200,backdropFilter:'blur(2px)'}} />
 
           {/* Panel */}
-          <div style={{position:'fixed',top:0,right:0,bottom:0,width:'380px',background:'#111',borderLeft:'1px solid #262626',zIndex:201,display:'flex',flexDirection:'column',overflowY:'auto'}}>
+          <div style={{position:'fixed',top:0,right:0,bottom:0,width:isMobile?'100%':'380px',background:'#111',borderLeft:'1px solid #262626',zIndex:201,display:'flex',flexDirection:'column',overflowY:'auto'}}>
 
             {/* Panel header */}
             <div style={{padding:'20px 24px',borderBottom:'1px solid #1e1e1e',display:'flex',justifyContent:'space-between',alignItems:'center',flexShrink:0}}>
@@ -1553,7 +1562,7 @@ const MealPrepApp = () => {
             <div style={{padding:'24px'}}>
               <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:'10px'}}>
                 <div>
-                  <h2 style={{margin:'0 0 8px 0',fontSize:'26px',fontWeight:700,color:'#fff'}}>{selectedRecipe.name}</h2>
+                  <h2 style={{margin:'0 0 8px 0',fontSize:isMobile?'20px':'26px',fontWeight:700,color:'#fff'}}>{selectedRecipe.name}</h2>
                   <RatingDisplay recipeId={selectedRecipe.id} />
                 </div>
                 <div style={{display:'flex',gap:'8px',marginLeft:'12px',flexShrink:0}}>

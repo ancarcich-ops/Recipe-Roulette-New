@@ -143,7 +143,7 @@ const emptyMealPlan = {
   6:{breakfast:null,lunch:null,dinner:null}
 };
 
-const AuthScreen = () => {
+const AuthScreen = ({ onGuest }) => {
   const [mode, setMode] = useState('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -198,6 +198,15 @@ const AuthScreen = () => {
               style={{width:'100%',padding:'13px',background:'#ffffff',color:'#000000',border:'none',borderRadius:'8px',fontSize:'15px',fontWeight:700,cursor:loading?'not-allowed':'pointer',opacity:loading?0.7:1}}>
               {loading ? 'Please wait...' : mode === 'login' ? 'Log In' : 'Create Account'}
             </button>
+            <div style={{display:'flex',alignItems:'center',gap:'12px',margin:'20px 0 0'}}>
+              <div style={{flex:1,height:'1px',background:'#262626'}} />
+              <span style={{color:'#555',fontSize:'12px',fontWeight:600}}>OR</span>
+              <div style={{flex:1,height:'1px',background:'#262626'}} />
+            </div>
+            <button type="button" onClick={onGuest}
+              style={{width:'100%',marginTop:'12px',padding:'13px',background:'transparent',color:'#999',border:'1px solid #262626',borderRadius:'8px',fontSize:'14px',fontWeight:600,cursor:'pointer'}}>
+              👀 View as Guest
+            </button>
           </form>
         </div>
       </div>
@@ -218,6 +227,7 @@ const MealPrepApp = () => {
 
   const [session, setSession] = useState(null);
   const [loadingSession, setLoadingSession] = useState(true);
+  const [guestMode, setGuestMode] = useState(false);
   const [loadingProfile, setLoadingProfile] = useState(true);
   const [saving, setSaving] = useState(false);
   const [showProfilePanel, setShowProfilePanel] = useState(false);
@@ -756,12 +766,22 @@ const MealPrepApp = () => {
     </div>
   );
 
-  if (!session) return <AuthScreen />;
+  if (!session && !guestMode) return <AuthScreen onGuest={() => setGuestMode(true)} />;
 
   return (
     <div style={{minHeight:'100vh',background:'#0a0a0a',fontFamily:'system-ui, sans-serif',color:'#fff',overflowX:'hidden'}}>
 
       {/* Header */}
+      {/* Guest mode banner */}
+      {guestMode && (
+        <div style={{background:'#1a1200',borderBottom:'1px solid #3d2e00',padding:'10px 20px',display:'flex',alignItems:'center',justifyContent:'center',gap:'12px',flexWrap:'wrap'}}>
+          <span style={{color:'#fcc419',fontSize:'13px',fontWeight:600}}>👀 You're viewing as a guest — some features are disabled</span>
+          <button onClick={() => setGuestMode(false)} style={{padding:'6px 16px',background:'#fcc419',color:'#000',border:'none',borderRadius:'6px',fontSize:'12px',fontWeight:700,cursor:'pointer'}}>
+            Sign In / Sign Up
+          </button>
+        </div>
+      )}
+
       <div style={{background:'rgba(0,0,0,0.95)',borderBottom:'1px solid #262626',position:'sticky',top:0,zIndex:100}}>
         <div style={{maxWidth:'1400px',margin:'0 auto',padding:isMobile?'8px 12px':'10px 24px'}}>
           {/* Top row: logo + profile */}

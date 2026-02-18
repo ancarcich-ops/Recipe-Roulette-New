@@ -1118,8 +1118,10 @@ const MealPrepApp = () => {
       {showProfilePanel && (
         <>
           {/* Backdrop */}
-          <div onClick={() => setShowProfilePanel(false)}
-            style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.6)',zIndex:200,backdropFilter:'blur(2px)'}} />
+          <div 
+            onClick={() => setShowProfilePanel(false)}
+            onTouchEnd={(e) => { e.preventDefault(); setShowProfilePanel(false); }}
+            style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.6)',zIndex:200,backdropFilter:'blur(2px)',cursor:'pointer'}} />
 
           {/* Panel */}
           <div style={{position:'fixed',top:0,right:0,bottom:0,width:isMobile?'100%':'380px',background:'#111',borderLeft:'1px solid #262626',zIndex:201,display:'flex',flexDirection:'column',overflowY:'auto'}}>
@@ -1127,7 +1129,7 @@ const MealPrepApp = () => {
             {/* Panel header */}
             <div style={{padding:'20px 24px',borderBottom:'1px solid #1e1e1e',display:'flex',justifyContent:'space-between',alignItems:'center',flexShrink:0}}>
               <h2 style={{margin:0,fontSize:'18px',fontWeight:700,color:'#fff'}}>Your Profile</h2>
-              <button onClick={() => setShowProfilePanel(false)} style={{background:'none',border:'none',cursor:'pointer',padding:'4px'}}><X size={20} color="#666" /></button>
+              <button onClick={() => setShowProfilePanel(false)} style={{background:'#262626',border:'1px solid #333',borderRadius:'50%',cursor:'pointer',padding:'8px',display:'flex',alignItems:'center',justifyContent:'center'}}><X size={18} color="#fff" /></button>
             </div>
 
             <div style={{padding:'24px',flex:1,display:'flex',flexDirection:'column',gap:'28px'}}>

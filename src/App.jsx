@@ -1469,8 +1469,8 @@ const MealPrepApp = () => {
               );
             })}
             {/* Center circle */}
-            <div style={{position:'absolute',top:'50%',left:'50%',transform:'translate(-50%,-50%)',width:'50px',height:'50px',borderRadius:'50%',background:'#0a0a0a',border:'4px solid #333',display:'flex',alignItems:'center',justifyContent:'center',zIndex:5,overflow:'hidden',boxShadow:'0 0 20px rgba(0,0,0,0.8)'}}>
-              <img src="/logo.png" alt="logo" style={{width:'38px',height:'38px',objectFit:'contain'}} />
+            <div style={{position:'absolute',top:'50%',left:'50%',transform:'translate(-50%,-50%)',width:'80px',height:'80px',borderRadius:'50%',background:'#0a0a0a',border:'4px solid #333',display:'flex',alignItems:'center',justifyContent:'center',zIndex:5,overflow:'hidden',boxShadow:'0 0 20px rgba(0,0,0,0.8)'}}>
+              <img src="/logo.png" alt="logo" style={{width:'72px',height:'72px',objectFit:'contain'}} />
             </div>
           </div>
 

@@ -695,7 +695,7 @@ const MealPrepApp = () => {
             {/* Greeting */}
             <div style={{marginBottom:'28px'}}>
               <h2 style={{fontSize:isMobile?'22px':'28px',fontWeight:700,color:'#fff',margin:'0 0 4px 0'}}>
-                {(() => { const h = new Date().getHours(); return `Good ${h < 12 ? 'morning' : h < 17 ? 'afternoon' : 'evening'}, ${session.user.email.split('@')[0]} 👋`; })()}
+                {(() => { const h = new Date().getHours(); const name = profile.displayName || session.user.email.split('@')[0]; return `Good ${h < 12 ? 'morning' : h < 17 ? 'afternoon' : 'evening'}, ${name} 👋`; })()}
               </h2>
               <p style={{color:'#666',margin:0,fontSize:'14px'}}>Here's what's cooking today</p>
             </div>

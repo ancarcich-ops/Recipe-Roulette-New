@@ -249,6 +249,8 @@ const MealPrepApp = () => {
   const [newFolderEmoji, setNewFolderEmoji] = useState('📁');
   const [selectedRecipe, setSelectedRecipe] = useState(null);
   const [showAutoFillModal, setShowAutoFillModal] = useState(false);
+  const [showSpinningWheel, setShowSpinningWheel] = useState(false);
+  const [spinDeg, setSpinDeg] = useState(0);
   const [showRecipeSelector, setShowRecipeSelector] = useState(null);
   const [showShoppingList, setShowShoppingList] = useState(false);
   const [showAddRecipeModal, setShowAddRecipeModal] = useState(false);
@@ -569,22 +571,29 @@ const MealPrepApp = () => {
   };
 
   const autoFillCalendar = () => {
-    const newPlan = JSON.parse(JSON.stringify(mealPlan));
-    const all = [...sampleRecipes, ...communityRecipes, ...userRecipes];
-    const empty = [];
-    for (let d = 0; d < 7; d++) for (const mt of mealTypes)
-      if (mealTypeSettings[d][mt] && !newPlan[d][mt] && !isSlotDisabled(d, mt)) empty.push({d, mt});
-    const slots = empty.sort(() => Math.random() - 0.5);
-    let i = 0;
-    const easy = all.filter(r => r.cookTime < 20).sort(() => Math.random() - 0.5);
-    for (let j = 0; j < autoFillSettings.easyMeals && i < slots.length; j++, i++) newPlan[slots[i].d][slots[i].mt] = easy[j % easy.length];
-    const popular = [...communityRecipes].sort((a,b) => b.likes - a.likes);
-    for (let j = 0; j < autoFillSettings.communityMeals && i < slots.length; j++, i++) newPlan[slots[i].d][slots[i].mt] = popular[j % popular.length];
-    const untried = sampleRecipes.filter(r => r.timesMade === 0).sort(() => Math.random() - 0.5);
-    for (let j = 0; j < autoFillSettings.untriedRecipes && i < slots.length; j++, i++) newPlan[slots[i].d][slots[i].mt] = untried[j % untried.length];
-    setMealPlan(newPlan);
-    saveMealPlan(newPlan);
     setShowAutoFillModal(false);
+    setShowSpinningWheel(true);
+    // Spin to a random big angle
+    const newDeg = spinDeg + 1440 + Math.floor(Math.random() * 360);
+    setSpinDeg(newDeg);
+    setTimeout(() => {
+      setShowSpinningWheel(false);
+      const newPlan = JSON.parse(JSON.stringify(mealPlan));
+      const all = [...sampleRecipes, ...communityRecipes, ...userRecipes];
+      const empty = [];
+      for (let d = 0; d < 7; d++) for (const mt of mealTypes)
+        if (mealTypeSettings[d][mt] && !newPlan[d][mt] && !isSlotDisabled(d, mt)) empty.push({d, mt});
+      const slots = empty.sort(() => Math.random() - 0.5);
+      let i = 0;
+      const easy = all.filter(r => r.cookTime < 20).sort(() => Math.random() - 0.5);
+      for (let j = 0; j < autoFillSettings.easyMeals && i < slots.length; j++, i++) newPlan[slots[i].d][slots[i].mt] = easy[j % easy.length];
+      const popular = [...communityRecipes].sort((a,b) => b.likes - a.likes);
+      for (let j = 0; j < autoFillSettings.communityMeals && i < slots.length; j++, i++) newPlan[slots[i].d][slots[i].mt] = popular[j % popular.length];
+      const untried = sampleRecipes.filter(r => r.timesMade === 0).sort(() => Math.random() - 0.5);
+      for (let j = 0; j < autoFillSettings.untriedRecipes && i < slots.length; j++, i++) newPlan[slots[i].d][slots[i].mt] = untried[j % untried.length];
+      setMealPlan(newPlan);
+      saveMealPlan(newPlan);
+    }, 3000);
   };
 
   const filterRecipes = (recipes) => recipes.filter(r => {
@@ -1405,6 +1414,71 @@ const MealPrepApp = () => {
       )}
 
       {/* AUTO-FILL MODAL */}
+      {/* SPINNING WHEEL */}
+      {showSpinningWheel && (
+        <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.92)',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',zIndex:2000}}>
+          <style>{`
+            @keyframes wheelSpin {
+              0% { transform: rotate(0deg); }
+              100% { transform: rotate(${spinDeg}deg); }
+            }
+            @keyframes pulse {
+              0%, 100% { transform: scale(1); }
+              50% { transform: scale(1.05); }
+            }
+            .wheel-spin {
+              animation: wheelSpin 3s cubic-bezier(0.17, 0.67, 0.12, 0.99) forwards;
+            }
+            .pulse-text {
+              animation: pulse 0.8s ease-in-out infinite;
+            }
+          `}</style>
+
+          {/* Pointer */}
+          <div style={{width:0,height:0,borderLeft:'12px solid transparent',borderRight:'12px solid transparent',borderTop:'24px solid #fff',marginBottom:'-12px',zIndex:10,filter:'drop-shadow(0 2px 4px rgba(0,0,0,0.5))'}} />
+
+          {/* Wheel */}
+          <div className="wheel-spin" style={{width:'280px',height:'280px',borderRadius:'50%',position:'relative',border:'6px solid #333',boxShadow:'0 0 40px rgba(255,255,255,0.1)'}}>
+            {[
+              {label:'🍝 Pasta', color:'#e63946'},
+              {label:'🥗 Salad', color:'#2a9d8f'},
+              {label:'🍗 Chicken', color:'#e9c46a'},
+              {label:'🐟 Seafood', color:'#457b9d'},
+              {label:'🌮 Tacos', color:'#f4a261'},
+              {label:'🥘 Slow Cook', color:'#6a4c93'},
+              {label:'🍳 Breakfast', color:'#1d3557'},
+              {label:'🥩 Protein', color:'#e76f51'},
+            ].map((segment, i, arr) => {
+              const angle = 360 / arr.length;
+              const rotation = i * angle;
+              return (
+                <div key={i} style={{
+                  position:'absolute', inset:0, borderRadius:'50%', overflow:'hidden',
+                  transform:`rotate(${rotation}deg)`,
+                  clipPath:`polygon(50% 50%, 50% 0%, ${50 + 50 * Math.tan((angle * Math.PI) / 180)}% 0%)`
+                }}>
+                  <div style={{position:'absolute',inset:0,background:segment.color}} />
+                  <div style={{
+                    position:'absolute', top:'18%', left:'50%',
+                    transform:`translateX(-50%) rotate(${angle/2}deg)`,
+                    fontSize:'11px', fontWeight:700, color:'#fff',
+                    whiteSpace:'nowrap', textShadow:'0 1px 3px rgba(0,0,0,0.8)',
+                    transformOrigin:'center bottom'
+                  }}>{segment.label}</div>
+                </div>
+              );
+            })}
+            {/* Center circle */}
+            <div style={{position:'absolute',top:'50%',left:'50%',transform:'translate(-50%,-50%)',width:'50px',height:'50px',borderRadius:'50%',background:'#0a0a0a',border:'4px solid #333',display:'flex',alignItems:'center',justifyContent:'center',zIndex:5,overflow:'hidden',boxShadow:'0 0 20px rgba(0,0,0,0.8)'}}>
+              <img src="/logo.png" alt="logo" style={{width:'38px',height:'38px',objectFit:'contain'}} />
+            </div>
+          </div>
+
+          <p className="pulse-text" style={{marginTop:'32px',fontSize:'18px',fontWeight:700,color:'#fff'}}>Spinning your meals...</p>
+          <p style={{marginTop:'8px',fontSize:'13px',color:'#666'}}>Finding the perfect week for you</p>
+        </div>
+      )}
+
       {showAutoFillModal && (
         <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.8)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:1000,padding:'20px'}}>
           <div style={{background:'#1a1a1a',borderRadius:'12px',padding:'24px',maxWidth:'440px',width:'100%',border:'1px solid #262626'}}>

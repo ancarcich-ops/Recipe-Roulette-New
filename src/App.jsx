@@ -1,4 +1,4 @@
-\import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import { Heart, X, Wand2, Clock, Archive, ShoppingCart, Plus, LogOut, User, Camera, Edit2, Check } from 'lucide-react';
 

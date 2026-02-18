@@ -514,13 +514,26 @@ const MealPrepApp = () => {
       touchDragRef.current.moved = true;
       e.preventDefault();
     }
-    setDraggedMeal(touchDragRef.current);
+    setDraggedMeal({...touchDragRef.current});
   };
-  const handleTouchEnd = (e, td, tmt) => {
-    if (!touchDragRef.current || !touchDragRef.current.moved) { touchDragRef.current = null; return; }
+  const handleTouchEnd = (e) => {
+    if (!touchDragRef.current || !touchDragRef.current.moved) {
+      touchDragRef.current = null;
+      setDraggedMeal(null);
+      return;
+    }
     const dragged = touchDragRef.current;
     touchDragRef.current = null;
     setDraggedMeal(null);
+    // Find which drop zone the finger is over
+    const touch = e.changedTouches[0];
+    const el = document.elementFromPoint(touch.clientX, touch.clientY);
+    if (!el) return;
+    const dropZone = el.closest('[data-dropzone]');
+    if (!dropZone) return;
+    const td = parseInt(dropZone.dataset.day);
+    const tmt = dropZone.dataset.meal;
+    if (isNaN(td) || !tmt) return;
     if (isSlotDisabled(td, tmt) || (dragged.d === td && dragged.mt === tmt)) return;
     const newPlan = JSON.parse(JSON.stringify(mealPlan));
     newPlan[dragged.d][dragged.mt] = null;
@@ -635,7 +648,7 @@ const MealPrepApp = () => {
           {/* Top row: logo + profile */}
           <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:isMobile?'8px':0}}>
             <div style={{display:'flex',alignItems:'center',gap:'10px'}}>
-              <img src="/logo.png" alt="Recipe Roulette Logo" style={{width:isMobile?'44px':'64px',height:isMobile?'44px':'64px',objectFit:'contain',flexShrink:0}} />
+              <img src="/logo.png" alt="Recipe Roulette Logo" style={{width:isMobile?'104px':'128px',height:isMobile?'104px':'128px',objectFit:'contain',flexShrink:0}} />
               <div>
                 <h1 style={{margin:0,fontSize:isMobile?'18px':'26px',fontWeight:700,color:'#fff',lineHeight:1.1}}>Recipe Roulette</h1>
                 {!isMobile && <p style={{margin:0,fontSize:'12px',color:'#666'}}>Plan together, eat better</p>}
@@ -661,7 +674,7 @@ const MealPrepApp = () => {
             </div>
           </div>
           {/* Nav row — scrollable on mobile, inline on desktop */}
-          <nav style={{display:'flex',gap:isMobile?'6px':'6px',overflowX:'auto',WebkitOverflowScrolling:'touch',paddingBottom:isMobile?'2px':0,scrollbarWidth:'none'}}>
+          <nav style={{display:'flex',gap:'6px',overflowX:'auto',WebkitOverflowScrolling:'touch',paddingBottom:isMobile?'2px':0,paddingLeft:'2px',scrollbarWidth:'none',msOverflowStyle:'none'}}>
             {[{id:'home',label:'Home'},{id:'calendar',label:'My Meals'},{id:'recipes',label:'Recipe Book'},{id:'community',label:'Community'},{id:'settings',label:'Settings'}].map(item => (
               <button key={item.id} onClick={() => setCurrentView(item.id)}
                 style={{padding:isMobile?'7px 14px':'8px 16px',background:currentView===item.id?'#ffffff':'transparent',color:currentView===item.id?'#000':'#999',border:currentView===item.id?'none':'1px solid #262626',borderRadius:'8px',cursor:'pointer',fontWeight:600,fontSize:isMobile?'12px':'13px',whiteSpace:'nowrap',flexShrink:0}}>
@@ -811,19 +824,17 @@ const MealPrepApp = () => {
         {/* MY MEALS */}
         {currentView === 'calendar' && (
           <div>
-            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'24px'}}>
-              <div>
-                <h2 style={{fontSize:isMobile?'24px':'30px',fontWeight:700,color:'#fff',margin:'0 0 4px 0'}}>Weekly Meal Plan</h2>
-                <p style={{color:'#666',margin:0,fontSize:'13px'}}>Drag meals to rearrange • Click to view details</p>
-              </div>
-              <div style={{display:'flex',gap:'10px'}}>
-                <button onClick={() => setShowAutoFillModal(true)} style={{padding:'10px 18px',background:'#ffffff',border:'none',borderRadius:'8px',cursor:'pointer',display:'flex',alignItems:'center',gap:'6px',fontWeight:600,fontSize:'13px',color:'#000'}}>
+            <div style={{marginBottom:'24px'}}>
+              <h2 style={{fontSize:isMobile?'24px':'30px',fontWeight:700,color:'#fff',margin:'0 0 2px 0'}}>Weekly Meal Plan</h2>
+              <p style={{color:'#666',margin:'0 0 14px 0',fontSize:'13px'}}>Drag meals to rearrange • Click to view details</p>
+              <div style={{display:'flex',gap:'10px',flexWrap: isMobile ? 'wrap' : 'nowrap'}}>
+                <button onClick={() => setShowAutoFillModal(true)} style={{flex: isMobile ? '1 1 auto' : 'none', padding:'10px 18px',background:'#ffffff',border:'none',borderRadius:'8px',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:'6px',fontWeight:600,fontSize:'13px',color:'#000'}}>
                   <Wand2 size={16} /> Auto-Fill
                 </button>
-                <button onClick={() => setShowShoppingList(true)} style={{padding:'10px 18px',background:'#1a1a1a',border:'1px solid #262626',borderRadius:'8px',cursor:'pointer',display:'flex',alignItems:'center',gap:'6px',fontWeight:600,fontSize:'13px',color:'#fff'}}>
+                <button onClick={() => setShowShoppingList(true)} style={{flex: isMobile ? '1 1 auto' : 'none', padding:'10px 18px',background:'#1a1a1a',border:'1px solid #262626',borderRadius:'8px',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:'6px',fontWeight:600,fontSize:'13px',color:'#fff'}}>
                   <ShoppingCart size={16} /> Shopping List
                 </button>
-                <button onClick={clearAllMeals} style={{padding:'10px 18px',background:'#1a1a1a',border:'1px solid #ff4444',borderRadius:'8px',cursor:'pointer',display:'flex',alignItems:'center',gap:'6px',fontWeight:600,fontSize:'13px',color:'#ff4444'}}>
+                <button onClick={clearAllMeals} style={{flex: isMobile ? '1 1 auto' : 'none', padding:'10px 18px',background:'#1a1a1a',border:'1px solid #ff4444',borderRadius:'8px',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:'6px',fontWeight:600,fontSize:'13px',color:'#ff4444'}}>
                   <X size={16} /> Clear All
                 </button>
               </div>
@@ -837,8 +848,10 @@ const MealPrepApp = () => {
                       const disabled = isSlotDisabled(dayIndex, mealType);
                       const meal = mealPlan[dayIndex][mealType];
                       return (
-                        <div key={mealType} onDragOver={handleDragOver} onDrop={(e) => handleDrop(e, dayIndex, mealType)} onTouchEnd={(e) => handleTouchEnd(e, dayIndex, mealType)}
-                          style={{background:'#1a1a1a',borderRadius:'8px',padding:'8px',marginBottom:'8px',minHeight:'68px',border:disabled?'2px solid #333': draggedMeal ? '2px dashed #51cf66' : '2px dashed #262626',position:'relative',opacity:disabled?0.5:1,transition:'border-color 0.15s'}}>
+                        <div key={mealType}
+                          data-dropzone="true" data-day={dayIndex} data-meal={mealType}
+                          onDragOver={handleDragOver} onDrop={(e) => handleDrop(e, dayIndex, mealType)}
+                          style={{background:'#1a1a1a',borderRadius:'8px',padding:'8px',marginBottom:'8px',minHeight:'68px',border:disabled?'2px solid #333': draggedMeal && !(draggedMeal.d===dayIndex && draggedMeal.mt===mealType) ? '2px dashed #51cf66' : '2px dashed #262626',position:'relative',opacity:disabled?0.5:1,transition:'border-color 0.15s'}}>
                           {!meal && (
                             <button onClick={() => toggleSlotDisabled(dayIndex, mealType)}
                               style={{position:'absolute',top:'-7px',right:'-7px',background:disabled?'#51cf66':'#ff4444',border:'2px solid #1a1a1a',borderRadius:'50%',width:'20px',height:'20px',display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',padding:0,zIndex:10,color:'white',fontSize:'13px',fontWeight:'bold'}}>
@@ -853,6 +866,7 @@ const MealPrepApp = () => {
                               onDragStart={(e) => handleDragStart(e, dayIndex, mealType, meal)}
                               onTouchStart={(e) => handleTouchStart(e, dayIndex, mealType, meal)}
                               onTouchMove={handleTouchMove}
+                              onTouchEnd={handleTouchEnd}
                               onClick={() => setSelectedRecipe(meal)}
                               style={{background:'#fff',borderRadius:'6px',padding:'6px',position:'relative',cursor:'grab',userSelect:'none',WebkitUserSelect:'none',touchAction:'none'}}>
                               <button onClick={e => { e.stopPropagation(); removeMealFromPlan(dayIndex, mealType); }}

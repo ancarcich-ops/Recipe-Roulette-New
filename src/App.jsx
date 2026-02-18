@@ -666,7 +666,7 @@ const MealPrepApp = () => {
               <img src="/logo.png" alt="Recipe Roulette Logo" style={{width:isMobile?'104px':'128px',height:isMobile?'104px':'128px',objectFit:'contain',flexShrink:0}} />
               <div>
                 <h1 style={{margin:0,fontSize:isMobile?'18px':'26px',fontWeight:700,color:'#fff',lineHeight:1.1}}>Recipe Roulette</h1>
-                {!isMobile && <p style={{margin:0,fontSize:'12px',color:'#666'}}>Plan together, eat better</p>}
+                <p style={{margin:0,fontSize:'12px',color:'#666'}}>Plan together, eat better</p>
               </div>
             </div>
             {/* Profile button - always top right */}

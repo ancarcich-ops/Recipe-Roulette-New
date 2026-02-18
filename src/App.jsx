@@ -426,15 +426,28 @@ const MealPrepApp = () => {
     if (!session?.user) return;
     setProfileSaving(true);
     const userId = session.user.id;
-    await supabase.from('profiles').upsert({
+    const { error } = await supabase.from('profiles').upsert({
       id: userId,
       display_name: profile.displayName,
       avatar_url: profile.avatarPreview,
       dietary_prefs: profile.dietaryPrefs,
       household_size: profile.householdSize,
       updated_at: new Date().toISOString()
-    });
-    setProfile(p => ({ ...p, avatarUrl: p.avatarPreview }));
+    }, { onConflict: 'id' });
+    if (error) {
+      console.error('Profile save error:', error);
+    }
+    // Reload profile from DB to confirm it saved
+    const { data: prof } = await supabase.from('profiles').select('*').eq('id', userId).single();
+    if (prof) {
+      setProfile({
+        displayName: prof.display_name || '',
+        avatarUrl: prof.avatar_url || '',
+        avatarPreview: prof.avatar_url || '',
+        dietaryPrefs: prof.dietary_prefs || [],
+        householdSize: prof.household_size || 2
+      });
+    }
     setProfileSaving(false);
     setProfileSaved(true);
     setTimeout(() => { setProfileSaved(false); setShowProfilePanel(false); }, 1500);

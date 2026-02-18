@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+=import React, { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import { Heart, X, Wand2, Clock, Archive, ShoppingCart, Plus, LogOut, User, Camera, Edit2, Check } from 'lucide-react';
 
@@ -713,10 +713,49 @@ const MealPrepApp = () => {
     return true;
   });
 
+  // Scale an ingredient string based on ratio
+  const scaleIngredient = (ingredient, ratio) => {
+    if (ratio === 1) return ingredient;
+    // Match leading number/fraction like "1.5", "1/2", "2", "1 1/2"
+    const fracPattern = /^(\d+\s+\d+\/\d+|\d+\/\d+|\d*\.?\d+)/;
+    return ingredient.replace(fracPattern, (match) => {
+      // Parse mixed fractions like "1 1/2"
+      let val;
+      if (match.includes(' ')) {
+        const parts = match.trim().split(' ');
+        const whole = parseFloat(parts[0]);
+        const [n, d] = parts[1].split('/').map(Number);
+        val = whole + n / d;
+      } else if (match.includes('/')) {
+        const [n, d] = match.split('/').map(Number);
+        val = n / d;
+      } else {
+        val = parseFloat(match);
+      }
+      const scaled = val * ratio;
+      // Format nicely
+      if (Number.isInteger(scaled)) return String(scaled);
+      // Try to express as a simple fraction
+      const fracs = [[1/4,'1/4'],[1/3,'1/3'],[1/2,'1/2'],[2/3,'2/3'],[3/4,'3/4']];
+      const whole = Math.floor(scaled);
+      const rem = scaled - whole;
+      const frac = fracs.find(([f]) => Math.abs(rem - f) < 0.08);
+      if (frac) return whole > 0 ? `${whole} ${frac[1]}` : frac[1];
+      return parseFloat(scaled.toFixed(2)).toString();
+    });
+  };
+
   const generateShoppingList = () => {
     const map = {};
     Object.values(mealPlan).forEach(day => Object.values(day).forEach(meal => {
-      if (meal?.ingredients) meal.ingredients.forEach(ing => { const k = ing.toLowerCase().trim(); map[k] = (map[k]||0)+1; });
+      if (meal?.ingredients) {
+        const ratio = meal.servings ? (profile.householdSize || 2) / meal.servings : 1;
+        meal.ingredients.forEach(ing => {
+          const scaled = scaleIngredient(ing, ratio);
+          const k = scaled.toLowerCase().trim();
+          map[k] = (map[k]||0)+1;
+        });
+      }
     }));
     const cats = {Produce:[],Proteins:[],Dairy:[],Pantry:[],Seasonings:[],Other:[]};
     const keys = {Produce:['tomato','cucumber','onion','pepper','broccoli','kale','avocado','lemon','basil','parsley','potato'],Proteins:['chicken','beef','shrimp','salmon','egg','tofu','pork','fish'],Dairy:['cheese','cream','milk','butter','yogurt','feta','parmesan'],Pantry:['rice','pasta','quinoa','bread','soy sauce','olive oil','honey','flour','sugar','wine'],Seasonings:['salt','pepper','garlic','ginger','oregano','paprika','cumin','thyme','chili']};
@@ -1860,20 +1899,41 @@ const MealPrepApp = () => {
               </div>
               <div style={{display:'flex',gap:'18px',marginBottom:'20px',fontSize:'13px',color:'#999'}}>
                 <span>⏱ {selectedRecipe.prepTime}</span>
-                <span>🍽 {selectedRecipe.servings} servings</span>
+                <span>🍽 {profile.householdSize || selectedRecipe.servings} servings{profile.householdSize && selectedRecipe.servings && profile.householdSize !== selectedRecipe.servings ? ` (scaled from ${selectedRecipe.servings})` : ''}</span>
                 {selectedRecipe.timesMade !== undefined && <span>Made {selectedRecipe.timesMade}x</span>}
               </div>
               {selectedRecipe.ingredients && (<>
-                <h3 style={{margin:'0 0 8px 0',fontSize:'15px',fontWeight:700,color:'#fff'}}>Ingredients</h3>
+                <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',margin:'0 0 8px 0'}}>
+                  <h3 style={{margin:0,fontSize:'15px',fontWeight:700,color:'#fff'}}>Ingredients</h3>
+                  {selectedRecipe.servings && (
+                    <span style={{fontSize:'12px',color: profile.householdSize !== selectedRecipe.servings ? '#fcc419' : '#666',fontWeight:600}}>
+                      {profile.householdSize !== selectedRecipe.servings
+                        ? `Scaled for ${profile.householdSize || 2} people (orig. ${selectedRecipe.servings})`
+                        : `Serves ${selectedRecipe.servings}`}
+                    </span>
+                  )}
+                </div>
                 <ul style={{marginBottom:'18px',paddingLeft:'18px'}}>
-                  {selectedRecipe.ingredients.map((ing,i) => <li key={i} style={{marginBottom:'5px',color:'#999',lineHeight:1.5}}>{ing}</li>)}
+                  {selectedRecipe.ingredients.map((ing,i) => {
+                    const ratio = selectedRecipe.servings ? (profile.householdSize || 2) / selectedRecipe.servings : 1;
+                    const scaled = scaleIngredient(ing, ratio);
+                    const changed = scaled !== ing;
+                    return <li key={i} style={{marginBottom:'5px',color: changed ? '#fff' : '#999',lineHeight:1.5}}>{scaled}</li>;
+                  })}
                 </ul>
               </>)}
               {selectedRecipe.instructions && (<>
-                <h3 style={{margin:'0 0 8px 0',fontSize:'15px',fontWeight:700,color:'#fff'}}>Instructions</h3>
+                <h3 style={{margin:'0 0 4px 0',fontSize:'15px',fontWeight:700,color:'#fff'}}>Instructions</h3>
+                {selectedRecipe.servings && profile.householdSize && profile.householdSize !== selectedRecipe.servings && (
+                  <p style={{margin:'0 0 10px',fontSize:'12px',color:'#fcc419'}}>⚠ Ingredients above are scaled for {profile.householdSize} — adjust cooking vessel sizes accordingly.</p>
+                )}
                 {Array.isArray(selectedRecipe.instructions) ? (
                   <ol style={{paddingLeft:'18px'}}>
-                    {selectedRecipe.instructions.map((step,i) => <li key={i} style={{marginBottom:'8px',color:'#999',lineHeight:1.6}}>{step}</li>)}
+                    {selectedRecipe.instructions.map((step,i) => {
+                      const ratio = selectedRecipe.servings ? (profile.householdSize || 2) / selectedRecipe.servings : 1;
+                      const scaledStep = scaleIngredient(step, ratio);
+                      return <li key={i} style={{marginBottom:'8px',color:'#999',lineHeight:1.6}}>{scaledStep}</li>;
+                    })}
                   </ol>
                 ) : <p style={{color:'#999'}}>{selectedRecipe.instructions}</p>}
               </>)}

@@ -839,8 +839,8 @@ const MealPrepApp = () => {
                 </button>
               </div>
             </div>
-            <div style={{background:'#1a1a1a',borderRadius:'8px',padding:'20px',border:'1px solid #262626'}}>
-              <div style={{display:'grid',gridTemplateColumns:'repeat(7, 1fr)',gap:'10px'}}>
+            <div style={{background:'#1a1a1a',borderRadius:'8px',padding:'20px',border:'1px solid #262626',overflowX: isMobile ? 'auto' : 'visible',WebkitOverflowScrolling:'touch'}}>
+              <div style={{display:'grid',gridTemplateColumns: isMobile ? 'repeat(7, 140px)' : 'repeat(7, 1fr)',gap:'10px',minWidth: isMobile ? 'max-content' : 'auto'}}>
                 {daysOfWeek.map((day, dayIndex) => (
                   <div key={day} style={{background:'#262626',borderRadius:'8px',padding:'10px'}}>
                     <h3 style={{margin:'0 0 10px 0',fontSize:'11px',fontWeight:700,color:'#fff',textAlign:'center',textTransform:'uppercase',letterSpacing:'0.5px'}}>{day.slice(0,3)}</h3>

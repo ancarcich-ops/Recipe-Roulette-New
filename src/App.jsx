@@ -355,7 +355,7 @@ const MealPrepApp = () => {
     if (saved) setSavedRecipes(new Set(saved.map(r => r.recipe_id)));
     // Load profile
     const { data: prof } = await supabase.from('profiles').select('*').eq('id', userId).single();
-    if (prof?.raw_user_meta_data || prof) {
+    if (prof) {
       setProfile({
         displayName: prof.display_name || '',
         avatarUrl: prof.avatar_url || '',

@@ -485,9 +485,13 @@ const MealPrepApp = () => {
     setDisabledSlots(prev => ({...prev,[key]:!prev[key]}));
   };
 
-  const handleDragStart = (d, mt, recipe) => setDraggedMeal({d, mt, recipe});
+  const handleDragStart = (e, d, mt, recipe) => {
+    setDraggedMeal({d, mt, recipe});
+    if (e.dataTransfer) e.dataTransfer.effectAllowed = 'move';
+  };
   const handleDragOver = e => e.preventDefault();
-  const handleDrop = (td, tmt) => {
+  const handleDrop = (e, td, tmt) => {
+    e.preventDefault();
     if (!draggedMeal || isSlotDisabled(td, tmt)) return;
     const newPlan = JSON.parse(JSON.stringify(mealPlan));
     newPlan[draggedMeal.d][draggedMeal.mt] = null;
@@ -495,6 +499,34 @@ const MealPrepApp = () => {
     setMealPlan(newPlan);
     saveMealPlan(newPlan);
     setDraggedMeal(null);
+  };
+
+  // Touch-based drag for mobile
+  const touchDragRef = React.useRef(null);
+  const handleTouchStart = (e, d, mt, recipe) => {
+    touchDragRef.current = {d, mt, recipe, startX: e.touches[0].clientX, startY: e.touches[0].clientY, moved: false};
+  };
+  const handleTouchMove = (e) => {
+    if (!touchDragRef.current) return;
+    const dx = Math.abs(e.touches[0].clientX - touchDragRef.current.startX);
+    const dy = Math.abs(e.touches[0].clientY - touchDragRef.current.startY);
+    if (dx > 5 || dy > 5) {
+      touchDragRef.current.moved = true;
+      e.preventDefault();
+    }
+    setDraggedMeal(touchDragRef.current);
+  };
+  const handleTouchEnd = (e, td, tmt) => {
+    if (!touchDragRef.current || !touchDragRef.current.moved) { touchDragRef.current = null; return; }
+    const dragged = touchDragRef.current;
+    touchDragRef.current = null;
+    setDraggedMeal(null);
+    if (isSlotDisabled(td, tmt) || (dragged.d === td && dragged.mt === tmt)) return;
+    const newPlan = JSON.parse(JSON.stringify(mealPlan));
+    newPlan[dragged.d][dragged.mt] = null;
+    newPlan[td][tmt] = dragged.recipe;
+    setMealPlan(newPlan);
+    saveMealPlan(newPlan);
   };
 
   const saveCommunityRecipe = async (recipe) => {
@@ -599,40 +631,44 @@ const MealPrepApp = () => {
 
       {/* Header */}
       <div style={{background:'rgba(0,0,0,0.95)',borderBottom:'1px solid #262626',position:'sticky',top:0,zIndex:100}}>
-        <div style={{maxWidth:'1400px',margin:'0 auto',padding:isMobile?'10px 12px':'10px 24px',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
-          <div style={{display:'flex',alignItems:'center',gap:'12px'}}>
-            <img src="https://www.dropbox.com/scl/fi/odkvuob40yhyittqba8k5/ChatGPT-Image-Feb-16-2026-06_37_13-PM.png?rlkey=k89onj2ds29ikovgm8b70dniv&st=p7vuda88&dl=1" alt="Logo" style={{width:isMobile?'50px':'80px',height:isMobile?'50px':'80px',objectFit:'contain'}} />
-            <div>
-              <h1 style={{margin:0,fontSize:isMobile?'20px':'26px',fontWeight:700,color:'#fff'}}>Recipe Roulette</h1>
-              <p style={{margin:0,fontSize:'12px',color:'#666'}}>Plan together, eat better</p>
+        <div style={{maxWidth:'1400px',margin:'0 auto',padding:isMobile?'8px 12px':'10px 24px'}}>
+          {/* Top row: logo + profile */}
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:isMobile?'8px':0}}>
+            <div style={{display:'flex',alignItems:'center',gap:'10px'}}>
+              <img src="/logo.png" alt="Recipe Roulette Logo" style={{width:isMobile?'44px':'64px',height:isMobile?'44px':'64px',objectFit:'contain',flexShrink:0}} />
+              <div>
+                <h1 style={{margin:0,fontSize:isMobile?'18px':'26px',fontWeight:700,color:'#fff',lineHeight:1.1}}>Recipe Roulette</h1>
+                {!isMobile && <p style={{margin:0,fontSize:'12px',color:'#666'}}>Plan together, eat better</p>}
+              </div>
             </div>
-          </div>
-          <div style={{display:'flex',alignItems:'center',gap:'8px'}}>
-            <nav style={{display:'flex',gap:isMobile?'4px':'6px',overflowX:'auto',WebkitOverflowScrolling:'touch',maxWidth:isMobile?'calc(100vw - 200px)':'none'}}>
-              {[{id:'home',label:'Home'},{id:'calendar',label:'My Meals'},{id:'recipes',label:'Recipe Book'},{id:'community',label:'Community'},{id:'settings',label:'Settings'}].map(item => (
-                <button key={item.id} onClick={() => setCurrentView(item.id)}
-                  style={{padding:isMobile?'6px 10px':'8px 16px',background:currentView===item.id?'#ffffff':'transparent',color:currentView===item.id?'#000':'#999',border:currentView===item.id?'none':'1px solid #262626',borderRadius:'8px',cursor:'pointer',fontWeight:600,fontSize:isMobile?'11px':'13px',whiteSpace:'nowrap',flexShrink:0}}>
-                  {item.label}
-                </button>
-              ))}
-            </nav>
-            <div style={{display:'flex',alignItems:'center',gap:'10px',marginLeft:'12px',paddingLeft:'12px',borderLeft:'1px solid #262626'}}>
+            {/* Profile button - always top right */}
+            <div style={{display:'flex',alignItems:'center',gap:'8px'}}>
               {saving && <span style={{fontSize:'11px',color:'#51cf66',fontWeight:600}}>Saving...</span>}
               <button onClick={() => setShowProfilePanel(true)}
-                style={{display:'flex',alignItems:'center',gap:'9px',background:'#1a1a1a',border:'1px solid #262626',borderRadius:'24px',padding:'5px 12px 5px 5px',cursor:'pointer',transition:'border-color 0.15s'}}>
-                {/* Avatar circle */}
+                style={{display:'flex',alignItems:'center',gap:'8px',background:'#1a1a1a',border:'1px solid #262626',borderRadius:'24px',padding:'5px 12px 5px 5px',cursor:'pointer',transition:'border-color 0.15s'}}>
                 <div style={{width:'30px',height:'30px',borderRadius:'50%',overflow:'hidden',background:'#262626',flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center'}}>
                   {profile.avatarUrl
                     ? <img src={profile.avatarUrl} alt="avatar" style={{width:'100%',height:'100%',objectFit:'cover'}} />
                     : <span style={{fontSize:'14px',fontWeight:700,color:'#fff'}}>{(profile.displayName || session.user.email).charAt(0).toUpperCase()}</span>
                   }
                 </div>
-                <span style={{fontSize:isMobile?'12px':'13px',fontWeight:600,color:'#fff',maxWidth:isMobile?'80px':'110px',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',display:isMobile?'none':'block'}}>
-                  {profile.displayName || session.user.email.split('@')[0]}
-                </span>
+                {!isMobile && (
+                  <span style={{fontSize:'13px',fontWeight:600,color:'#fff',maxWidth:'110px',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>
+                    {profile.displayName || session.user.email.split('@')[0]}
+                  </span>
+                )}
               </button>
             </div>
           </div>
+          {/* Nav row — scrollable on mobile, inline on desktop */}
+          <nav style={{display:'flex',gap:isMobile?'6px':'6px',overflowX:'auto',WebkitOverflowScrolling:'touch',paddingBottom:isMobile?'2px':0,scrollbarWidth:'none'}}>
+            {[{id:'home',label:'Home'},{id:'calendar',label:'My Meals'},{id:'recipes',label:'Recipe Book'},{id:'community',label:'Community'},{id:'settings',label:'Settings'}].map(item => (
+              <button key={item.id} onClick={() => setCurrentView(item.id)}
+                style={{padding:isMobile?'7px 14px':'8px 16px',background:currentView===item.id?'#ffffff':'transparent',color:currentView===item.id?'#000':'#999',border:currentView===item.id?'none':'1px solid #262626',borderRadius:'8px',cursor:'pointer',fontWeight:600,fontSize:isMobile?'12px':'13px',whiteSpace:'nowrap',flexShrink:0}}>
+                {item.label}
+              </button>
+            ))}
+          </nav>
         </div>
       </div>
 
@@ -801,8 +837,8 @@ const MealPrepApp = () => {
                       const disabled = isSlotDisabled(dayIndex, mealType);
                       const meal = mealPlan[dayIndex][mealType];
                       return (
-                        <div key={mealType} onDragOver={(e) => handleDragOver(e)} onDrop={(e) => handleDrop(e, dayIndex, mealType)}
-                          style={{background:'#1a1a1a',borderRadius:'8px',padding:'8px',marginBottom:'8px',minHeight:'68px',border:disabled?'2px solid #333':'2px dashed #262626',position:'relative',opacity:disabled?0.5:1}}>
+                        <div key={mealType} onDragOver={handleDragOver} onDrop={(e) => handleDrop(e, dayIndex, mealType)} onTouchEnd={(e) => handleTouchEnd(e, dayIndex, mealType)}
+                          style={{background:'#1a1a1a',borderRadius:'8px',padding:'8px',marginBottom:'8px',minHeight:'68px',border:disabled?'2px solid #333': draggedMeal ? '2px dashed #51cf66' : '2px dashed #262626',position:'relative',opacity:disabled?0.5:1,transition:'border-color 0.15s'}}>
                           {!meal && (
                             <button onClick={() => toggleSlotDisabled(dayIndex, mealType)}
                               style={{position:'absolute',top:'-7px',right:'-7px',background:disabled?'#51cf66':'#ff4444',border:'2px solid #1a1a1a',borderRadius:'50%',width:'20px',height:'20px',display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',padding:0,zIndex:10,color:'white',fontSize:'13px',fontWeight:'bold'}}>
@@ -813,8 +849,12 @@ const MealPrepApp = () => {
                           {disabled ? (
                             <p style={{margin:0,fontSize:'10px',color:'#555',textAlign:'center',paddingTop:'6px'}}>Disabled</p>
                           ) : meal ? (
-                            <div draggable={true} onDragStart={(e) => handleDragStart(e, dayIndex, mealType, meal)} onClick={() => setSelectedRecipe(meal)}
-                              style={{background:'#fff',borderRadius:'6px',padding:'6px',position:'relative',cursor:'pointer'}}>
+                            <div draggable={true}
+                              onDragStart={(e) => handleDragStart(e, dayIndex, mealType, meal)}
+                              onTouchStart={(e) => handleTouchStart(e, dayIndex, mealType, meal)}
+                              onTouchMove={handleTouchMove}
+                              onClick={() => setSelectedRecipe(meal)}
+                              style={{background:'#fff',borderRadius:'6px',padding:'6px',position:'relative',cursor:'grab',userSelect:'none',WebkitUserSelect:'none',touchAction:'none'}}>
                               <button onClick={e => { e.stopPropagation(); removeMealFromPlan(dayIndex, mealType); }}
                                 style={{position:'absolute',top:'3px',right:'3px',background:'rgba(0,0,0,0.4)',border:'none',borderRadius:'50%',width:'16px',height:'16px',display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',padding:0}}>
                                 <X size={10} color="white" />

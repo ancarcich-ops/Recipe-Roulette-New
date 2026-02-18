@@ -670,7 +670,8 @@ const MealPrepApp = () => {
       setTimeout(() => {
         setShowSpinningWheel(false); setWheelDone(false);
         const newPlan = JSON.parse(JSON.stringify(mealPlan));
-        const all = [...sampleRecipes, ...communityRecipes, ...userRecipes];
+        const myRecipes = guestMode ? [...sampleRecipes, ...userRecipes] : [...userRecipes];
+        const all = [...myRecipes, ...communityRecipes];
         const empty = [];
         for (let d = 0; d < 7; d++) for (const mt of mealTypes)
           if (mealTypeSettings[d][mt] && !newPlan[d][mt] && !isSlotDisabled(d, mt)) empty.push({d, mt});
@@ -680,7 +681,7 @@ const MealPrepApp = () => {
         for (let j = 0; j < autoFillSettings.easyMeals && i < slots.length; j++, i++) newPlan[slots[i].d][slots[i].mt] = easy[j % easy.length];
         const popular = [...communityRecipes].sort((a,b) => b.likes - a.likes);
         for (let j = 0; j < autoFillSettings.communityMeals && i < slots.length; j++, i++) newPlan[slots[i].d][slots[i].mt] = popular[j % popular.length];
-        const untried = sampleRecipes.filter(r => r.timesMade === 0).sort(() => Math.random() - 0.5);
+        const untried = myRecipes.filter(r => r.timesMade === 0).sort(() => Math.random() - 0.5);
         for (let j = 0; j < autoFillSettings.untriedRecipes && i < slots.length; j++, i++) newPlan[slots[i].d][slots[i].mt] = untried[j % untried.length];
         setMealPlan(newPlan); saveMealPlan(newPlan);
       }, 1200);
@@ -773,7 +774,7 @@ const MealPrepApp = () => {
     return cats;
   };
 
-  const allMyRecipes = [...sampleRecipes, ...userRecipes];
+  const allMyRecipes = guestMode ? [...sampleRecipes, ...userRecipes] : [...userRecipes];
 
   const FilterBar = ({ showTried=false, showAuthor=false }) => (
     <div style={{background:'#1a1a1a',borderRadius:'8px',padding:'16px',marginBottom:'24px',border:'1px solid #262626'}}>
@@ -1080,7 +1081,7 @@ const MealPrepApp = () => {
                 <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'24px'}}>
                   <div>
                     <h2 style={{fontSize:isMobile?'24px':'30px',fontWeight:700,color:'#fff',margin:'0 0 4px 0'}}>Recipe Book</h2>
-                    <p style={{color:'#666',margin:0}}>{folders.length} folders • {allMyRecipes.length} recipes</p>
+                    <p style={{color:'#666',margin:0}}>{allMyRecipes.length > 0 ? `${folders.length} folders • ${allMyRecipes.length} recipes` : 'No recipes yet — add your first one!'}</p>
                   </div>
                   <div style={{display:'flex',gap:'10px'}}>
                     <button onClick={() => setShowFolderModal(true)} style={{padding:'10px 18px',background:'#1a1a1a',border:'1px solid #262626',borderRadius:'8px',cursor:'pointer',display:'flex',alignItems:'center',gap:'6px',fontWeight:600,fontSize:'13px',color:'#fff'}}>

@@ -437,7 +437,7 @@ const MealPrepApp = () => {
     setProfile(p => ({ ...p, avatarUrl: p.avatarPreview }));
     setProfileSaving(false);
     setProfileSaved(true);
-    setTimeout(() => setProfileSaved(false), 2500);
+    setTimeout(() => { setProfileSaved(false); setShowProfilePanel(false); }, 1500);
   };
 
   const saveMealPlan = async (newPlan) => {

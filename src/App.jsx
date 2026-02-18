@@ -273,6 +273,7 @@ const MealPrepApp = () => {
   const [wheelShimmer,       setWheelShimmer]       = useState(false);
   const [showRecipeSelector, setShowRecipeSelector] = useState(null);
   const [showShoppingList, setShowShoppingList] = useState(false);
+  const [checkedItems, setCheckedItems] = useState(new Set());
   const [showAddRecipeModal, setShowAddRecipeModal] = useState(false);
   const [showAddToCalendar, setShowAddToCalendar] = useState(null);
   const [recipeSearchQuery, setRecipeSearchQuery] = useState('');
@@ -1501,25 +1502,53 @@ const MealPrepApp = () => {
       {showShoppingList && (
         <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.8)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:1000,padding:'20px'}}>
           <div style={{background:'#1a1a1a',borderRadius:'12px',padding:'24px',maxWidth:'520px',width:'100%',maxHeight:'80vh',overflow:'auto',border:'1px solid #262626'}}>
-            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'18px'}}>
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'6px'}}>
               <h2 style={{margin:0,fontSize:'20px',fontWeight:700,color:'#fff'}}>Shopping List</h2>
-              <button onClick={() => setShowShoppingList(false)} style={{background:'none',border:'none',cursor:'pointer'}}><X size={22} color="#999" /></button>
+              <div style={{display:'flex',alignItems:'center',gap:'10px'}}>
+                {checkedItems.size > 0 && (
+                  <button onClick={() => setCheckedItems(new Set())} style={{background:'none',border:'none',cursor:'pointer',fontSize:'12px',color:'#666',fontWeight:600}}>
+                    Clear checked
+                  </button>
+                )}
+                <button onClick={() => setShowShoppingList(false)} style={{background:'none',border:'none',cursor:'pointer'}}><X size={22} color="#999" /></button>
+              </div>
             </div>
+            {checkedItems.size > 0 && (
+              <p style={{margin:'0 0 16px',fontSize:'12px',color:'#555'}}>{checkedItems.size} item{checkedItems.size !== 1 ? 's' : ''} already have</p>
+            )}
             {(() => {
               const list = generateShoppingList();
               const hasItems = Object.values(list).some(a => a.length > 0);
               if (!hasItems) return <p style={{color:'#999',textAlign:'center',padding:'40px 0'}}>No meals planned yet!</p>;
               return Object.entries(list).map(([cat, items]) => {
                 if (!items.length) return null;
+                const needed = items.filter(item => !checkedItems.has(`${cat}:${item.name}`));
+                const have = items.filter(item => checkedItems.has(`${cat}:${item.name}`));
+                const allItems = [...needed, ...have];
                 return (
                   <div key={cat} style={{marginBottom:'18px'}}>
                     <h3 style={{margin:'0 0 8px 0',fontSize:'13px',fontWeight:700,color:'#fff',textTransform:'uppercase',letterSpacing:'0.5px'}}>{cat}</h3>
-                    {items.map((item, i) => (
-                      <div key={i} style={{display:'flex',justifyContent:'space-between',padding:'6px 0',borderBottom:i<items.length-1?'1px solid #262626':'none'}}>
-                        <span style={{fontSize:'14px',color:'#ccc'}}>{item.name}</span>
-                        {item.count > 1 && <span style={{background:'#fff',color:'#000',padding:'2px 8px',borderRadius:'10px',fontSize:'11px',fontWeight:700}}>x{item.count}</span>}
-                      </div>
-                    ))}
+                    {allItems.map((item, i) => {
+                      const key = `${cat}:${item.name}`;
+                      const isChecked = checkedItems.has(key);
+                      return (
+                        <div key={i} onClick={() => {
+                          setCheckedItems(prev => {
+                            const next = new Set(prev);
+                            isChecked ? next.delete(key) : next.add(key);
+                            return next;
+                          });
+                        }} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'8px 10px',marginBottom:'2px',borderRadius:'7px',cursor:'pointer',background:isChecked?'transparent':'#222',border:isChecked?'1px solid #1e1e1e':'1px solid #2e2e2e',transition:'all 0.15s',opacity:isChecked?0.45:1}}>
+                          <div style={{display:'flex',alignItems:'center',gap:'10px'}}>
+                            <div style={{width:'16px',height:'16px',borderRadius:'4px',border:isChecked?'none':'1px solid #444',background:isChecked?'#333':'transparent',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+                              {isChecked && <span style={{color:'#555',fontSize:'11px',fontWeight:700}}>✓</span>}
+                            </div>
+                            <span style={{fontSize:'14px',color:isChecked?'#555':'#ccc',textDecoration:isChecked?'line-through':'none',transition:'all 0.15s'}}>{item.name}</span>
+                          </div>
+                          {item.count > 1 && <span style={{background:isChecked?'#1a1a1a':'#fff',color:isChecked?'#444':'#000',padding:'2px 8px',borderRadius:'10px',fontSize:'11px',fontWeight:700,transition:'all 0.15s'}}>x{item.count}</span>}
+                        </div>
+                      );
+                    })}
                   </div>
                 );
               });

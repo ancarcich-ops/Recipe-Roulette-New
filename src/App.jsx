@@ -365,12 +365,6 @@ const MealPrepApp = () => {
     if (session?.user) loadUserData(session.user.id);
   }, [session]);
 
-  useEffect(() => {
-    if (showSpinningWheel && wheelCanvasRef.current) {
-      drawWheelCanvas(wheelCanvasRef.current, wheelDegRef.current);
-    }
-  }, [showSpinningWheel, drawWheelCanvas]);
-
   const loadUserData = async (userId) => {
     const { data: meals } = await supabase.from('meal_plans').select('*').eq('user_id', userId);
     if (meals && meals.length > 0) {
@@ -690,6 +684,12 @@ const MealPrepApp = () => {
     }
   }, [mealPlan, autoFillSettings, mealTypeSettings, drawWheelCanvas]);
 
+  useEffect(() => {
+    if (showSpinningWheel && wheelCanvasRef.current) {
+      drawWheelCanvas(wheelCanvasRef.current, wheelDegRef.current);
+    }
+  }, [showSpinningWheel, drawWheelCanvas]);
+
   const autoFillCalendar = () => {
     setShowAutoFillModal(false);
     setShowSpinningWheel(true);
@@ -836,7 +836,7 @@ const MealPrepApp = () => {
               <h2 style={{fontSize:isMobile?'22px':'28px',fontWeight:700,color:'#fff',margin:'0 0 4px 0'}}>
                 {(() => { const h = new Date().getHours(); const name = loadingProfile ? '' : (profile.displayName || session?.user?.email?.split('@')[0]); return `Good ${h < 12 ? 'morning' : h < 17 ? 'afternoon' : 'evening'}${name ? `, ${name}` : ''} 👋`; })()}
               </h2>
-              <p style={{color:'#666',margin:0,fontSize:'14px'}}>Here's what's cooking today</p>
+              <p style={{color:'#666',margin:0,fontSize:'14px'}}>Here is what is cooking today</p>
             </div>
 
             {/* Category filter pills */}

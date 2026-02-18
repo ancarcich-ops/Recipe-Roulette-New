@@ -236,7 +236,9 @@ const MealPrepApp = () => {
     avatarUrl: '',
     avatarPreview: '',
     dietaryPrefs: [],
-    householdSize: 2
+    householdSize: 2,
+    adults: 2,
+    children: 0
   });
   const [profileSaving, setProfileSaving] = useState(false);
   const [profileSaved, setProfileSaved] = useState(false);
@@ -387,7 +389,7 @@ const MealPrepApp = () => {
         avatarUrl: prof.avatar_url || '',
         avatarPreview: prof.avatar_url || '',
         dietaryPrefs: prof.dietary_prefs || [],
-        householdSize: prof.household_size || 2
+        householdSize: (prof.adults || 2) + (prof.children || 0), adults: prof.adults ?? 2, children: prof.children ?? 0
       });
     }
     setLoadingProfile(false);
@@ -459,6 +461,8 @@ const MealPrepApp = () => {
       avatar_url: profile.avatarPreview,
       dietary_prefs: profile.dietaryPrefs,
       household_size: profile.householdSize,
+      adults: profile.adults,
+      children: profile.children,
       updated_at: new Date().toISOString()
     }, { onConflict: 'id' });
     if (error) {
@@ -472,7 +476,7 @@ const MealPrepApp = () => {
         avatarUrl: prof.avatar_url || '',
         avatarPreview: prof.avatar_url || '',
         dietaryPrefs: prof.dietary_prefs || [],
-        householdSize: prof.household_size || 2
+        householdSize: (prof.adults || 2) + (prof.children || 0), adults: prof.adults ?? 2, children: prof.children ?? 0
       });
     }
     setProfileSaving(false);
@@ -1453,17 +1457,32 @@ const MealPrepApp = () => {
                 <label style={{display:'block',marginBottom:'12px',fontWeight:600,color:'#fff',fontSize:'13px',textTransform:'uppercase',letterSpacing:'0.5px'}}>
                   Household Size
                 </label>
-                <div style={{display:'flex',alignItems:'center',gap:'0'}}>
-                  {[1,2,3,4,5,6,7,8].map(n => (
-                    <button key={n} onClick={() => setProfile(p => ({...p, householdSize: n}))}
-                      style={{flex:1,padding:'10px 0',background:profile.householdSize===n?'#ffffff':'#1a1a1a',color:profile.householdSize===n?'#000':'#666',border:'1px solid #262626',cursor:'pointer',fontSize:'13px',fontWeight:700,
-                        borderRadius: n===1?'8px 0 0 8px':n===8?'0 8px 8px 0':'0',marginLeft: n===1?0:'-1px',position:'relative',zIndex:profile.householdSize===n?1:0,transition:'all 0.1s'}}>
-                      {n}{n===8?'+':''}
-                    </button>
-                  ))}
+                <div style={{display:'flex',gap:'12px',marginBottom:'10px'}}>
+                  {/* Adults */}
+                  <div style={{flex:1,background:'#111',border:'1px solid #262626',borderRadius:'10px',padding:'12px'}}>
+                    <p style={{margin:'0 0 10px 0',fontSize:'12px',fontWeight:600,color:'#999',textTransform:'uppercase',letterSpacing:'0.5px'}}>👩 Adults</p>
+                    <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:'8px'}}>
+                      <button onClick={() => setProfile(p => ({...p, adults: Math.max(1, p.adults-1), householdSize: Math.max(1, p.adults-1) + p.children}))}
+                        style={{width:'32px',height:'32px',borderRadius:'50%',background:'#262626',border:'none',cursor:'pointer',color:'#fff',fontSize:'18px',fontWeight:700,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>−</button>
+                      <span style={{fontSize:'22px',fontWeight:700,color:'#fff',minWidth:'24px',textAlign:'center'}}>{profile.adults}</span>
+                      <button onClick={() => setProfile(p => ({...p, adults: Math.min(10, p.adults+1), householdSize: Math.min(10, p.adults+1) + p.children}))}
+                        style={{width:'32px',height:'32px',borderRadius:'50%',background:'#262626',border:'none',cursor:'pointer',color:'#fff',fontSize:'18px',fontWeight:700,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>+</button>
+                    </div>
+                  </div>
+                  {/* Children */}
+                  <div style={{flex:1,background:'#111',border:'1px solid #262626',borderRadius:'10px',padding:'12px'}}>
+                    <p style={{margin:'0 0 10px 0',fontSize:'12px',fontWeight:600,color:'#999',textTransform:'uppercase',letterSpacing:'0.5px'}}>🧒 Children</p>
+                    <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:'8px'}}>
+                      <button onClick={() => setProfile(p => ({...p, children: Math.max(0, p.children-1), householdSize: p.adults + Math.max(0, p.children-1)}))}
+                        style={{width:'32px',height:'32px',borderRadius:'50%',background:'#262626',border:'none',cursor:'pointer',color:'#fff',fontSize:'18px',fontWeight:700,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>−</button>
+                      <span style={{fontSize:'22px',fontWeight:700,color:'#fff',minWidth:'24px',textAlign:'center'}}>{profile.children}</span>
+                      <button onClick={() => setProfile(p => ({...p, children: Math.min(10, p.children+1), householdSize: p.adults + Math.min(10, p.children+1)}))}
+                        style={{width:'32px',height:'32px',borderRadius:'50%',background:'#262626',border:'none',cursor:'pointer',color:'#fff',fontSize:'18px',fontWeight:700,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>+</button>
+                    </div>
+                  </div>
                 </div>
-                <p style={{margin:'8px 0 0 0',fontSize:'11px',color:'#555'}}>
-                  {profile.householdSize === 1 ? 'Just you 🧑' : profile.householdSize <= 3 ? `${profile.householdSize} people 👥` : `${profile.householdSize} people 👨‍👩‍👧‍👦`}
+                <p style={{margin:'4px 0 0',fontSize:'12px',color:'#555'}}>
+                  {profile.householdSize === 1 ? 'Just you 🧑' : `${profile.householdSize} total (${profile.adults} adult${profile.adults !== 1 ? 's' : ''}${profile.children > 0 ? `, ${profile.children} child${profile.children !== 1 ? 'ren' : ''}` : ''}) 👨‍👩‍👧‍👦`}
                 </p>
               </div>
 

@@ -775,7 +775,7 @@ const MealPrepApp = () => {
       {/* Guest mode banner */}
       {guestMode && (
         <div style={{background:'#1a1200',borderBottom:'1px solid #3d2e00',padding:'10px 20px',display:'flex',alignItems:'center',justifyContent:'center',gap:'12px',flexWrap:'wrap'}}>
-          <span style={{color:'#fcc419',fontSize:'13px',fontWeight:600}}>👀 You're viewing as a guest — some features are disabled</span>
+          <span style={{color:'#fcc419',fontSize:'13px',fontWeight:600}}>👀 Viewing as guest &mdash; some features are disabled</span>
           <button onClick={() => setGuestMode(false)} style={{padding:'6px 16px',background:'#fcc419',color:'#000',border:'none',borderRadius:'6px',fontSize:'12px',fontWeight:700,cursor:'pointer'}}>
             Sign In / Sign Up
           </button>

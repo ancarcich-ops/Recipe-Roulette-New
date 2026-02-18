@@ -247,12 +247,7 @@ const MealPrepApp = () => {
   const [savedPosts, setSavedPosts] = useState(new Set());
   const [activeFilter, setActiveFilter] = useState('all');
   const [folders, setFolders] = useState([
-    {id:'f1', name:'House Favorites', emoji:'🏠', recipes:[3,6,8,11,12,13,14,15,19]},
-    {id:'f2', name:'Crock Pot Favorites', emoji:'🍲', recipes:[11,12,13,14]},
-    {id:'f3', name:'Kid Friendly', emoji:'👶', recipes:[2,8,10,11,14,15,16]},
-    {id:'f4', name:'Whole 30 Approved', emoji:'💪', recipes:[1,4,5,9,10,17,18,20]},
-    {id:'f5', name:'Quick Weeknight', emoji:'⚡', recipes:[2,4,7,8,9,10,17,18]},
-    {id:'f6', name:'Date Night', emoji:'🕯️', recipes:[6,9,18,19,20]}
+    {id:'f1', name:'House Favorites', emoji:'🏠', recipes:[]}
   ]);
   const [activeFolder, setActiveFolder] = useState(null); // null = show all folders
   const [showFolderModal, setShowFolderModal] = useState(false); // create new folder
@@ -365,6 +360,21 @@ const MealPrepApp = () => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => setSession(session));
     return () => subscription.unsubscribe();
   }, []);
+
+  useEffect(() => {
+    if (guestMode) {
+      setFolders([
+        {id:'f1', name:'House Favorites', emoji:'🏠', recipes:[3,6,8,11,12,13,14,15,19]},
+        {id:'f2', name:'Crock Pot Favorites', emoji:'🍲', recipes:[11,12,13,14]},
+        {id:'f3', name:'Kid Friendly', emoji:'👶', recipes:[2,8,10,11,14,15,16]},
+        {id:'f4', name:'Whole 30 Approved', emoji:'💪', recipes:[1,4,5,9,10,17,18,20]},
+        {id:'f5', name:'Quick Weeknight', emoji:'⚡', recipes:[2,4,7,8,9,10,17,18]},
+        {id:'f6', name:'Date Night', emoji:'🕯️', recipes:[6,9,18,19,20]}
+      ]);
+    } else {
+      setFolders([{id:'f1', name:'House Favorites', emoji:'🏠', recipes:[]}]);
+    }
+  }, [guestMode]);
 
   useEffect(() => {
     if (session?.user) loadUserData(session.user.id);

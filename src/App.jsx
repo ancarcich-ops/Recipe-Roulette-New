@@ -801,12 +801,12 @@ const MealPrepApp = () => {
                 <div style={{width:'30px',height:'30px',borderRadius:'50%',overflow:'hidden',background:'#262626',flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center'}}>
                   {profile.avatarUrl
                     ? <img src={profile.avatarUrl} alt="avatar" style={{width:'100%',height:'100%',objectFit:'cover'}} />
-                    : <span style={{fontSize:'14px',fontWeight:700,color:'#fff'}}>{(profile.displayName || session.user.email).charAt(0).toUpperCase()}</span>
+                    : <span style={{fontSize:'14px',fontWeight:700,color:'#fff'}}>{(profile.displayName || session?.user?.email || 'G')?.charAt(0).toUpperCase()}</span>
                   }
                 </div>
                 {!isMobile && (
                   <span style={{fontSize:'13px',fontWeight:600,color:'#fff',maxWidth:'110px',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>
-                    {profile.displayName || session.user.email.split('@')[0]}
+                    {profile.displayName || session?.user?.email?.split('@')[0]}
                   </span>
                 )}
               </button>
@@ -834,7 +834,7 @@ const MealPrepApp = () => {
             {/* Greeting */}
             <div style={{marginBottom:'28px'}}>
               <h2 style={{fontSize:isMobile?'22px':'28px',fontWeight:700,color:'#fff',margin:'0 0 4px 0'}}>
-                {(() => { const h = new Date().getHours(); const name = loadingProfile ? '' : (profile.displayName || session.user.email.split('@')[0]); return `Good ${h < 12 ? 'morning' : h < 17 ? 'afternoon' : 'evening'}${name ? `, ${name}` : ''} 👋`; })()}
+                {(() => { const h = new Date().getHours(); const name = loadingProfile ? '' : (profile.displayName || session?.user?.email?.split('@')[0]); return `Good ${h < 12 ? 'morning' : h < 17 ? 'afternoon' : 'evening'}${name ? `, ${name}` : ''} 👋`; })()}
               </h2>
               <p style={{color:'#666',margin:0,fontSize:'14px'}}>Here's what's cooking today</p>
             </div>
@@ -1333,7 +1333,7 @@ const MealPrepApp = () => {
                   <div style={{width:'90px',height:'90px',borderRadius:'50%',overflow:'hidden',background:'#262626',border:'3px solid #333',display:'flex',alignItems:'center',justifyContent:'center'}}>
                     {profile.avatarPreview
                       ? <img src={profile.avatarPreview} alt="avatar" style={{width:'100%',height:'100%',objectFit:'cover'}} />
-                      : <span style={{fontSize:'32px',fontWeight:700,color:'#fff'}}>{(profile.displayName || session.user.email).charAt(0).toUpperCase()}</span>
+                      : <span style={{fontSize:'32px',fontWeight:700,color:'#fff'}}>{(profile.displayName || session?.user?.email || 'G')?.charAt(0).toUpperCase()}</span>
                     }
                   </div>
                   <label style={{position:'absolute',bottom:0,right:0,width:'28px',height:'28px',background:'#ffffff',borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',border:'2px solid #111'}}>
@@ -1354,7 +1354,7 @@ const MealPrepApp = () => {
                   type="text"
                   value={profile.displayName}
                   onChange={e => setProfile(p => ({...p, displayName: e.target.value}))}
-                  placeholder={session.user.email.split('@')[0]}
+                  placeholder={session?.user?.email?.split('@')[0]}
                   style={{width:'100%',padding:'11px 14px',border:'1px solid #2a2a2a',borderRadius:'8px',fontSize:'14px',background:'#1a1a1a',color:'#fff',outline:'none',boxSizing:'border-box'}}
                 />
                 <p style={{margin:'6px 0 0 0',fontSize:'11px',color:'#555'}}>This is how your name appears in the app</p>
@@ -1364,7 +1364,7 @@ const MealPrepApp = () => {
               <div>
                 <label style={{display:'block',marginBottom:'8px',fontWeight:600,color:'#fff',fontSize:'13px',textTransform:'uppercase',letterSpacing:'0.5px'}}>Email</label>
                 <div style={{padding:'11px 14px',border:'1px solid #1e1e1e',borderRadius:'8px',fontSize:'14px',background:'#0d0d0d',color:'#555'}}>
-                  {session.user.email}
+                  {session?.user?.email}
                 </div>
               </div>
 
@@ -1629,7 +1629,7 @@ const MealPrepApp = () => {
                 ingredients: fd.get('ingredients').split('\n').filter(i => i.trim()),
                 instructions: fd.get('instructions').split('\n').filter(i => i.trim()),
                 tags: [fd.get('mealType'), ...fd.get('tags').split(',').map(t => t.trim()).filter(t => t)],
-                author: session.user.email.split('@')[0],
+                author: session?.user?.email?.split('@')[0],
                 timesMade: 0,
                 isEasy: parseInt(fd.get('cookTime')) < 20
               };

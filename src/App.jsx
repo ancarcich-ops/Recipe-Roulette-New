@@ -274,6 +274,7 @@ const MealPrepApp = () => {
   const [recipeSearch, setRecipeSearch] = useState('');
   const [communitySearch, setCommunitySearch] = useState('');
   const [showAddRecipeModal, setShowAddRecipeModal] = useState(false);
+  const [showAddRecipeChoice, setShowAddRecipeChoice] = useState(false);
   const [showEditRecipeModal, setShowEditRecipeModal] = useState(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
   const [showImportModal, setShowImportModal] = useState(false);
@@ -1111,10 +1112,7 @@ const MealPrepApp = () => {
                       <button onClick={() => setShowFolderModal(true)} style={{padding:'9px 14px',background:'#1a1a1a',border:'1px solid #262626',borderRadius:'8px',cursor:'pointer',display:'flex',alignItems:'center',gap:'6px',fontWeight:600,fontSize:'13px',color:'#fff',whiteSpace:'nowrap'}}>
                         <Plus size={15} /> New Folder
                       </button>
-                      <button onClick={() => { setShowImportModal(true); setImportStep('url'); setImportUrl(''); setImportError(''); setImportedRecipe(null); setImportFolderIds([]); setImportMode('url'); setImportImageFile(null); setImportImagePreview(null); }} style={{padding:'9px 14px',background:'#1a1a1a',border:'1px solid #262626',borderRadius:'8px',cursor:'pointer',display:'flex',alignItems:'center',gap:'6px',fontWeight:600,fontSize:'13px',color:'#fff',whiteSpace:'nowrap'}}>
-                        🔗 Import Recipe
-                      </button>
-                      <button onClick={() => setShowAddRecipeModal(true)} style={{padding:'9px 14px',background:'#fff',border:'none',borderRadius:'8px',cursor:'pointer',display:'flex',alignItems:'center',gap:'6px',fontWeight:600,fontSize:'13px',color:'#000',whiteSpace:'nowrap'}}>
+                      <button onClick={() => setShowAddRecipeChoice(true)} style={{padding:'9px 14px',background:'#fff',border:'none',borderRadius:'8px',cursor:'pointer',display:'flex',alignItems:'center',gap:'6px',fontWeight:600,fontSize:'13px',color:'#000',whiteSpace:'nowrap'}}>
                         <Plus size={15} /> Add Recipe
                       </button>
                     </div>
@@ -1196,10 +1194,7 @@ const MealPrepApp = () => {
                       </p>
                     </div>
                   </div>
-                  <button onClick={() => { setShowImportModal(true); setImportStep('url'); setImportUrl(''); setImportError(''); setImportedRecipe(null); setImportFolderIds([]); setImportMode('url'); setImportImageFile(null); setImportImagePreview(null); }} style={{padding:'10px 18px',background:'#1a1a1a',border:'1px solid #262626',borderRadius:'8px',cursor:'pointer',display:'flex',alignItems:'center',gap:'6px',fontWeight:600,fontSize:'13px',color:'#fff'}}>
-                    🔗 Import Recipe
-                  </button>
-                  <button onClick={() => setShowAddRecipeModal(true)} style={{padding:'10px 18px',background:'#fff',border:'none',borderRadius:'8px',cursor:'pointer',display:'flex',alignItems:'center',gap:'6px',fontWeight:600,fontSize:'13px',color:'#000'}}>
+                  <button onClick={() => setShowAddRecipeChoice(true)} style={{padding:'10px 18px',background:'#fff',border:'none',borderRadius:'8px',cursor:'pointer',display:'flex',alignItems:'center',gap:'6px',fontWeight:600,fontSize:'13px',color:'#000'}}>
                     <Plus size={16} /> Add Recipe
                   </button>
                 </div>
@@ -1762,6 +1757,38 @@ const MealPrepApp = () => {
         </div>
       )}
 
+      {/* ADD RECIPE CHOICE MODAL */}
+      {showAddRecipeChoice && (
+        <div onClick={() => setShowAddRecipeChoice(false)} style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.85)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:1000,padding:'20px'}}>
+          <div onClick={e => e.stopPropagation()} style={{background:'#1a1a1a',borderRadius:'16px',padding:'28px',maxWidth:'400px',width:'100%',border:'1px solid #262626'}}>
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'20px'}}>
+              <h2 style={{margin:0,fontSize:'20px',fontWeight:700,color:'#fff'}}>Add Recipe</h2>
+              <button onClick={() => setShowAddRecipeChoice(false)} style={{background:'none',border:'none',cursor:'pointer'}}><X size={22} color="#999" /></button>
+            </div>
+            <div style={{display:'flex',flexDirection:'column',gap:'10px'}}>
+              <button onClick={() => { setShowAddRecipeChoice(false); setShowAddRecipeModal(true); }}
+                style={{padding:'16px',background:'#0a0a0a',border:'1px solid #262626',borderRadius:'12px',cursor:'pointer',textAlign:'left',width:'100%'}}>
+                <div style={{fontSize:'24px',marginBottom:'6px'}}>✍️</div>
+                <div style={{fontWeight:700,color:'#fff',fontSize:'15px',marginBottom:'3px'}}>Enter Manually</div>
+                <div style={{fontSize:'13px',color:'#666'}}>Type in your own recipe from scratch</div>
+              </button>
+              <button onClick={() => { setShowAddRecipeChoice(false); setShowImportModal(true); setImportStep('url'); setImportUrl(''); setImportError(''); setImportedRecipe(null); setImportFolderIds([]); setImportMode('url'); setImportImageFile(null); setImportImagePreview(null); }}
+                style={{padding:'16px',background:'#0a0a0a',border:'1px solid #262626',borderRadius:'12px',cursor:'pointer',textAlign:'left',width:'100%'}}>
+                <div style={{fontSize:'24px',marginBottom:'6px'}}>🔗</div>
+                <div style={{fontWeight:700,color:'#fff',fontSize:'15px',marginBottom:'3px'}}>Import from URL</div>
+                <div style={{fontSize:'13px',color:'#666'}}>Paste a link from any recipe website</div>
+              </button>
+              <button onClick={() => { setShowAddRecipeChoice(false); setShowImportModal(true); setImportStep('url'); setImportUrl(''); setImportError(''); setImportedRecipe(null); setImportFolderIds([]); setImportMode('image'); setImportImageFile(null); setImportImagePreview(null); }}
+                style={{padding:'16px',background:'#0a0a0a',border:'1px solid #262626',borderRadius:'12px',cursor:'pointer',textAlign:'left',width:'100%'}}>
+                <div style={{fontSize:'24px',marginBottom:'6px'}}>📷</div>
+                <div style={{fontWeight:700,color:'#fff',fontSize:'15px',marginBottom:'3px'}}>Import from Photo</div>
+                <div style={{fontSize:'13px',color:'#666'}}>Take a photo or upload from your camera roll</div>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ADD RECIPE MODAL */}
       {showAddRecipeModal && (
         <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.8)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:1000,padding:'20px'}}>
@@ -1893,7 +1920,7 @@ const MealPrepApp = () => {
                         </div>
                       ) : (
                         <>
-                          <input type="file" accept="image/*" onChange={e => {
+                          <input type="file" accept="image/*" capture="environment" onChange={e => {
                             const f = e.target.files[0];
                             if (f) { setImportImageFile(f); const r = new FileReader(); r.onloadend = () => setImportImagePreview(r.result); r.readAsDataURL(f); }
                           }} style={{position:'absolute',inset:0,opacity:0,cursor:'pointer',width:'100%',height:'100%'}} />

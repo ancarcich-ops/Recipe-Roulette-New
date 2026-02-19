@@ -236,7 +236,7 @@ const SharedRecipeView = ({ shareId }) => {
     </div>
   );
   if (error || !recipe) return (
-    <div style={{minHeight:'100vh',background:'#000',display:'flex',alignItems:'center',justifyContent:'center',flexDirection:'column',gap:'12px'}}>
+    <div style={{minHeight:'100vh',background:'#000',display:'flex',alignItems:'center',justifyContent:'center',flexDirection:'column',gap:'12px',padding:'20px'}}>
       <p style={{fontSize:'40px'}}>🍽</p>
       <p style={{color:'#fff',fontSize:'18px',fontWeight:700}}>Recipe not found</p>
       <a href="/" style={{color:'#7dd3fc',fontSize:'14px'}}>Go to Recipe Roulette →</a>
@@ -244,56 +244,56 @@ const SharedRecipeView = ({ shareId }) => {
   );
 
   return (
-    <div style={{minHeight:'100vh',background:'#000',color:'#fff',fontFamily:'system-ui,sans-serif'}}>
+    <div style={{minHeight:'100vh',background:'#000',color:'#fff',fontFamily:'system-ui,sans-serif',overflowX:'hidden'}}>
       {/* Header */}
-      <div style={{background:'#1a1a1a',borderBottom:'1px solid #262626',padding:'14px 20px',display:'flex',alignItems:'center',gap:'12px'}}>
-        <span style={{fontSize:'22px'}}>🍽</span>
-        <span style={{fontWeight:700,fontSize:'16px'}}>Recipe Roulette</span>
-        <a href="/" style={{marginLeft:'auto',padding:'8px 16px',background:'#fff',color:'#000',borderRadius:'8px',textDecoration:'none',fontWeight:600,fontSize:'13px'}}>Try the App →</a>
+      <div style={{background:'#1a1a1a',borderBottom:'1px solid #262626',padding:'14px 16px',display:'flex',alignItems:'center',gap:'10px'}}>
+        <span style={{fontSize:'20px'}}>🍽</span>
+        <span style={{fontWeight:700,fontSize:'15px',flex:1,minWidth:0}}>Recipe Roulette</span>
+        <a href="/" style={{flexShrink:0,padding:'8px 14px',background:'#fff',color:'#000',borderRadius:'8px',textDecoration:'none',fontWeight:600,fontSize:'13px',whiteSpace:'nowrap'}}>Try the App →</a>
       </div>
 
-      {/* Recipe */}
-      <div style={{maxWidth:'720px',margin:'0 auto',padding:'24px 20px'}}>
+      {/* Recipe content */}
+      <div style={{maxWidth:'720px',margin:'0 auto',padding:'20px 16px',boxSizing:'border-box',width:'100%'}}>
         {recipe.image && (
-          <div style={{height:'280px',backgroundImage:`url(${recipe.image})`,backgroundSize:'cover',backgroundPosition:'center',borderRadius:'16px',marginBottom:'24px'}} />
+          <div style={{height:'220px',backgroundImage:`url(${recipe.image})`,backgroundSize:'cover',backgroundPosition:'center',borderRadius:'12px',marginBottom:'20px'}} />
         )}
-        <h1 style={{fontSize:'28px',fontWeight:800,color:'#fff',margin:'0 0 12px 0'}}>{recipe.name}</h1>
-        <div style={{display:'flex',gap:'16px',fontSize:'13px',color:'#999',marginBottom:'20px',flexWrap:'wrap'}}>
+        <h1 style={{fontSize:'24px',fontWeight:800,color:'#fff',margin:'0 0 10px 0',lineHeight:1.2,wordBreak:'break-word'}}>{recipe.name}</h1>
+        <div style={{display:'flex',gap:'12px',fontSize:'13px',color:'#999',marginBottom:'16px',flexWrap:'wrap'}}>
           {recipe.prepTime && <span>⏱ {recipe.prepTime}</span>}
           {recipe.cookTime && <span>🔥 {recipe.cookTime} min</span>}
           {recipe.servings && <span>🍽 {recipe.servings} servings</span>}
           {recipe.author && <span>👤 {recipe.author}</span>}
         </div>
         {recipe.tags?.length > 0 && (
-          <div style={{display:'flex',gap:'6px',flexWrap:'wrap',marginBottom:'24px'}}>
+          <div style={{display:'flex',gap:'6px',flexWrap:'wrap',marginBottom:'20px'}}>
             {recipe.tags.map(t => <span key={t} style={{padding:'4px 10px',background:'#1a1a1a',border:'1px solid #262626',borderRadius:'20px',fontSize:'12px',color:'#999'}}>{t}</span>)}
           </div>
         )}
         {recipe.ingredients?.length > 0 && (
-          <div style={{marginBottom:'24px'}}>
-            <h2 style={{fontSize:'18px',fontWeight:700,color:'#fff',margin:'0 0 12px 0'}}>Ingredients</h2>
+          <div style={{marginBottom:'16px',background:'#1a1a1a',borderRadius:'12px',padding:'16px',border:'1px solid #262626'}}>
+            <h2 style={{fontSize:'17px',fontWeight:700,color:'#fff',margin:'0 0 12px 0'}}>Ingredients</h2>
             <ul style={{paddingLeft:'18px',margin:0}}>
-              {recipe.ingredients.map((ing, i) => <li key={i} style={{marginBottom:'6px',color:'#999',lineHeight:1.5}}>{ing}</li>)}
+              {recipe.ingredients.map((ing, i) => <li key={i} style={{marginBottom:'7px',color:'#ccc',lineHeight:1.5,fontSize:'14px'}}>{ing}</li>)}
             </ul>
           </div>
         )}
         {recipe.instructions?.length > 0 && (
-          <div style={{marginBottom:'32px'}}>
-            <h2 style={{fontSize:'18px',fontWeight:700,color:'#fff',margin:'0 0 12px 0'}}>Instructions</h2>
+          <div style={{marginBottom:'24px',background:'#1a1a1a',borderRadius:'12px',padding:'16px',border:'1px solid #262626'}}>
+            <h2 style={{fontSize:'17px',fontWeight:700,color:'#fff',margin:'0 0 12px 0'}}>Instructions</h2>
             <ol style={{paddingLeft:'18px',margin:0}}>
-              {recipe.instructions.map((step, i) => <li key={i} style={{marginBottom:'10px',color:'#999',lineHeight:1.6}}>{step}</li>)}
+              {recipe.instructions.map((step, i) => <li key={i} style={{marginBottom:'12px',color:'#ccc',lineHeight:1.6,fontSize:'14px'}}>{step}</li>)}
             </ol>
           </div>
         )}
-        <div style={{background:'#1a1a1a',borderRadius:'12px',padding:'20px',textAlign:'center',border:'1px solid #262626'}}>
-          <p style={{margin:'0 0 12px 0',fontSize:'15px',fontWeight:600,color:'#fff'}}>Want to save this recipe?</p>
-          <a href="/" style={{padding:'10px 24px',background:'#fff',color:'#000',borderRadius:'8px',textDecoration:'none',fontWeight:700,fontSize:'14px'}}>Join Recipe Roulette</a>
+        <div style={{background:'#1a1a1a',borderRadius:'12px',padding:'20px',textAlign:'center',border:'1px solid #262626',marginBottom:'32px'}}>
+          <p style={{margin:'0 0 4px 0',fontSize:'16px',fontWeight:700,color:'#fff'}}>🎲 Recipe Roulette</p>
+          <p style={{margin:'0 0 14px 0',fontSize:'13px',color:'#666'}}>Plan your meals, import recipes, and more</p>
+          <a href="/" style={{display:'inline-block',padding:'11px 28px',background:'#fff',color:'#000',borderRadius:'8px',textDecoration:'none',fontWeight:700,fontSize:'14px'}}>Try it free →</a>
         </div>
       </div>
     </div>
   );
 };
-
 const MealPrepApp = () => {
   // Mobile detection
   const [isMobile, setIsMobile] = useState(false);
@@ -1582,6 +1582,14 @@ const MealPrepApp = () => {
         )}
       </div>
 
+      {/* LINK COPIED TOAST */}
+      {shareToast === 'copied' && (
+        <div style={{position:'fixed',bottom:'24px',left:'50%',transform:'translateX(-50%)',background:'#1a1a1a',border:'1px solid #51cf66',borderRadius:'10px',padding:'12px 20px',zIndex:9999,display:'flex',alignItems:'center',gap:'8px',boxShadow:'0 4px 24px rgba(0,0,0,0.5)',whiteSpace:'nowrap'}}>
+          <span style={{fontSize:'16px'}}>✅</span>
+          <span style={{color:'#fff',fontWeight:600,fontSize:'14px'}}>Link copied to clipboard!</span>
+        </div>
+      )}
+
       {/* ── RATING MODAL ── */}
       {showRatingModal && (
         <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.85)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:1000,padding:'20px'}}>
@@ -2512,6 +2520,13 @@ const MealPrepApp = () => {
         </div>
       )}
 
+      {/* SHARE TOAST */}
+      {shareToast === 'copied' && (
+        <div style={{position:'fixed',bottom:'32px',left:'50%',transform:'translateX(-50%)',background:'#1a1a1a',border:'1px solid #51cf66',borderRadius:'10px',padding:'12px 20px',zIndex:9999,display:'flex',alignItems:'center',gap:'8px',boxShadow:'0 8px 24px rgba(0,0,0,0.5)',whiteSpace:'nowrap'}}>
+          <span style={{fontSize:'18px'}}>✅</span>
+          <span style={{color:'#fff',fontWeight:600,fontSize:'14px'}}>Link copied to clipboard!</span>
+        </div>
+      )}
     </div>
   );
 };

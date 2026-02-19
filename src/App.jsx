@@ -2467,10 +2467,10 @@ const MealPrepApp = () => {
               <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:'20px'}}>
                 <div style={{display:'flex',alignItems:'center',gap:'12px'}}>
                   <img src="/logo.png" alt="Logo" style={{width:'80px',height:'80px',objectFit:'contain'}} />
-                  <div>
-                    <div style={{fontSize:'22px',fontWeight:800,color:'#fff',letterSpacing:'-0.5px'}}>My Weekly Meals</div>
-                    <div style={{fontSize:'22px',fontWeight:800,color:'#fff',letterSpacing:'-0.5px'}}>
-                      {(() => { const d = getDayDate(0); const e = getDayDate(6); return `${d.getMonth()+1}/${d.getDate()} — ${e.getMonth()+1}/${e.getDate()}`; })()}
+                  <div style={{display:'flex',alignItems:'baseline',gap:'10px',flexWrap:'wrap'}}>
+                    <div style={{fontSize:'24px',fontWeight:800,color:'#fff',letterSpacing:'-0.5px'}}>My Weekly Meals</div>
+                    <div style={{fontSize:'14px',fontWeight:500,color:'#888'}}>
+                      — {(() => { const d = getDayDate(0); const e = getDayDate(6); return `${d.getMonth()+1}/${d.getDate()} – ${e.getMonth()+1}/${e.getDate()}`; })()}
                     </div>
                   </div>
                 </div>

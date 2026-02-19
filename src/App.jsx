@@ -2465,16 +2465,13 @@ const MealPrepApp = () => {
             <div id="meal-plan-card" style={{background:'linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #0a0a0a 100%)',borderRadius:'20px',padding:'28px',border:'1px solid #262626',fontFamily:'system-ui,sans-serif'}}>
               {/* Card header */}
               <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:'20px'}}>
-                <div>
-                  <div style={{display:'flex',alignItems:'center',gap:'10px'}}>
-                    <img src="/logo.png" alt="Logo" style={{width:'80px',height:'80px',objectFit:'contain'}} />
-                    <div style={{fontSize:'22px',fontWeight:800,color:'#fff',letterSpacing:'-0.5px'}}>My Week</div>
-                  </div>
-                  <div style={{fontSize:'12px',color:'#666',marginTop:'2px'}}>
-                    {(() => { const d = getDayDate(0); return `${d.getMonth()+1}/${d.getDate()} — ${(() => { const e = getDayDate(6); return `${e.getMonth()+1}/${e.getDate()}`; })()}`; })()}
-                  </div>
+                <div style={{display:'flex',alignItems:'center',gap:'10px'}}>
+                  <img src="/logo.png" alt="Logo" style={{width:'80px',height:'80px',objectFit:'contain'}} />
+                  <div style={{fontSize:'22px',fontWeight:800,color:'#fff',letterSpacing:'-0.5px'}}>My Meals This Week</div>
                 </div>
-                <div style={{fontSize:'11px',color:'#555',fontWeight:600}}>Recipe Roulette</div>
+                <div style={{fontSize:'12px',color:'#666',textAlign:'right'}}>
+                  {(() => { const d = getDayDate(0); const e = getDayDate(6); return `${d.getMonth()+1}/${d.getDate()} — ${e.getMonth()+1}/${e.getDate()}`; })()}
+                </div>
               </div>
 
               {/* Day columns */}

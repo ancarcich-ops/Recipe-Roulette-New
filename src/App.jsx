@@ -2476,34 +2476,33 @@ const MealPrepApp = () => {
                 </div>
               </div>
 
-              {/* Day columns */}
-              <div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:'6px'}}>
+              {/* Day rows — vertical list layout */}
+              <div style={{display:'flex',flexDirection:'column',gap:'5px'}}>
                 {daysOfWeek.map((day, dayIndex) => {
-                  const meals = mealTypes.filter(mt => mealPlan[dayIndex][mt]);
-                  const hasAny = meals.length > 0;
+                  const colors = {breakfast:'#fbbf24',lunch:'#51cf66',dinner:'#7dd3fc'};
+                  const hasMeals = mealTypes.some(mt => mealPlan[dayIndex][mt]);
                   return (
-                    <div key={day} style={{background:'rgba(255,255,255,0.04)',borderRadius:'10px',padding:'8px 5px',border:'1px solid rgba(255,255,255,0.06)',minHeight:'120px'}}>
-                      <div style={{fontSize:'9px',fontWeight:700,color:'#888',textAlign:'center',textTransform:'uppercase',letterSpacing:'0.5px',marginBottom:'3px'}}>{day.slice(0,3)}</div>
-                      <div style={{fontSize:'9px',color:'#555',textAlign:'center',marginBottom:'8px'}}>{formatDayDate(dayIndex)}</div>
-                      {hasAny ? (
-                        <div style={{display:'flex',flexDirection:'column',gap:'5px'}}>
-                          {mealTypes.map(mt => {
-                            const recipe = mealPlan[dayIndex][mt];
-                            if (!recipe) return null;
-                            const colors = {breakfast:'#fbbf24',lunch:'#51cf66',dinner:'#7dd3fc'};
-                            return (
-                              <div key={mt} style={{background:'rgba(255,255,255,0.06)',borderRadius:'6px',padding:'5px 4px',borderLeft:`2px solid ${colors[mt]}`}}>
-                                <div style={{fontSize:'7px',color:colors[mt],fontWeight:700,textTransform:'uppercase',letterSpacing:'0.3px',marginBottom:'2px'}}>{mt.slice(0,1).toUpperCase()}</div>
-                                <div style={{fontSize:'8px',color:'#ddd',fontWeight:600,lineHeight:1.2,wordBreak:'break-word'}}>{recipe.name.length > 18 ? recipe.name.slice(0,18)+'…' : recipe.name}</div>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      ) : (
-                        <div style={{textAlign:'center',paddingTop:'12px'}}>
-                          <div style={{fontSize:'16px',opacity:0.2}}>·</div>
-                        </div>
-                      )}
+                    <div key={day} style={{display:'flex',alignItems:'flex-start',gap:'8px',background:'rgba(255,255,255,0.04)',borderRadius:'8px',padding:'7px 9px',border:'1px solid rgba(255,255,255,0.06)'}}>
+                      {/* Day label */}
+                      <div style={{width:'28px',flexShrink:0}}>
+                        <div style={{fontSize:'9px',fontWeight:700,color:'#888',textTransform:'uppercase',letterSpacing:'0.4px'}}>{day.slice(0,3)}</div>
+                        <div style={{fontSize:'8px',color:'#444',marginTop:'1px'}}>{formatDayDate(dayIndex)}</div>
+                      </div>
+                      {/* Meals */}
+                      <div style={{display:'flex',flexWrap:'wrap',gap:'4px',flex:1}}>
+                        {hasMeals ? mealTypes.map(mt => {
+                          const recipe = mealPlan[dayIndex][mt];
+                          if (!recipe) return null;
+                          return (
+                            <div key={mt} style={{background:'rgba(255,255,255,0.06)',borderRadius:'5px',padding:'3px 7px',borderLeft:`2px solid ${colors[mt]}`,lineHeight:1.3}}>
+                              <span style={{fontSize:'7px',fontWeight:700,color:colors[mt],textTransform:'uppercase',letterSpacing:'0.3px',marginRight:'4px'}}>{mt.slice(0,1).toUpperCase()}</span>
+                              <span style={{fontSize:'9px',fontWeight:600,color:'#ddd'}}>{recipe.name.length > 22 ? recipe.name.slice(0,22)+'…' : recipe.name}</span>
+                            </div>
+                          );
+                        }) : (
+                          <span style={{fontSize:'9px',color:'#3a3a3a',fontStyle:'italic',paddingTop:'2px'}}>Nothing planned</span>
+                        )}
+                      </div>
                     </div>
                   );
                 })}

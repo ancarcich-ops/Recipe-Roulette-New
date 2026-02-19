@@ -274,15 +274,14 @@ const MealPrepApp = () => {
   const [recipeSearch, setRecipeSearch] = useState('');
   const [communitySearch, setCommunitySearch] = useState('');
   const [showAddRecipeModal, setShowAddRecipeModal] = useState(false);
+  const [showEditRecipeModal, setShowEditRecipeModal] = useState(null); // recipe to edit
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(null); // recipe to delete
   const [showImportModal, setShowImportModal] = useState(false);
   const [importStep, setImportStep] = useState('url'); // 'url' | 'loading' | 'review'
   const [importUrl, setImportUrl] = useState('');
   const [importError, setImportError] = useState('');
   const [importedRecipe, setImportedRecipe] = useState(null);
   const [importFolderIds, setImportFolderIds] = useState([]);
-  const [importImageFile, setImportImageFile] = useState(null);
-  const [importImagePreview, setImportImagePreview] = useState(null);
-  const [importMode, setImportMode] = useState('url'); // 'url' | 'image'
   const [showAddToCalendar, setShowAddToCalendar] = useState(null);
   const [recipeSearchQuery, setRecipeSearchQuery] = useState('');
   const [userRecipes, setUserRecipes] = useState([]);
@@ -1110,8 +1109,8 @@ const MealPrepApp = () => {
                     <button onClick={() => setShowFolderModal(true)} style={{padding:'10px 18px',background:'#1a1a1a',border:'1px solid #262626',borderRadius:'8px',cursor:'pointer',display:'flex',alignItems:'center',gap:'6px',fontWeight:600,fontSize:'13px',color:'#fff'}}>
                       <Plus size={16} /> New Folder
                     </button>
-                    <button onClick={() => { setShowImportModal(true); setImportStep('url'); setImportUrl(''); setImportError(''); setImportedRecipe(null); setImportFolderIds([]); setImportMode('url'); setImportImageFile(null); setImportImagePreview(null); }} style={{padding:'10px 18px',background:'#1a1a1a',border:'1px solid #262626',borderRadius:'8px',cursor:'pointer',display:'flex',alignItems:'center',gap:'6px',fontWeight:600,fontSize:'13px',color:'#fff'}}>
-                      🔗 Import Recipe
+                    <button onClick={() => { setShowImportModal(true); setImportStep('url'); setImportUrl(''); setImportError(''); setImportedRecipe(null); setImportFolderIds([]); }} style={{padding:'10px 18px',background:'#1a1a1a',border:'1px solid #262626',borderRadius:'8px',cursor:'pointer',display:'flex',alignItems:'center',gap:'6px',fontWeight:600,fontSize:'13px',color:'#fff'}}>
+                      🔗 Import URL
                     </button>
                     <button onClick={() => setShowAddRecipeModal(true)} style={{padding:'10px 18px',background:'#fff',border:'none',borderRadius:'8px',cursor:'pointer',display:'flex',alignItems:'center',gap:'6px',fontWeight:600,fontSize:'13px',color:'#000'}}>
                       <Plus size={16} /> Add Recipe
@@ -1194,8 +1193,8 @@ const MealPrepApp = () => {
                       </p>
                     </div>
                   </div>
-                  <button onClick={() => { setShowImportModal(true); setImportStep('url'); setImportUrl(''); setImportError(''); setImportedRecipe(null); setImportFolderIds([]); setImportMode('url'); setImportImageFile(null); setImportImagePreview(null); }} style={{padding:'10px 18px',background:'#1a1a1a',border:'1px solid #262626',borderRadius:'8px',cursor:'pointer',display:'flex',alignItems:'center',gap:'6px',fontWeight:600,fontSize:'13px',color:'#fff'}}>
-                    🔗 Import Recipe
+                  <button onClick={() => { setShowImportModal(true); setImportStep('url'); setImportUrl(''); setImportError(''); setImportedRecipe(null); setImportFolderIds([]); }} style={{padding:'10px 18px',background:'#1a1a1a',border:'1px solid #262626',borderRadius:'8px',cursor:'pointer',display:'flex',alignItems:'center',gap:'6px',fontWeight:600,fontSize:'13px',color:'#fff'}}>
+                    🔗 Import URL
                   </button>
                   <button onClick={() => setShowAddRecipeModal(true)} style={{padding:'10px 18px',background:'#fff',border:'none',borderRadius:'8px',cursor:'pointer',display:'flex',alignItems:'center',gap:'6px',fontWeight:600,fontSize:'13px',color:'#000'}}>
                     <Plus size={16} /> Add Recipe
@@ -1245,6 +1244,14 @@ const MealPrepApp = () => {
                             <button onClick={e => { e.stopPropagation(); setShowAddToCalendar(recipe); }} style={{flex:isMobile?'1 1 48%':'1 1 auto',padding:'7px',background:'#fff',color:'#000',border:'none',borderRadius:'6px',fontSize:'11px',fontWeight:600,cursor:'pointer'}}>
                               📅 Cal
                             </button>
+                            {userRecipes.find(r => r.id === recipe.id) && (<>
+                              <button onClick={e => { e.stopPropagation(); setShowEditRecipeModal(recipe); }} style={{flex:isMobile?'1 1 48%':'1 1 auto',padding:'7px',background:'#1a1a1a',color:'#7dd3fc',border:'1px solid #333',borderRadius:'6px',fontSize:'11px',fontWeight:600,cursor:'pointer'}}>
+                                ✏️ Edit
+                              </button>
+                              <button onClick={e => { e.stopPropagation(); setShowDeleteConfirm(recipe); }} style={{flex:isMobile?'1 1 48%':'1 1 auto',padding:'7px',background:'#1a1a1a',color:'#ff6b6b',border:'1px solid #333',borderRadius:'6px',fontSize:'11px',fontWeight:600,cursor:'pointer'}}>
+                                🗑 Delete
+                              </button>
+                            </>)}
                           </div>
                         </div>
                       ))}
@@ -1852,147 +1859,59 @@ const MealPrepApp = () => {
         <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.85)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:1000,padding:'20px'}}>
           <div style={{background:'#1a1a1a',borderRadius:'16px',padding:'28px',maxWidth:'560px',width:'100%',maxHeight:'90vh',overflow:'auto',border:'1px solid #262626'}}>
 
-            {/* STEP 1: Input (URL or Image) */}
+            {/* STEP 1: URL Input */}
             {importStep === 'url' && (
               <>
-                <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'16px'}}>
-                  <h2 style={{margin:0,fontSize:'20px',fontWeight:700,color:'#fff'}}>Import Recipe</h2>
+                <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'8px'}}>
+                  <h2 style={{margin:0,fontSize:'20px',fontWeight:700,color:'#fff'}}>🔗 Import Recipe from URL</h2>
                   <button onClick={() => setShowImportModal(false)} style={{background:'none',border:'none',cursor:'pointer'}}><X size={22} color="#999" /></button>
                 </div>
-
-                {/* Mode tabs */}
-                <div style={{display:'flex',background:'#0a0a0a',borderRadius:'8px',padding:'4px',marginBottom:'20px',border:'1px solid #262626'}}>
-                  <button onClick={() => { setImportMode('url'); setImportError(''); }} style={{flex:1,padding:'9px',background:importMode==='url'?'#fff':'transparent',color:importMode==='url'?'#000':'#999',border:'none',borderRadius:'6px',fontWeight:600,fontSize:'13px',cursor:'pointer',transition:'all 0.15s'}}>
-                    🔗 From URL
-                  </button>
-                  <button onClick={() => { setImportMode('image'); setImportError(''); }} style={{flex:1,padding:'9px',background:importMode==='image'?'#fff':'transparent',color:importMode==='image'?'#000':'#999',border:'none',borderRadius:'6px',fontWeight:600,fontSize:'13px',cursor:'pointer',transition:'all 0.15s'}}>
-                    📷 From Photo
-                  </button>
-                </div>
-
-                {/* URL mode */}
-                {importMode === 'url' && (
-                  <>
-                    <p style={{margin:'0 0 14px 0',fontSize:'13px',color:'#666'}}>Works with BudgetBytes, Food Network, NYT Cooking, Serious Eats, and most major recipe sites.</p>
-                    <label style={{display:'block',marginBottom:'6px',fontWeight:600,color:'#fff',fontSize:'13px'}}>Recipe URL</label>
-                    <input
-                      type="url"
-                      value={importUrl}
-                      onChange={e => { setImportUrl(e.target.value); setImportError(''); }}
-                      placeholder="https://www.budgetbytes.com/recipe/..."
-                      autoFocus
-                      style={{width:'100%',padding:'11px 14px',border:`1px solid ${importError ? '#ff4444' : '#262626'}`,borderRadius:'8px',fontSize:'14px',background:'#0a0a0a',color:'#fff',outline:'none',boxSizing:'border-box',marginBottom:'8px'}}
-                    />
-                  </>
-                )}
-
-                {/* Image mode */}
-                {importMode === 'image' && (
-                  <>
-                    <p style={{margin:'0 0 14px 0',fontSize:'13px',color:'#666'}}>Take a photo or upload a screenshot of any recipe — handwritten, cookbook, or screenshot.</p>
-                    <div style={{border:`2px dashed ${importImagePreview ? '#51cf66' : '#262626'}`,borderRadius:'10px',padding:'20px',textAlign:'center',background:'#0a0a0a',position:'relative',cursor:'pointer',marginBottom:'8px'}}>
-                      {importImagePreview ? (
-                        <div style={{position:'relative'}}>
-                          <img src={importImagePreview} alt="Recipe" style={{maxWidth:'100%',maxHeight:'200px',borderRadius:'8px',objectFit:'contain'}} />
-                          <button type="button" onClick={() => { setImportImageFile(null); setImportImagePreview(null); }} style={{position:'absolute',top:'4px',right:'4px',background:'rgba(0,0,0,0.7)',border:'none',borderRadius:'50%',width:'26px',height:'26px',display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer'}}><X size={14} color="white" /></button>
-                        </div>
-                      ) : (
-                        <>
-                          <input type="file" accept="image/*" capture="environment" onChange={e => {
-                            const f = e.target.files[0];
-                            if (f) {
-                              setImportImageFile(f);
-                              const r = new FileReader();
-                              r.onloadend = () => setImportImagePreview(r.result);
-                              r.readAsDataURL(f);
-                            }
-                          }} style={{position:'absolute',inset:0,opacity:0,cursor:'pointer',width:'100%',height:'100%'}} />
-                          <div style={{fontSize:'36px',marginBottom:'8px'}}>📷</div>
-                          <p style={{margin:'0 0 4px 0',fontWeight:600,color:'#fff',fontSize:'14px'}}>Tap to take photo or upload</p>
-                          <p style={{margin:0,fontSize:'12px',color:'#555'}}>Works with handwritten recipes, cookbooks, screenshots</p>
-                        </>
-                      )}
-                    </div>
-                  </>
-                )}
-
-                {importError && <p style={{margin:'8px 0 0 0',fontSize:'12px',color:'#ff6b6b'}}>{importError}</p>}
+                <p style={{margin:'0 0 22px 0',fontSize:'13px',color:'#666'}}>Works with AllRecipes, Food Network, NYT Cooking, Serious Eats, and most major recipe sites.</p>
+                <label style={{display:'block',marginBottom:'6px',fontWeight:600,color:'#fff',fontSize:'13px'}}>Recipe URL</label>
+                <input
+                  type="url"
+                  value={importUrl}
+                  onChange={e => { setImportUrl(e.target.value); setImportError(''); }}
+                  placeholder="https://www.allrecipes.com/recipe/..."
+                  autoFocus
+                  style={{width:'100%',padding:'11px 14px',border:`1px solid ${importError ? '#ff4444' : '#262626'}`,borderRadius:'8px',fontSize:'14px',background:'#0a0a0a',color:'#fff',outline:'none',boxSizing:'border-box',marginBottom:'8px'}}
+                />
+                {importError && <p style={{margin:'0 0 14px 0',fontSize:'12px',color:'#ff6b6b'}}>{importError}</p>}
                 <div style={{display:'flex',gap:'10px',marginTop:'16px'}}>
                   <button onClick={() => setShowImportModal(false)} style={{flex:1,padding:'11px',background:'#262626',border:'none',borderRadius:'8px',cursor:'pointer',fontWeight:600,color:'#fff',fontSize:'14px'}}>Cancel</button>
                   <button onClick={async () => {
+                    if (!importUrl.trim()) { setImportError('Please enter a URL.'); return; }
+                    try { new URL(importUrl); } catch { setImportError('Please enter a valid URL.'); return; }
+                    setImportStep('loading');
                     setImportError('');
-
-                    if (importMode === 'url') {
-                      if (!importUrl.trim()) { setImportError('Please enter a URL.'); return; }
-                      try { new URL(importUrl); } catch { setImportError('Please enter a valid URL.'); return; }
-                      setImportStep('loading');
-                      try {
-                        const { data, error } = await supabase.functions.invoke('fetch-recipe', { body: { url: importUrl.trim() } });
-                        if (error || !data?.name) {
-                          setImportStep('url');
-                          setImportError(data?.error || "Couldn't parse a recipe from that URL. Try a different link.");
-                          return;
-                        }
-                        setImportedRecipe({
-                          ...data,
-                          id: Date.now(),
-                          author: session.user.email.split('@')[0],
-                          timesMade: 0,
-                          isEasy: (data.cookTime || 30) < 20,
-                          image: data.image || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&h=300&fit=crop',
-                          tags: data.tags || [],
-                          ingredients: Array.isArray(data.ingredients) ? data.ingredients : [],
-                          instructions: Array.isArray(data.instructions) ? data.instructions : [],
-                          prepTime: data.prepTime || '30 min',
-                          servings: data.servings || 4,
-                          cookTime: data.cookTime || 30,
-                        });
-                        setImportStep('review');
-                      } catch (err) {
+                    try {
+                      const { data, error } = await supabase.functions.invoke('fetch-recipe', { body: { url: importUrl.trim() } });
+                      if (error || !data?.name) {
                         setImportStep('url');
-                        setImportError('Something went wrong. Please try again.');
+                        setImportError(error?.message || "Couldn't parse a recipe from that URL. Try a different link.");
+                        return;
                       }
-
-                    } else {
-                      if (!importImageFile) { setImportError('Please select a photo first.'); return; }
-                      setImportStep('loading');
-                      try {
-                        const base64 = await new Promise((res, rej) => {
-                          const r = new FileReader();
-                          r.onload = () => res(r.result.split(',')[1]);
-                          r.onerror = rej;
-                          r.readAsDataURL(importImageFile);
-                        });
-                        const { data, error } = await supabase.functions.invoke('import-recipe-image', {
-                          body: { image: base64, mediaType: importImageFile.type }
-                        });
-                        if (error || !data?.name) {
-                          setImportStep('url');
-                          setImportError(data?.error || "Couldn't read a recipe from that image. Try a clearer photo.");
-                          return;
-                        }
-                        setImportedRecipe({
-                          ...data,
-                          id: Date.now(),
-                          author: session.user.email.split('@')[0],
-                          timesMade: 0,
-                          isEasy: (data.cookTime || 30) < 20,
-                          image: importImagePreview,
-                          tags: data.tags || [],
-                          ingredients: Array.isArray(data.ingredients) ? data.ingredients : [],
-                          instructions: Array.isArray(data.instructions) ? data.instructions : [],
-                          prepTime: data.prepTime || '30 min',
-                          servings: data.servings || 4,
-                          cookTime: data.cookTime || 30,
-                        });
-                        setImportStep('review');
-                      } catch (err) {
-                        setImportStep('url');
-                        setImportError('Something went wrong. Please try again.');
-                      }
+                      setImportedRecipe({
+                        ...data,
+                        id: Date.now(),
+                        author: session.user.email.split('@')[0],
+                        timesMade: 0,
+                        isEasy: (data.cookTime || 30) < 20,
+                        image: data.image || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&h=300&fit=crop',
+                        tags: data.tags || [],
+                        ingredients: Array.isArray(data.ingredients) ? data.ingredients : [],
+                        instructions: Array.isArray(data.instructions) ? data.instructions : [],
+                        prepTime: data.prepTime || '30 min',
+                        servings: data.servings || 4,
+                        cookTime: data.cookTime || 30,
+                      });
+                      setImportStep('review');
+                    } catch (err) {
+                      setImportStep('url');
+                      setImportError('Something went wrong. Please try again.');
                     }
-                  }} style={{flex:2,padding:'11px',background: importMode==='url' ? (importUrl.trim() ? '#fff' : '#333') : (importImageFile ? '#fff' : '#333'),border:'none',borderRadius:'8px',cursor:'pointer',fontWeight:700,color: importMode==='url' ? (importUrl.trim() ? '#000' : '#666') : (importImageFile ? '#000' : '#666'),fontSize:'14px',transition:'all 0.2s'}}>
-                    {importMode === 'url' ? 'Import Recipe →' : '✨ Read Recipe'}
+                  }} style={{flex:2,padding:'11px',background:'#fff',border:'none',borderRadius:'8px',cursor:'pointer',fontWeight:700,color:'#000',fontSize:'14px'}}>
+                    Import Recipe →
                   </button>
                 </div>
               </>
@@ -2002,8 +1921,8 @@ const MealPrepApp = () => {
             {importStep === 'loading' && (
               <div style={{textAlign:'center',padding:'40px 20px'}}>
                 <div style={{fontSize:'40px',marginBottom:'16px'}}>⏳</div>
-                <h3 style={{margin:'0 0 8px 0',fontSize:'18px',fontWeight:700,color:'#fff'}}>{importMode === 'image' ? 'Reading your photo...' : 'Fetching recipe...'}</h3>
-                <p style={{margin:0,fontSize:'13px',color:'#666'}}>{importMode === 'image' ? 'Claude is scanning the ingredients and instructions' : 'Parsing ingredients and instructions'}</p>
+                <h3 style={{margin:'0 0 8px 0',fontSize:'18px',fontWeight:700,color:'#fff'}}>Fetching recipe...</h3>
+                <p style={{margin:0,fontSize:'13px',color:'#666'}}>Parsing ingredients and instructions</p>
               </div>
             )}
 
@@ -2080,6 +1999,86 @@ const MealPrepApp = () => {
               </>
             )}
 
+          </div>
+        </div>
+      )}
+
+      {/* EDIT RECIPE MODAL */}
+      {showEditRecipeModal && (
+        <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.8)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:1000,padding:'20px'}}>
+          <div style={{background:'#1a1a1a',borderRadius:'12px',padding:'24px',maxWidth:'560px',width:'100%',maxHeight:'90vh',overflow:'auto',border:'1px solid #262626'}}>
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'18px'}}>
+              <h2 style={{margin:0,fontSize:'20px',fontWeight:700,color:'#fff'}}>✏️ Edit Recipe</h2>
+              <button onClick={() => setShowEditRecipeModal(null)} style={{background:'none',border:'none',cursor:'pointer'}}><X size={22} color="#999" /></button>
+            </div>
+            <div style={{marginBottom:'12px'}}>
+              <label style={{display:'block',marginBottom:'5px',fontWeight:600,color:'#fff',fontSize:'13px'}}>Recipe Name</label>
+              <input value={showEditRecipeModal.name} onChange={e => setShowEditRecipeModal(r => ({...r, name: e.target.value}))}
+                style={{width:'100%',padding:'9px 12px',border:'1px solid #262626',borderRadius:'6px',fontSize:'14px',background:'#0a0a0a',color:'#fff',boxSizing:'border-box'}} />
+            </div>
+            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:'10px',marginBottom:'12px'}}>
+              {[['Prep Time','prepTime','text'],['Cook Time (min)','cookTime','number'],['Servings','servings','number']].map(([label,key,type]) => (
+                <div key={key}>
+                  <label style={{display:'block',marginBottom:'4px',fontWeight:600,color:'#fff',fontSize:'12px'}}>{label}</label>
+                  <input type={type} value={showEditRecipeModal[key]} onChange={e => setShowEditRecipeModal(r => ({...r, [key]: type==='number' ? parseInt(e.target.value)||0 : e.target.value}))}
+                    style={{width:'100%',padding:'9px 10px',border:'1px solid #262626',borderRadius:'6px',fontSize:'13px',background:'#0a0a0a',color:'#fff',boxSizing:'border-box'}} />
+                </div>
+              ))}
+            </div>
+            <div style={{marginBottom:'12px'}}>
+              <label style={{display:'block',marginBottom:'5px',fontWeight:600,color:'#fff',fontSize:'13px'}}>Ingredients</label>
+              <textarea value={Array.isArray(showEditRecipeModal.ingredients) ? showEditRecipeModal.ingredients.join('\n') : showEditRecipeModal.ingredients}
+                onChange={e => setShowEditRecipeModal(r => ({...r, ingredients: e.target.value.split('\n').filter(l => l.trim())}))}
+                rows={5} style={{width:'100%',padding:'9px 12px',border:'1px solid #262626',borderRadius:'6px',fontSize:'13px',background:'#0a0a0a',color:'#fff',fontFamily:'system-ui',resize:'vertical',boxSizing:'border-box'}} />
+            </div>
+            <div style={{marginBottom:'12px'}}>
+              <label style={{display:'block',marginBottom:'5px',fontWeight:600,color:'#fff',fontSize:'13px'}}>Instructions</label>
+              <textarea value={Array.isArray(showEditRecipeModal.instructions) ? showEditRecipeModal.instructions.join('\n') : showEditRecipeModal.instructions}
+                onChange={e => setShowEditRecipeModal(r => ({...r, instructions: e.target.value.split('\n').filter(l => l.trim())}))}
+                rows={5} style={{width:'100%',padding:'9px 12px',border:'1px solid #262626',borderRadius:'6px',fontSize:'13px',background:'#0a0a0a',color:'#fff',fontFamily:'system-ui',resize:'vertical',boxSizing:'border-box'}} />
+            </div>
+            <div style={{marginBottom:'18px'}}>
+              <label style={{display:'block',marginBottom:'5px',fontWeight:600,color:'#fff',fontSize:'13px'}}>Tags (comma separated)</label>
+              <input value={Array.isArray(showEditRecipeModal.tags) ? showEditRecipeModal.tags.join(', ') : showEditRecipeModal.tags}
+                onChange={e => setShowEditRecipeModal(r => ({...r, tags: e.target.value.split(',').map(t => t.trim()).filter(t => t)}))}
+                style={{width:'100%',padding:'9px 12px',border:'1px solid #262626',borderRadius:'6px',fontSize:'14px',background:'#0a0a0a',color:'#fff',boxSizing:'border-box'}} />
+            </div>
+            <div style={{display:'flex',gap:'10px'}}>
+              <button onClick={() => setShowEditRecipeModal(null)} style={{flex:1,padding:'11px',background:'#262626',border:'none',borderRadius:'8px',cursor:'pointer',fontWeight:600,color:'#fff'}}>Cancel</button>
+              <button onClick={async () => {
+                const updated = {...showEditRecipeModal, isEasy: showEditRecipeModal.cookTime < 20};
+                setUserRecipes(prev => prev.map(r => r.id === updated.id ? updated : r));
+                await supabase.from('user_recipes').update({recipe: updated}).eq('user_id', session.user.id).eq('recipe->>id', updated.id);
+                if (selectedRecipe?.id === updated.id) setSelectedRecipe(updated);
+                setShowEditRecipeModal(null);
+              }} style={{flex:2,padding:'11px',background:'#fff',border:'none',borderRadius:'8px',cursor:'pointer',fontWeight:700,color:'#000'}}>
+                Save Changes
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* DELETE CONFIRM MODAL */}
+      {showDeleteConfirm && (
+        <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.85)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:1000,padding:'20px'}}>
+          <div style={{background:'#1a1a1a',borderRadius:'16px',padding:'28px',maxWidth:'400px',width:'100%',border:'1px solid #262626',textAlign:'center'}}>
+            <div style={{fontSize:'40px',marginBottom:'12px'}}>🗑</div>
+            <h2 style={{margin:'0 0 8px 0',fontSize:'20px',fontWeight:700,color:'#fff'}}>Delete Recipe?</h2>
+            <p style={{margin:'0 0 24px 0',fontSize:'14px',color:'#999'}}>"{showDeleteConfirm.name}" will be permanently removed from your Recipe Book.</p>
+            <div style={{display:'flex',gap:'10px'}}>
+              <button onClick={() => setShowDeleteConfirm(null)} style={{flex:1,padding:'12px',background:'#262626',border:'none',borderRadius:'8px',cursor:'pointer',fontWeight:600,color:'#fff',fontSize:'14px'}}>Cancel</button>
+              <button onClick={async () => {
+                const id = showDeleteConfirm.id;
+                setUserRecipes(prev => prev.filter(r => r.id !== id));
+                setFolders(prev => prev.map(f => ({...f, recipes: f.recipes.filter(rid => rid !== id)})));
+                if (selectedRecipe?.id === id) setSelectedRecipe(null);
+                await supabase.from('user_recipes').delete().eq('user_id', session.user.id).eq('recipe->>id', id);
+                setShowDeleteConfirm(null);
+              }} style={{flex:1,padding:'12px',background:'#ff4444',border:'none',borderRadius:'8px',cursor:'pointer',fontWeight:700,color:'#fff',fontSize:'14px'}}>
+                Delete
+              </button>
+            </div>
           </div>
         </div>
       )}

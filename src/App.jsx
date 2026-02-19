@@ -1098,21 +1098,21 @@ const MealPrepApp = () => {
             {activeFolder === null ? (
               /* ── FOLDER GRID VIEW ── */
               <div>
-                <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'24px'}}>
-                  <div>
-                    <h2 style={{fontSize:isMobile?'24px':'30px',fontWeight:700,color:'#fff',margin:'0 0 4px 0'}}>Recipe Book</h2>
+                <div style={{marginBottom:'24px'}}>
+                  <h2 style={{fontSize:isMobile?'24px':'30px',fontWeight:700,color:'#fff',margin:'0 0 8px 0'}}>Recipe Book</h2>
+                  <div style={{display:'flex',flexWrap:'wrap',alignItems:'center',justifyContent:'space-between',gap:'12px'}}>
                     <p style={{color:'#666',margin:0}}>{allMyRecipes.length > 0 ? `${folders.length} folders • ${allMyRecipes.length} recipes` : 'No recipes yet — add your first one!'}</p>
-                  </div>
-                  <div style={{display:'flex',gap:'10px'}}>
-                    <button onClick={() => setShowFolderModal(true)} style={{padding:'10px 18px',background:'#1a1a1a',border:'1px solid #262626',borderRadius:'8px',cursor:'pointer',display:'flex',alignItems:'center',gap:'6px',fontWeight:600,fontSize:'13px',color:'#fff'}}>
-                      <Plus size={16} /> New Folder
-                    </button>
-                    <button onClick={() => { setShowImportModal(true); setImportStep('url'); setImportUrl(''); setImportError(''); setImportedRecipe(null); setImportFolderIds([]); }} style={{padding:'10px 18px',background:'#1a1a1a',border:'1px solid #262626',borderRadius:'8px',cursor:'pointer',display:'flex',alignItems:'center',gap:'6px',fontWeight:600,fontSize:'13px',color:'#fff'}}>
-                      🔗 Import URL
-                    </button>
-                    <button onClick={() => setShowAddRecipeModal(true)} style={{padding:'10px 18px',background:'#fff',border:'none',borderRadius:'8px',cursor:'pointer',display:'flex',alignItems:'center',gap:'6px',fontWeight:600,fontSize:'13px',color:'#000'}}>
-                      <Plus size={16} /> Add Recipe
-                    </button>
+                    <div style={{display:'flex',gap:'8px',flexWrap:'wrap'}}>
+                      <button onClick={() => setShowFolderModal(true)} style={{padding:'9px 14px',background:'#1a1a1a',border:'1px solid #262626',borderRadius:'8px',cursor:'pointer',display:'flex',alignItems:'center',gap:'6px',fontWeight:600,fontSize:'13px',color:'#fff',whiteSpace:'nowrap'}}>
+                        <Plus size={15} /> New Folder
+                      </button>
+                      <button onClick={() => { setShowImportModal(true); setImportStep('url'); setImportUrl(''); setImportError(''); setImportedRecipe(null); setImportFolderIds([]); }} style={{padding:'9px 14px',background:'#1a1a1a',border:'1px solid #262626',borderRadius:'8px',cursor:'pointer',display:'flex',alignItems:'center',gap:'6px',fontWeight:600,fontSize:'13px',color:'#fff',whiteSpace:'nowrap'}}>
+                        🔗 Import URL
+                      </button>
+                      <button onClick={() => setShowAddRecipeModal(true)} style={{padding:'9px 14px',background:'#fff',border:'none',borderRadius:'8px',cursor:'pointer',display:'flex',alignItems:'center',gap:'6px',fontWeight:600,fontSize:'13px',color:'#000',whiteSpace:'nowrap'}}>
+                        <Plus size={15} /> Add Recipe
+                      </button>
+                    </div>
                   </div>
                 </div>
 
@@ -1191,29 +1191,12 @@ const MealPrepApp = () => {
                       </p>
                     </div>
                   </div>
-                  <div style={{display:'flex',gap:'10px'}}>
-                    <button onClick={() => { setShowImportModal(true); setImportStep('url'); setImportUrl(''); setImportError(''); setImportedRecipe(null); setImportFolderIds([]); }} style={{padding:'10px 18px',background:'#1a1a1a',border:'1px solid #262626',borderRadius:'8px',cursor:'pointer',display:'flex',alignItems:'center',gap:'6px',fontWeight:600,fontSize:'13px',color:'#fff'}}>
-                      🔗 Import URL
-                    </button>
-                    <button onClick={() => setShowAddRecipeModal(true)} style={{padding:'10px 18px',background:'#fff',border:'none',borderRadius:'8px',cursor:'pointer',display:'flex',alignItems:'center',gap:'6px',fontWeight:600,fontSize:'13px',color:'#000'}}>
-                      <Plus size={16} /> Add Recipe
-                    </button>
-                  </div>
-                </div>
-
-                {/* Search bar */}
-                <div style={{position:'relative',marginBottom:'18px'}}>
-                  <span style={{position:'absolute',left:'14px',top:'50%',transform:'translateY(-50%)',color:'#555',pointerEvents:'none',fontSize:'16px'}}>🔍</span>
-                  <input
-                    type="text"
-                    placeholder="Search recipes..."
-                    value={recipeSearch}
-                    onChange={e => setRecipeSearch(e.target.value)}
-                    style={{width:'100%',padding:'11px 14px 11px 42px',background:'#1a1a1a',border:'1px solid #262626',borderRadius:'10px',fontSize:'14px',color:'#fff',outline:'none',boxSizing:'border-box'}}
-                  />
-                  {recipeSearch && (
-                    <button onClick={() => setRecipeSearch('')} style={{position:'absolute',right:'12px',top:'50%',transform:'translateY(-50%)',background:'none',border:'none',cursor:'pointer',color:'#555',fontSize:'18px',lineHeight:1}}>×</button>
-                  )}
+                  <button onClick={() => { setShowImportModal(true); setImportStep('url'); setImportUrl(''); setImportError(''); setImportedRecipe(null); setImportFolderIds([]); }} style={{padding:'10px 18px',background:'#1a1a1a',border:'1px solid #262626',borderRadius:'8px',cursor:'pointer',display:'flex',alignItems:'center',gap:'6px',fontWeight:600,fontSize:'13px',color:'#fff'}}>
+                    🔗 Import URL
+                  </button>
+                  <button onClick={() => setShowAddRecipeModal(true)} style={{padding:'10px 18px',background:'#fff',border:'none',borderRadius:'8px',cursor:'pointer',display:'flex',alignItems:'center',gap:'6px',fontWeight:600,fontSize:'13px',color:'#000'}}>
+                    <Plus size={16} /> Add Recipe
+                  </button>
                 </div>
 
                 {/* Filter bar for all recipes view */}

@@ -2467,7 +2467,7 @@ const MealPrepApp = () => {
               <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:'20px'}}>
                 <div>
                   <div style={{display:'flex',alignItems:'center',gap:'10px'}}>
-                    <img src="/logo.png" alt="Logo" style={{width:'52px',height:'52px',objectFit:'contain'}} />
+                    <img src="/logo.png" alt="Logo" style={{width:'80px',height:'80px',objectFit:'contain'}} />
                     <div style={{fontSize:'22px',fontWeight:800,color:'#fff',letterSpacing:'-0.5px'}}>My Week</div>
                   </div>
                   <div style={{fontSize:'12px',color:'#666',marginTop:'2px'}}>
@@ -2514,7 +2514,7 @@ const MealPrepApp = () => {
               <div style={{marginTop:'16px',paddingTop:'14px',borderTop:'1px solid rgba(255,255,255,0.06)',display:'flex',alignItems:'center',justifyContent:'center',gap:'8px'}}>
                 <span style={{fontSize:'11px',color:'#555'}}>Made with</span>
                 <img src="/logo.png" alt="" style={{width:'16px',height:'16px',objectFit:'contain'}} />
-                <span style={{fontSize:'11px',color:'#777',fontWeight:600}}>Recipe Roulette</span>
+                <a href="https://recipe-roulette-new.vercel.app" target="_blank" rel="noopener noreferrer" style={{fontSize:'11px',color:'#a78bfa',fontWeight:600,textDecoration:'none'}}>Recipe Roulette</a>
               </div>
             </div>
 

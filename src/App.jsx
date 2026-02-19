@@ -274,8 +274,8 @@ const MealPrepApp = () => {
   const [recipeSearch, setRecipeSearch] = useState('');
   const [communitySearch, setCommunitySearch] = useState('');
   const [showAddRecipeModal, setShowAddRecipeModal] = useState(false);
-  const [showEditRecipeModal, setShowEditRecipeModal] = useState(null); // recipe to edit
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(null); // recipe to delete
+  const [showEditRecipeModal, setShowEditRecipeModal] = useState(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
   const [showImportModal, setShowImportModal] = useState(false);
   const [importStep, setImportStep] = useState('url'); // 'url' | 'loading' | 'review'
   const [importUrl, setImportUrl] = useState('');
@@ -1244,14 +1244,6 @@ const MealPrepApp = () => {
                             <button onClick={e => { e.stopPropagation(); setShowAddToCalendar(recipe); }} style={{flex:isMobile?'1 1 48%':'1 1 auto',padding:'7px',background:'#fff',color:'#000',border:'none',borderRadius:'6px',fontSize:'11px',fontWeight:600,cursor:'pointer'}}>
                               📅 Cal
                             </button>
-                            {userRecipes.find(r => r.id === recipe.id) && (<>
-                              <button onClick={e => { e.stopPropagation(); setShowEditRecipeModal(recipe); }} style={{flex:isMobile?'1 1 48%':'1 1 auto',padding:'7px',background:'#1a1a1a',color:'#7dd3fc',border:'1px solid #333',borderRadius:'6px',fontSize:'11px',fontWeight:600,cursor:'pointer'}}>
-                                ✏️ Edit
-                              </button>
-                              <button onClick={e => { e.stopPropagation(); setShowDeleteConfirm(recipe); }} style={{flex:isMobile?'1 1 48%':'1 1 auto',padding:'7px',background:'#1a1a1a',color:'#ff6b6b',border:'1px solid #333',borderRadius:'6px',fontSize:'11px',fontWeight:600,cursor:'pointer'}}>
-                                🗑 Delete
-                              </button>
-                            </>)}
                           </div>
                         </div>
                       ))}
@@ -2005,8 +1997,8 @@ const MealPrepApp = () => {
 
       {/* EDIT RECIPE MODAL */}
       {showEditRecipeModal && (
-        <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.8)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:1000,padding:'20px'}}>
-          <div style={{background:'#1a1a1a',borderRadius:'12px',padding:'24px',maxWidth:'560px',width:'100%',maxHeight:'90vh',overflow:'auto',border:'1px solid #262626'}}>
+        <div onClick={() => setShowEditRecipeModal(null)} style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.8)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:1000,padding:'20px'}}>
+          <div onClick={e => e.stopPropagation()} style={{background:'#1a1a1a',borderRadius:'12px',padding:'24px',maxWidth:'560px',width:'100%',maxHeight:'90vh',overflow:'auto',border:'1px solid #262626'}}>
             <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'18px'}}>
               <h2 style={{margin:0,fontSize:'20px',fontWeight:700,color:'#fff'}}>✏️ Edit Recipe</h2>
               <button onClick={() => setShowEditRecipeModal(null)} style={{background:'none',border:'none',cursor:'pointer'}}><X size={22} color="#999" /></button>
@@ -2026,13 +2018,13 @@ const MealPrepApp = () => {
               ))}
             </div>
             <div style={{marginBottom:'12px'}}>
-              <label style={{display:'block',marginBottom:'5px',fontWeight:600,color:'#fff',fontSize:'13px'}}>Ingredients</label>
+              <label style={{display:'block',marginBottom:'5px',fontWeight:600,color:'#fff',fontSize:'13px'}}>Ingredients (one per line)</label>
               <textarea value={Array.isArray(showEditRecipeModal.ingredients) ? showEditRecipeModal.ingredients.join('\n') : showEditRecipeModal.ingredients}
                 onChange={e => setShowEditRecipeModal(r => ({...r, ingredients: e.target.value.split('\n').filter(l => l.trim())}))}
                 rows={5} style={{width:'100%',padding:'9px 12px',border:'1px solid #262626',borderRadius:'6px',fontSize:'13px',background:'#0a0a0a',color:'#fff',fontFamily:'system-ui',resize:'vertical',boxSizing:'border-box'}} />
             </div>
             <div style={{marginBottom:'12px'}}>
-              <label style={{display:'block',marginBottom:'5px',fontWeight:600,color:'#fff',fontSize:'13px'}}>Instructions</label>
+              <label style={{display:'block',marginBottom:'5px',fontWeight:600,color:'#fff',fontSize:'13px'}}>Instructions (one per line)</label>
               <textarea value={Array.isArray(showEditRecipeModal.instructions) ? showEditRecipeModal.instructions.join('\n') : showEditRecipeModal.instructions}
                 onChange={e => setShowEditRecipeModal(r => ({...r, instructions: e.target.value.split('\n').filter(l => l.trim())}))}
                 rows={5} style={{width:'100%',padding:'9px 12px',border:'1px solid #262626',borderRadius:'6px',fontSize:'13px',background:'#0a0a0a',color:'#fff',fontFamily:'system-ui',resize:'vertical',boxSizing:'border-box'}} />
@@ -2049,7 +2041,6 @@ const MealPrepApp = () => {
                 const updated = {...showEditRecipeModal, isEasy: showEditRecipeModal.cookTime < 20};
                 setUserRecipes(prev => prev.map(r => r.id === updated.id ? updated : r));
                 await supabase.from('user_recipes').update({recipe: updated}).eq('user_id', session.user.id).eq('recipe->>id', updated.id);
-                if (selectedRecipe?.id === updated.id) setSelectedRecipe(updated);
                 setShowEditRecipeModal(null);
               }} style={{flex:2,padding:'11px',background:'#fff',border:'none',borderRadius:'8px',cursor:'pointer',fontWeight:700,color:'#000'}}>
                 Save Changes
@@ -2061,8 +2052,8 @@ const MealPrepApp = () => {
 
       {/* DELETE CONFIRM MODAL */}
       {showDeleteConfirm && (
-        <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.85)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:1000,padding:'20px'}}>
-          <div style={{background:'#1a1a1a',borderRadius:'16px',padding:'28px',maxWidth:'400px',width:'100%',border:'1px solid #262626',textAlign:'center'}}>
+        <div onClick={() => setShowDeleteConfirm(null)} style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.85)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:1000,padding:'20px'}}>
+          <div onClick={e => e.stopPropagation()} style={{background:'#1a1a1a',borderRadius:'16px',padding:'28px',maxWidth:'400px',width:'100%',border:'1px solid #262626',textAlign:'center'}}>
             <div style={{fontSize:'40px',marginBottom:'12px'}}>🗑</div>
             <h2 style={{margin:'0 0 8px 0',fontSize:'20px',fontWeight:700,color:'#fff'}}>Delete Recipe?</h2>
             <p style={{margin:'0 0 24px 0',fontSize:'14px',color:'#999'}}>"{showDeleteConfirm.name}" will be permanently removed from your Recipe Book.</p>
@@ -2194,8 +2185,8 @@ const MealPrepApp = () => {
 
       {/* RECIPE DETAIL MODAL */}
       {selectedRecipe && (
-        <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.8)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:1000,padding:'20px'}}>
-          <div style={{background:'#1a1a1a',borderRadius:'12px',maxWidth:'720px',width:'100%',maxHeight:'90vh',overflow:'auto',border:'1px solid #262626'}}>
+        <div onClick={() => setSelectedRecipe(null)} style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.8)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:1000,padding:'20px'}}>
+          <div onClick={e => e.stopPropagation()} style={{background:'#1a1a1a',borderRadius:'12px',maxWidth:'720px',width:'100%',maxHeight:'90vh',overflow:'auto',border:'1px solid #262626'}}>
             <div style={{height:'240px',backgroundImage:`url(${selectedRecipe.image})`,backgroundSize:'cover',backgroundPosition:'center',position:'relative',borderRadius:'12px 12px 0 0'}}>
               <button onClick={() => setSelectedRecipe(null)} style={{position:'absolute',top:'12px',right:'12px',background:'rgba(0,0,0,0.7)',border:'none',borderRadius:'50%',width:'34px',height:'34px',display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer'}}><X size={18} color="white" /></button>
             </div>
@@ -2217,6 +2208,16 @@ const MealPrepApp = () => {
                   </button>
                 </div>
               </div>
+              {userRecipes.find(r => r.id === selectedRecipe.id) && (
+                <div style={{display:'flex',gap:'8px',marginBottom:'16px'}}>
+                  <button onClick={() => { setShowEditRecipeModal(selectedRecipe); setSelectedRecipe(null); }} style={{flex:1,padding:'9px 14px',background:'#1a1a1a',border:'1px solid #333',borderRadius:'8px',fontWeight:600,fontSize:'13px',cursor:'pointer',color:'#7dd3fc'}}>
+                    ✏️ Edit Recipe
+                  </button>
+                  <button onClick={() => { setShowDeleteConfirm(selectedRecipe); setSelectedRecipe(null); }} style={{flex:1,padding:'9px 14px',background:'#1a1a1a',border:'1px solid #333',borderRadius:'8px',fontWeight:600,fontSize:'13px',cursor:'pointer',color:'#ff6b6b'}}>
+                    🗑 Delete Recipe
+                  </button>
+                </div>
+              )}
               <div style={{display:'flex',gap:'18px',marginBottom:'20px',fontSize:'13px',color:'#999'}}>
                 <span>⏱ {selectedRecipe.prepTime}</span>
                 <span>🍽 {profile.householdSize || selectedRecipe.servings} servings{profile.householdSize && selectedRecipe.servings && profile.householdSize !== selectedRecipe.servings ? ` (scaled from ${selectedRecipe.servings})` : ''}</span>

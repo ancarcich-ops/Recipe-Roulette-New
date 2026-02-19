@@ -1191,12 +1191,29 @@ const MealPrepApp = () => {
                       </p>
                     </div>
                   </div>
-                  <button onClick={() => { setShowImportModal(true); setImportStep('url'); setImportUrl(''); setImportError(''); setImportedRecipe(null); setImportFolderIds([]); }} style={{padding:'10px 18px',background:'#1a1a1a',border:'1px solid #262626',borderRadius:'8px',cursor:'pointer',display:'flex',alignItems:'center',gap:'6px',fontWeight:600,fontSize:'13px',color:'#fff'}}>
-                    🔗 Import URL
-                  </button>
-                  <button onClick={() => setShowAddRecipeModal(true)} style={{padding:'10px 18px',background:'#fff',border:'none',borderRadius:'8px',cursor:'pointer',display:'flex',alignItems:'center',gap:'6px',fontWeight:600,fontSize:'13px',color:'#000'}}>
-                    <Plus size={16} /> Add Recipe
-                  </button>
+                  <div style={{display:'flex',gap:'10px'}}>
+                    <button onClick={() => { setShowImportModal(true); setImportStep('url'); setImportUrl(''); setImportError(''); setImportedRecipe(null); setImportFolderIds([]); }} style={{padding:'10px 18px',background:'#1a1a1a',border:'1px solid #262626',borderRadius:'8px',cursor:'pointer',display:'flex',alignItems:'center',gap:'6px',fontWeight:600,fontSize:'13px',color:'#fff'}}>
+                      🔗 Import URL
+                    </button>
+                    <button onClick={() => setShowAddRecipeModal(true)} style={{padding:'10px 18px',background:'#fff',border:'none',borderRadius:'8px',cursor:'pointer',display:'flex',alignItems:'center',gap:'6px',fontWeight:600,fontSize:'13px',color:'#000'}}>
+                      <Plus size={16} /> Add Recipe
+                    </button>
+                  </div>
+                </div>
+
+                {/* Search bar */}
+                <div style={{position:'relative',marginBottom:'18px'}}>
+                  <span style={{position:'absolute',left:'14px',top:'50%',transform:'translateY(-50%)',color:'#555',pointerEvents:'none',fontSize:'16px'}}>🔍</span>
+                  <input
+                    type="text"
+                    placeholder="Search recipes..."
+                    value={recipeSearch}
+                    onChange={e => setRecipeSearch(e.target.value)}
+                    style={{width:'100%',padding:'11px 14px 11px 42px',background:'#1a1a1a',border:'1px solid #262626',borderRadius:'10px',fontSize:'14px',color:'#fff',outline:'none',boxSizing:'border-box'}}
+                  />
+                  {recipeSearch && (
+                    <button onClick={() => setRecipeSearch('')} style={{position:'absolute',right:'12px',top:'50%',transform:'translateY(-50%)',background:'none',border:'none',cursor:'pointer',color:'#555',fontSize:'18px',lineHeight:1}}>×</button>
+                  )}
                 </div>
 
                 {/* Filter bar for all recipes view */}
@@ -1876,14 +1893,9 @@ const MealPrepApp = () => {
                     setImportError('');
                     try {
                       const { data, error } = await supabase.functions.invoke('fetch-recipe', { body: { url: importUrl.trim() } });
-                      if (error) {
+                      if (error || !data?.name) {
                         setImportStep('url');
-                        setImportError(data?.error || "Couldn't parse a recipe from that URL. Try a different link.");
-                        return;
-                      }
-                      if (!data?.name) {
-                        setImportStep('url');
-                        setImportError(data?.error || "Couldn't find recipe data on that page. Try a different link.");
+                        setImportError(error?.message || "Couldn't parse a recipe from that URL. Try a different link.");
                         return;
                       }
                       setImportedRecipe({

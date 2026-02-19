@@ -215,6 +215,85 @@ const AuthScreen = ({ onGuest }) => {
 };
 
 
+const SharedRecipeView = ({ shareId }) => {
+  const [recipe, setRecipe] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    const load = async () => {
+      const { data, error } = await supabase.from('shared_recipes').select('recipe').eq('id', shareId).single();
+      if (error || !data) { setError('Recipe not found.'); }
+      else { setRecipe(data.recipe); }
+      setLoading(false);
+    };
+    load();
+  }, [shareId]);
+
+  if (loading) return (
+    <div style={{minHeight:'100vh',background:'#000',display:'flex',alignItems:'center',justifyContent:'center'}}>
+      <p style={{color:'#666',fontSize:'16px'}}>Loading recipe...</p>
+    </div>
+  );
+  if (error || !recipe) return (
+    <div style={{minHeight:'100vh',background:'#000',display:'flex',alignItems:'center',justifyContent:'center',flexDirection:'column',gap:'12px'}}>
+      <p style={{fontSize:'40px'}}>🍽</p>
+      <p style={{color:'#fff',fontSize:'18px',fontWeight:700}}>Recipe not found</p>
+      <a href="/" style={{color:'#7dd3fc',fontSize:'14px'}}>Go to Recipe Roulette →</a>
+    </div>
+  );
+
+  return (
+    <div style={{minHeight:'100vh',background:'#000',color:'#fff',fontFamily:'system-ui,sans-serif'}}>
+      {/* Header */}
+      <div style={{background:'#1a1a1a',borderBottom:'1px solid #262626',padding:'14px 20px',display:'flex',alignItems:'center',gap:'12px'}}>
+        <span style={{fontSize:'22px'}}>🍽</span>
+        <span style={{fontWeight:700,fontSize:'16px'}}>Recipe Roulette</span>
+        <a href="/" style={{marginLeft:'auto',padding:'8px 16px',background:'#fff',color:'#000',borderRadius:'8px',textDecoration:'none',fontWeight:600,fontSize:'13px'}}>Try the App →</a>
+      </div>
+
+      {/* Recipe */}
+      <div style={{maxWidth:'720px',margin:'0 auto',padding:'24px 20px'}}>
+        {recipe.image && (
+          <div style={{height:'280px',backgroundImage:`url(${recipe.image})`,backgroundSize:'cover',backgroundPosition:'center',borderRadius:'16px',marginBottom:'24px'}} />
+        )}
+        <h1 style={{fontSize:'28px',fontWeight:800,color:'#fff',margin:'0 0 12px 0'}}>{recipe.name}</h1>
+        <div style={{display:'flex',gap:'16px',fontSize:'13px',color:'#999',marginBottom:'20px',flexWrap:'wrap'}}>
+          {recipe.prepTime && <span>⏱ {recipe.prepTime}</span>}
+          {recipe.cookTime && <span>🔥 {recipe.cookTime} min</span>}
+          {recipe.servings && <span>🍽 {recipe.servings} servings</span>}
+          {recipe.author && <span>👤 {recipe.author}</span>}
+        </div>
+        {recipe.tags?.length > 0 && (
+          <div style={{display:'flex',gap:'6px',flexWrap:'wrap',marginBottom:'24px'}}>
+            {recipe.tags.map(t => <span key={t} style={{padding:'4px 10px',background:'#1a1a1a',border:'1px solid #262626',borderRadius:'20px',fontSize:'12px',color:'#999'}}>{t}</span>)}
+          </div>
+        )}
+        {recipe.ingredients?.length > 0 && (
+          <div style={{marginBottom:'24px'}}>
+            <h2 style={{fontSize:'18px',fontWeight:700,color:'#fff',margin:'0 0 12px 0'}}>Ingredients</h2>
+            <ul style={{paddingLeft:'18px',margin:0}}>
+              {recipe.ingredients.map((ing, i) => <li key={i} style={{marginBottom:'6px',color:'#999',lineHeight:1.5}}>{ing}</li>)}
+            </ul>
+          </div>
+        )}
+        {recipe.instructions?.length > 0 && (
+          <div style={{marginBottom:'32px'}}>
+            <h2 style={{fontSize:'18px',fontWeight:700,color:'#fff',margin:'0 0 12px 0'}}>Instructions</h2>
+            <ol style={{paddingLeft:'18px',margin:0}}>
+              {recipe.instructions.map((step, i) => <li key={i} style={{marginBottom:'10px',color:'#999',lineHeight:1.6}}>{step}</li>)}
+            </ol>
+          </div>
+        )}
+        <div style={{background:'#1a1a1a',borderRadius:'12px',padding:'20px',textAlign:'center',border:'1px solid #262626'}}>
+          <p style={{margin:'0 0 12px 0',fontSize:'15px',fontWeight:600,color:'#fff'}}>Want to save this recipe?</p>
+          <a href="/" style={{padding:'10px 24px',background:'#fff',color:'#000',borderRadius:'8px',textDecoration:'none',fontWeight:700,fontSize:'14px'}}>Join Recipe Roulette</a>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const MealPrepApp = () => {
   // Mobile detection
   const [isMobile, setIsMobile] = useState(false);
@@ -275,6 +354,7 @@ const MealPrepApp = () => {
   const [communitySearch, setCommunitySearch] = useState('');
   const [showAddRecipeModal, setShowAddRecipeModal] = useState(false);
   const [showEditRecipeModal, setShowEditRecipeModal] = useState(null);
+  const [shareToast, setShareToast] = useState(''); // 'copying' | 'copied' | ''
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
   const [showImportModal, setShowImportModal] = useState(false);
   const [importStep, setImportStep] = useState('url'); // 'url' | 'loading' | 'review'
@@ -574,6 +654,31 @@ const MealPrepApp = () => {
     const d = getDayDate(dayIndex);
     const now = new Date();
     return d.getDate() === now.getDate() && d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+  };
+
+  const shareRecipe = async (recipe) => {
+    setShareToast('copying');
+    try {
+      // Check if already shared
+      const { data: existing } = await supabase.from('shared_recipes').select('id').eq('recipe->>id', recipe.id).single();
+      let shareId = existing?.id;
+      if (!shareId) {
+        // Generate short random ID
+        shareId = Math.random().toString(36).slice(2, 8);
+        await supabase.from('shared_recipes').insert({
+          id: shareId,
+          recipe: recipe,
+          created_by: session?.user?.id || 'guest'
+        });
+      }
+      const url = `${window.location.origin}${window.location.pathname}?r=${shareId}`;
+      await navigator.clipboard.writeText(url);
+      setShareToast('copied');
+      setTimeout(() => setShareToast(''), 2500);
+    } catch (err) {
+      console.error('Share error:', err);
+      setShareToast('');
+    }
   };
 
   const getWeekStart = () => {
@@ -2331,6 +2436,9 @@ const MealPrepApp = () => {
                   <button onClick={() => { setShowAddToCalendar(selectedRecipe); setSelectedRecipe(null); }} style={{padding:'8px 14px',background:'#fff',border:'none',borderRadius:'8px',fontWeight:600,fontSize:'13px',cursor:'pointer',color:'#000',whiteSpace:'nowrap'}}>
                     + Calendar
                   </button>
+                  <button onClick={() => shareRecipe(selectedRecipe)} style={{padding:'8px 14px',background:'#1a1a1a',border:'1px solid #333',borderRadius:'8px',fontWeight:600,fontSize:'13px',cursor:'pointer',color:'#a78bfa',whiteSpace:'nowrap'}}>
+                    {shareToast === 'copying' ? '...' : shareToast === 'copied' ? '✓ Copied!' : '🔗 Share'}
+                  </button>
                 </div>
               </div>
               {userRecipes.find(r => r.id === selectedRecipe.id) && (
@@ -2408,4 +2516,11 @@ const MealPrepApp = () => {
   );
 };
 
-export default MealPrepApp;
+const App = () => {
+  const params = new URLSearchParams(window.location.search);
+  const shareId = params.get('r');
+  if (shareId) return <SharedRecipeView shareId={shareId} />;
+  return <MealPrepApp />;
+};
+
+export default App;

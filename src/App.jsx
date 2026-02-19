@@ -2442,17 +2442,17 @@ const MealPrepApp = () => {
                   <h2 style={{margin:'0 0 8px 0',fontSize:isMobile?'20px':'26px',fontWeight:700,color:'#fff'}}>{selectedRecipe.name}</h2>
                   <RatingDisplay recipeId={selectedRecipe.id} />
                 </div>
-                <div style={{display:'flex',gap:'8px',marginLeft:'12px',flexShrink:0}}>
-                  <button onClick={() => { setShowRatingModal(selectedRecipe); }} style={{padding:'8px 14px',background:userRatings[selectedRecipe.id]?'#1a1a1a':'#262626',border:'1px solid #333',borderRadius:'8px',fontWeight:600,fontSize:'13px',cursor:'pointer',color:userRatings[selectedRecipe.id]?'#fbbf24':'#999',whiteSpace:'nowrap'}}>
+                <div style={{display:'flex',gap:'8px',flexWrap:'wrap',justifyContent:'flex-end',marginLeft:'8px'}}>
+                  <button onClick={() => { setShowRatingModal(selectedRecipe); }} style={{padding:'7px 12px',background:userRatings[selectedRecipe.id]?'#1a1a1a':'#262626',border:'1px solid #333',borderRadius:'8px',fontWeight:600,fontSize:'12px',cursor:'pointer',color:userRatings[selectedRecipe.id]?'#fbbf24':'#999',whiteSpace:'nowrap'}}>
                     {userRatings[selectedRecipe.id] ? `★ ${userRatings[selectedRecipe.id].rating}` : '☆ Rate'}
                   </button>
-                  <button onClick={() => { setShowSaveToFolderModal(selectedRecipe); setSelectedRecipe(null); }} style={{padding:'8px 14px',background:'#1a1a1a',border:'1px solid #333',borderRadius:'8px',fontWeight:600,fontSize:'13px',cursor:'pointer',color:'#fff',whiteSpace:'nowrap'}}>
+                  <button onClick={() => { setShowSaveToFolderModal(selectedRecipe); setSelectedRecipe(null); }} style={{padding:'7px 12px',background:'#1a1a1a',border:'1px solid #333',borderRadius:'8px',fontWeight:600,fontSize:'12px',cursor:'pointer',color:'#fff',whiteSpace:'nowrap'}}>
                     🗂 Folder
                   </button>
-                  <button onClick={() => { setShowAddToCalendar(selectedRecipe); setSelectedRecipe(null); }} style={{padding:'8px 14px',background:'#fff',border:'none',borderRadius:'8px',fontWeight:600,fontSize:'13px',cursor:'pointer',color:'#000',whiteSpace:'nowrap'}}>
+                  <button onClick={() => { setShowAddToCalendar(selectedRecipe); setSelectedRecipe(null); }} style={{padding:'7px 12px',background:'#fff',border:'none',borderRadius:'8px',fontWeight:600,fontSize:'12px',cursor:'pointer',color:'#000',whiteSpace:'nowrap'}}>
                     + Calendar
                   </button>
-                  <button onClick={() => shareRecipe(selectedRecipe)} style={{padding:'8px 14px',background:'#1a1a1a',border:'1px solid #333',borderRadius:'8px',fontWeight:600,fontSize:'13px',cursor:'pointer',color:'#a78bfa',whiteSpace:'nowrap'}}>
+                  <button onClick={() => shareRecipe(selectedRecipe)} style={{padding:'7px 12px',background:'#1a1a1a',border:'1px solid #333',borderRadius:'8px',fontWeight:600,fontSize:'12px',cursor:'pointer',color:'#a78bfa',whiteSpace:'nowrap'}}>
                     {shareToast === 'copying' ? '...' : shareToast === 'copied' ? '✓ Copied!' : '🔗 Share'}
                   </button>
                 </div>

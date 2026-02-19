@@ -1033,7 +1033,8 @@ const MealPrepApp = () => {
           <div>
             <div style={{marginBottom:'24px'}}>
               <h2 style={{fontSize:isMobile?'24px':'30px',fontWeight:700,color:'#fff',margin:'0 0 2px 0'}}>Weekly Meal Plan</h2>
-              <p style={{color:'#666',margin:'0 0 14px 0',fontSize:'13px'}}>Drag meals to rearrange • Click to view details • Auto-Fill to populate the week instantly</p>
+              <p style={{color:'#666',margin:'0 0 14px 0',fontSize:'13px'}}>Drag meals to rearrange • Click to view details</p>
+              <p style={{color:'#666',margin:'0 0 14px 0',fontSize:'13px'}}>✨ Auto-Fill to populate the week instantly</p>
               <div style={{display:'flex',gap:'10px',flexWrap: isMobile ? 'wrap' : 'nowrap'}}>
                 <button onClick={() => setShowAutoFillModal(true)} style={{flex: isMobile ? '1 1 auto' : 'none', padding:'10px 18px',background:'#ffffff',border:'none',borderRadius:'8px',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:'6px',fontWeight:600,fontSize:'13px',color:'#000'}}>
                   <Wand2 size={16} /> Auto-Fill

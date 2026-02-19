@@ -1876,9 +1876,14 @@ const MealPrepApp = () => {
                     setImportError('');
                     try {
                       const { data, error } = await supabase.functions.invoke('fetch-recipe', { body: { url: importUrl.trim() } });
-                      if (error || !data?.name) {
+                      if (error) {
                         setImportStep('url');
-                        setImportError(error?.message || "Couldn't parse a recipe from that URL. Try a different link.");
+                        setImportError(data?.error || "Couldn't parse a recipe from that URL. Try a different link.");
+                        return;
+                      }
+                      if (!data?.name) {
+                        setImportStep('url');
+                        setImportError(data?.error || "Couldn't find recipe data on that page. Try a different link.");
                         return;
                       }
                       setImportedRecipe({

@@ -294,7 +294,7 @@ const SharedRecipeView = ({ shareId }) => {
     </div>
   );
 };
-const MealPrepApp = () => {
+const MealPrepApp = ({ pendingJoinCode }) => {
   // Mobile detection
   const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {
@@ -351,6 +351,11 @@ const MealPrepApp = () => {
   const [showShoppingList, setShowShoppingList] = useState(false);
   const [showMealPlanShare, setShowMealPlanShare] = useState(false);
   const [generatingCard, setGeneratingCard] = useState(false);
+  const [household, setHousehold] = useState(null); // {id, owner_id, invite_code}
+  const [householdMembers, setHouseholdMembers] = useState([]); // [{user_id, email}]
+  const [showHouseholdModal, setShowHouseholdModal] = useState(false);
+  const [householdToast, setHouseholdToast] = useState('');
+  const [joiningHousehold, setJoiningHousehold] = useState(false);
   const [checkedItems, setCheckedItems] = useState(new Set());
   const [recipeSearch, setRecipeSearch] = useState('');
   const [communitySearch, setCommunitySearch] = useState('');
@@ -474,12 +479,50 @@ const MealPrepApp = () => {
   }, [guestMode]);
 
   useEffect(() => {
-    if (session?.user) loadUserData(session.user.id);
+    if (session?.user) {
+      loadUserData(session.user.id);
+      if (pendingJoinCode) {
+        setShowHouseholdModal(true);
+      }
+    }
   }, [session]);
 
+  const loadHousehold = async (userId) => {
+    // Check if user is a member of any household
+    const { data: membership } = await supabase.from('household_members').select('household_id').eq('user_id', userId).single();
+    if (!membership) return null;
+    const { data: hh } = await supabase.from('households').select('*').eq('id', membership.household_id).single();
+    if (!hh) return null;
+    setHousehold(hh);
+    // Load all members
+    const { data: members } = await supabase.from('household_members').select('user_id').eq('household_id', hh.id);
+    setHouseholdMembers(members || []);
+    return hh;
+  };
+
   const loadUserData = async (userId) => {
-    const { data: meals } = await supabase.from('meal_plans').select('*').eq('user_id', userId);
-    const { data: recipes } = await supabase.from('user_recipes').select('*').eq('user_id', userId);
+    const hh = await loadHousehold(userId);
+    const hhId = hh?.id;
+    // Load meals - if in household, load all household members' meals
+    let mealsQuery = supabase.from('meal_plans').select('*');
+    if (hhId) {
+      const { data: members } = await supabase.from('household_members').select('user_id').eq('household_id', hhId);
+      const memberIds = members ? members.map(m => m.user_id) : [userId];
+      mealsQuery = mealsQuery.in('user_id', memberIds);
+    } else {
+      mealsQuery = mealsQuery.eq('user_id', userId);
+    }
+    const { data: meals } = await mealsQuery;
+    // Load recipes - if in household, load all members' recipes
+    let recipesQuery = supabase.from('user_recipes').select('*');
+    if (hhId) {
+      const { data: members } = await supabase.from('household_members').select('user_id').eq('household_id', hhId);
+      const memberIds = members ? members.map(m => m.user_id) : [userId];
+      recipesQuery = recipesQuery.in('user_id', memberIds);
+    } else {
+      recipesQuery = recipesQuery.eq('user_id', userId);
+    }
+    const { data: recipes } = await recipesQuery;
     let loadedRecipes = recipes ? recipes.map(r => r.recipe) : [];
 
     if (meals && meals.length > 0) {
@@ -638,6 +681,59 @@ const MealPrepApp = () => {
     setProfileSaving(false);
     setProfileSaved(true);
     setTimeout(() => { setProfileSaved(false); setShowProfilePanel(false); }, 1500);
+  };
+
+  const createHousehold = async () => {
+    if (!session?.user) return;
+    const userId = session.user.id;
+    const hhId = Math.random().toString(36).slice(2, 10);
+    const inviteCode = Math.random().toString(36).slice(2, 8).toUpperCase();
+    await supabase.from('households').insert({ id: hhId, owner_id: userId, invite_code: inviteCode });
+    await supabase.from('household_members').insert({ household_id: hhId, user_id: userId });
+    const newHH = { id: hhId, owner_id: userId, invite_code: inviteCode };
+    setHousehold(newHH);
+    setHouseholdMembers([{ user_id: userId }]);
+    return newHH;
+  };
+
+  const joinHousehold = async (inviteCode) => {
+    if (!session?.user) return null;
+    const userId = session.user.id;
+    // Find household by invite code
+    const { data: hh } = await supabase.from('households').select('*').eq('invite_code', inviteCode.toUpperCase().trim()).single();
+    if (!hh) return 'not_found';
+    // Check member count
+    const { data: members } = await supabase.from('household_members').select('user_id').eq('household_id', hh.id);
+    if (members && members.length >= 4) return 'full';
+    if (members && members.find(m => m.user_id === userId)) return 'already_member';
+    // Join
+    await supabase.from('household_members').insert({ household_id: hh.id, user_id: userId });
+    setHousehold(hh);
+    setHouseholdMembers([...(members || []), { user_id: userId }]);
+    // Reload shared data
+    await loadUserData(userId);
+    return 'success';
+  };
+
+  const leaveHousehold = async () => {
+    if (!session?.user || !household) return;
+    const userId = session.user.id;
+    await supabase.from('household_members').delete().eq('household_id', household.id).eq('user_id', userId);
+    // If owner and no members left, delete household
+    if (household.owner_id === userId && householdMembers.length <= 1) {
+      await supabase.from('households').delete().eq('id', household.id);
+    }
+    setHousehold(null);
+    setHouseholdMembers([]);
+    await loadUserData(userId);
+  };
+
+  const copyInviteLink = async () => {
+    if (!household) return;
+    const url = `${window.location.origin}${window.location.pathname}?join=${household.invite_code}`;
+    await navigator.clipboard.writeText(url);
+    setHouseholdToast('copied');
+    setTimeout(() => setHouseholdToast(''), 2500);
   };
 
   const getDayDate = (dayIndex) => {
@@ -1607,6 +1703,45 @@ const MealPrepApp = () => {
                 }} style={{flex:isMobile?'1 1 auto':undefined,padding:'10px 18px',background:'#262626',border:'1px solid #333',borderRadius:'8px',fontWeight:600,cursor:'pointer',color:'#fff'}}>Weekdays Only</button>
               </div>
             </div>
+
+            {/* Household Sync */}
+            <div style={{background:'#1a1a1a',borderRadius:'8px',padding:isMobile?'16px':'28px',border:'1px solid #262626',marginTop:'20px'}}>
+              <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:'16px'}}>
+                <div>
+                  <h3 style={{margin:'0 0 4px 0',fontSize:'18px',fontWeight:700,color:'#fff'}}>👨‍👩‍👧 Household Sync</h3>
+                  <p style={{margin:0,fontSize:'13px',color:'#666'}}>Share your meal plan and recipes with up to 4 people</p>
+                </div>
+              </div>
+              {household ? (
+                <div>
+                  <div style={{background:'#262626',borderRadius:'8px',padding:'14px',marginBottom:'14px'}}>
+                    <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:'8px'}}>
+                      <span style={{fontSize:'13px',fontWeight:600,color:'#fff'}}>Your household</span>
+                      <span style={{fontSize:'12px',color:'#51cf66',fontWeight:600}}>{householdMembers.length}/4 members</span>
+                    </div>
+                    <div style={{fontSize:'12px',color:'#666',marginBottom:'12px'}}>Invite code: <span style={{color:'#fff',fontWeight:700,letterSpacing:'2px'}}>{household.invite_code}</span></div>
+                    <button onClick={copyInviteLink} style={{width:'100%',padding:'10px',background:'#1a1a1a',border:'1px solid #333',borderRadius:'8px',cursor:'pointer',fontWeight:600,fontSize:'13px',color:'#a78bfa'}}>
+                      {householdToast === 'copied' ? '✓ Link Copied!' : '🔗 Copy Invite Link'}
+                    </button>
+                  </div>
+                  <button onClick={async () => { if (window.confirm('Leave this household?')) await leaveHousehold(); }}
+                    style={{width:'100%',padding:'10px',background:'transparent',border:'1px solid #333',borderRadius:'8px',cursor:'pointer',fontWeight:600,fontSize:'13px',color:'#ff6b6b'}}>
+                    Leave Household
+                  </button>
+                </div>
+              ) : (
+                <div style={{display:'flex',gap:'10px',flexWrap:'wrap'}}>
+                  <button onClick={async () => { await createHousehold(); setShowHouseholdModal(true); }}
+                    style={{flex:'1 1 auto',padding:'11px',background:'#fff',border:'none',borderRadius:'8px',cursor:'pointer',fontWeight:700,fontSize:'13px',color:'#000'}}>
+                    + Create Household
+                  </button>
+                  <button onClick={() => setShowHouseholdModal(true)}
+                    style={{flex:'1 1 auto',padding:'11px',background:'#1a1a1a',border:'1px solid #333',borderRadius:'8px',cursor:'pointer',fontWeight:600,fontSize:'13px',color:'#fff'}}>
+                    Join with Code
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         )}
       </div>
@@ -1616,6 +1751,69 @@ const MealPrepApp = () => {
         <div style={{position:'fixed',bottom:'24px',left:'50%',transform:'translateX(-50%)',background:'#1a1a1a',border:'1px solid #51cf66',borderRadius:'10px',padding:'12px 20px',zIndex:9999,display:'flex',alignItems:'center',gap:'8px',boxShadow:'0 4px 24px rgba(0,0,0,0.5)',whiteSpace:'nowrap'}}>
           <span style={{fontSize:'16px'}}>✅</span>
           <span style={{color:'#fff',fontWeight:600,fontSize:'14px'}}>Link copied to clipboard!</span>
+        </div>
+      )}
+
+      {/* HOUSEHOLD MODAL */}
+      {showHouseholdModal && (
+        <div onClick={() => setShowHouseholdModal(false)} style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.85)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:1000,padding:'20px'}}>
+          <div onClick={e => e.stopPropagation()} style={{background:'#1a1a1a',borderRadius:'16px',padding:'28px',maxWidth:'400px',width:'100%',border:'1px solid #262626'}}>
+            {household ? (
+              <>
+                <div style={{textAlign:'center',marginBottom:'20px'}}>
+                  <div style={{fontSize:'40px',marginBottom:'8px'}}>👨‍👩‍👧</div>
+                  <h2 style={{margin:'0 0 6px 0',fontSize:'20px',fontWeight:700,color:'#fff'}}>Household Created!</h2>
+                  <p style={{margin:0,fontSize:'14px',color:'#666'}}>Share the invite link with up to 3 more people</p>
+                </div>
+                <div style={{background:'#262626',borderRadius:'10px',padding:'16px',marginBottom:'16px',textAlign:'center'}}>
+                  <div style={{fontSize:'12px',color:'#666',marginBottom:'6px'}}>Invite Code</div>
+                  <div style={{fontSize:'28px',fontWeight:800,color:'#fff',letterSpacing:'6px'}}>{household.invite_code}</div>
+                </div>
+                <button onClick={async () => { await copyInviteLink(); }}
+                  style={{width:'100%',padding:'12px',background:'#fff',border:'none',borderRadius:'8px',cursor:'pointer',fontWeight:700,fontSize:'14px',color:'#000',marginBottom:'10px'}}>
+                  {householdToast === 'copied' ? '✓ Link Copied!' : '🔗 Copy Invite Link'}
+                </button>
+                <button onClick={() => setShowHouseholdModal(false)}
+                  style={{width:'100%',padding:'12px',background:'transparent',border:'1px solid #333',borderRadius:'8px',cursor:'pointer',fontWeight:600,fontSize:'14px',color:'#999'}}>
+                  Done
+                </button>
+              </>
+            ) : (
+              <>
+                <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'20px'}}>
+                  <h2 style={{margin:0,fontSize:'20px',fontWeight:700,color:'#fff'}}>Join a Household</h2>
+                  <button onClick={() => setShowHouseholdModal(false)} style={{background:'none',border:'none',cursor:'pointer'}}><X size={22} color="#999" /></button>
+                </div>
+                <p style={{margin:'0 0 16px 0',fontSize:'14px',color:'#666'}}>Enter the 6-character invite code from your household member.</p>
+                <input
+                  id="join-code-input"
+                  defaultValue={pendingJoinCode || ''}
+                  placeholder="e.g. ABC123"
+                  maxLength={6}
+                  style={{width:'100%',padding:'14px',background:'#0a0a0a',border:'1px solid #333',borderRadius:'8px',fontSize:'20px',fontWeight:700,color:'#fff',textAlign:'center',letterSpacing:'4px',textTransform:'uppercase',boxSizing:'border-box',marginBottom:'8px',outline:'none'}}
+                />
+                {joiningHousehold === 'not_found' && <p style={{color:'#ff6b6b',fontSize:'13px',margin:'0 0 8px 0'}}>Code not found. Check the code and try again.</p>}
+                {joiningHousehold === 'full' && <p style={{color:'#ff6b6b',fontSize:'13px',margin:'0 0 8px 0'}}>This household is full (max 4 members).</p>}
+                {joiningHousehold === 'already_member' && <p style={{color:'#fbbf24',fontSize:'13px',margin:'0 0 8px 0'}}>You're already in this household!</p>}
+                {joiningHousehold === 'success' && <p style={{color:'#51cf66',fontSize:'13px',margin:'0 0 8px 0'}}>✓ Joined! Your meal plan and recipes are now shared.</p>}
+                <div style={{display:'flex',gap:'10px',marginTop:'8px'}}>
+                  <button onClick={() => setShowHouseholdModal(false)} style={{flex:1,padding:'12px',background:'#262626',border:'none',borderRadius:'8px',cursor:'pointer',fontWeight:600,color:'#fff',fontSize:'14px'}}>Cancel</button>
+                  <button onClick={async () => {
+                    const code = document.getElementById('join-code-input').value;
+                    if (!code.trim()) return;
+                    setJoiningHousehold('loading');
+                    const result = await joinHousehold(code);
+                    setJoiningHousehold(result);
+                    if (result === 'success') {
+                      setTimeout(() => { setShowHouseholdModal(false); setJoiningHousehold(false); window.history.replaceState({}, '', window.location.pathname); }, 2000);
+                    }
+                  }} style={{flex:2,padding:'12px',background:'#fff',border:'none',borderRadius:'8px',cursor:'pointer',fontWeight:700,color:'#000',fontSize:'14px'}}>
+                    {joiningHousehold === 'loading' ? 'Joining...' : 'Join Household →'}
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
         </div>
       )}
 
@@ -2727,8 +2925,9 @@ const MealPrepApp = () => {
 const App = () => {
   const params = new URLSearchParams(window.location.search);
   const shareId = params.get('r');
+  const joinCode = params.get('join');
   if (shareId) return <SharedRecipeView shareId={shareId} />;
-  return <MealPrepApp />;
+  return <MealPrepApp pendingJoinCode={joinCode} />;
 };
 
 export default App;

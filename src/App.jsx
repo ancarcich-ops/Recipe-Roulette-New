@@ -355,6 +355,9 @@ const MealPrepApp = () => {
   const [showAddRecipeModal, setShowAddRecipeModal] = useState(false);
   const [showEditRecipeModal, setShowEditRecipeModal] = useState(null);
   const [shareToast, setShareToast] = useState(''); // 'copying' | 'copied' | ''
+  const [selectionMode, setSelectionMode] = useState(false);
+  const [selectedRecipeIds, setSelectedRecipeIds] = useState(new Set());
+  const [showBulkDeleteConfirm, setShowBulkDeleteConfirm] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
   const [showImportModal, setShowImportModal] = useState(false);
   const [importStep, setImportStep] = useState('url'); // 'url' | 'loading' | 'review'
@@ -1412,33 +1415,54 @@ const MealPrepApp = () => {
                     </div>
                   ) : (
                     <div style={{display:'grid',gridTemplateColumns:isMobile?'1fr':'repeat(auto-fill, minmax(260px, 1fr))',gap:'18px'}}>
-                      {recipesToShow.map(recipe => (
-                        <div key={recipe.id} style={{background:'#1a1a1a',borderRadius:'12px',overflow:'hidden',border:'1px solid #262626'}}>
-                          <div onClick={() => setSelectedRecipe(recipe)} style={{cursor:'pointer'}}>
-                            <div style={{height:'170px',backgroundImage:`url(${recipe.image})`,backgroundSize:'cover',backgroundPosition:'center',position:'relative'}}>
-                              {recipe.timesMade === 0 && <div style={{position:'absolute',top:'10px',right:'10px',background:'#ff6b6b',color:'white',padding:'3px 8px',borderRadius:'6px',fontSize:'11px',fontWeight:600}}>Not Tried</div>}
-                              {recipe.cookTime < 20 && <div style={{position:'absolute',top:'10px',left:'10px',background:'#51cf66',color:'white',padding:'3px 8px',borderRadius:'6px',fontSize:'11px',fontWeight:600,display:'flex',alignItems:'center',gap:'3px'}}><Clock size={11} /> Quick</div>}
+                      {recipesToShow.map(recipe => {
+                        const isSelected = selectedRecipeIds.has(recipe.id);
+                        const isUserRecipe = userRecipes.find(r => r.id === recipe.id);
+                        let pressTimer = null;
+                        return (
+                          <div key={recipe.id}
+                            style={{background:'#1a1a1a',borderRadius:'12px',overflow:'hidden',border:`2px solid ${isSelected ? '#ff6b6b' : selectionMode ? '#333' : '#262626'}`,position:'relative',transition:'border-color 0.15s',transform:isSelected?'scale(0.97)':'scale(1)'}}
+                            onMouseDown={() => { if (!selectionMode && isUserRecipe) { pressTimer = setTimeout(() => { setSelectionMode(true); setSelectedRecipeIds(new Set([recipe.id])); }, 500); } }}
+                            onMouseUp={() => clearTimeout(pressTimer)}
+                            onMouseLeave={() => clearTimeout(pressTimer)}
+                            onTouchStart={() => { if (!selectionMode && isUserRecipe) { pressTimer = setTimeout(() => { setSelectionMode(true); setSelectedRecipeIds(new Set([recipe.id])); }, 500); } }}
+                            onTouchEnd={() => clearTimeout(pressTimer)}
+                          >
+                            {/* Checkbox overlay in selection mode */}
+                            {selectionMode && isUserRecipe && (
+                              <div onClick={() => setSelectedRecipeIds(prev => { const n = new Set(prev); n.has(recipe.id) ? n.delete(recipe.id) : n.add(recipe.id); return n; })}
+                                style={{position:'absolute',top:'10px',left:'10px',zIndex:10,width:'26px',height:'26px',borderRadius:'50%',background:isSelected?'#ff6b6b':'rgba(0,0,0,0.6)',border:`2px solid ${isSelected?'#ff6b6b':'#fff'}`,display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',backdropFilter:'blur(4px)'}}>
+                                {isSelected && <span style={{color:'white',fontSize:'14px',fontWeight:700}}>✓</span>}
+                              </div>
+                            )}
+                            <div onClick={() => { if (selectionMode && isUserRecipe) { setSelectedRecipeIds(prev => { const n = new Set(prev); n.has(recipe.id) ? n.delete(recipe.id) : n.add(recipe.id); return n; }); } else if (!selectionMode) { setSelectedRecipe(recipe); } }} style={{cursor:'pointer'}}>
+                              <div style={{height:'170px',backgroundImage:`url(${recipe.image})`,backgroundSize:'cover',backgroundPosition:'center',position:'relative'}}>
+                                {recipe.timesMade === 0 && !selectionMode && <div style={{position:'absolute',top:'10px',right:'10px',background:'#ff6b6b',color:'white',padding:'3px 8px',borderRadius:'6px',fontSize:'11px',fontWeight:600}}>Not Tried</div>}
+                                {recipe.cookTime < 20 && <div style={{position:'absolute',top:'10px',left:'10px',background:'#51cf66',color:'white',padding:'3px 8px',borderRadius:'6px',fontSize:'11px',fontWeight:600,display:'flex',alignItems:'center',gap:'3px'}}><Clock size={11} /> Quick</div>}
+                              </div>
+                              <div style={{padding:'14px 14px 8px',opacity:selectionMode&&!isUserRecipe?0.4:1}}>
+                                <h3 style={{margin:'0 0 6px 0',fontSize:'15px',fontWeight:700,color:'#fff'}}>{recipe.name}</h3>
+                                <RatingDisplay recipeId={recipe.id} compact />
+                                <p style={{margin:'6px 0 3px 0',fontSize:'12px',color:'#999'}}>{recipe.prepTime} • {recipe.servings} servings</p>
+                                <p style={{margin:0,fontSize:'12px',color:'#666'}}>Made {recipe.timesMade} times</p>
+                              </div>
                             </div>
-                            <div style={{padding:'14px 14px 8px'}}>
-                              <h3 style={{margin:'0 0 6px 0',fontSize:'15px',fontWeight:700,color:'#fff'}}>{recipe.name}</h3>
-                              <RatingDisplay recipeId={recipe.id} compact />
-                              <p style={{margin:'6px 0 3px 0',fontSize:'12px',color:'#999'}}>{recipe.prepTime} • {recipe.servings} servings</p>
-                              <p style={{margin:0,fontSize:'12px',color:'#666'}}>Made {recipe.timesMade} times</p>
-                            </div>
+                            {!selectionMode && (
+                              <div style={{padding:'8px 14px 14px',display:'flex',gap:'6px',flexWrap:'wrap'}}>
+                                <button onClick={e => { e.stopPropagation(); setShowRatingModal(recipe); }} style={{flex:isMobile?'1 1 100%':'1 1 auto',padding:'7px',background:userRatings[recipe.id]?'#1a1a1a':'#262626',color:userRatings[recipe.id]?'#fbbf24':'#999',border:'1px solid #333',borderRadius:'6px',fontSize:'11px',fontWeight:600,cursor:'pointer'}}>
+                                  {userRatings[recipe.id] ? `★ ${userRatings[recipe.id].rating}` : '☆ Rate'}
+                                </button>
+                                <button onClick={e => { e.stopPropagation(); setShowSaveToFolderModal(recipe); }} style={{flex:isMobile?'1 1 48%':'1 1 auto',padding:'7px',background:'#1a1a1a',color:'#fff',border:'1px solid #333',borderRadius:'6px',fontSize:'11px',fontWeight:600,cursor:'pointer'}}>
+                                  🗂 Folder
+                                </button>
+                                <button onClick={e => { e.stopPropagation(); setShowAddToCalendar(recipe); }} style={{flex:isMobile?'1 1 48%':'1 1 auto',padding:'7px',background:'#fff',color:'#000',border:'none',borderRadius:'6px',fontSize:'11px',fontWeight:600,cursor:'pointer'}}>
+                                  📅 Cal
+                                </button>
+                              </div>
+                            )}
                           </div>
-                          <div style={{padding:'8px 14px 14px',display:'flex',gap:'6px',flexWrap:'wrap'}}>
-                            <button onClick={e => { e.stopPropagation(); setShowRatingModal(recipe); }} style={{flex:isMobile?'1 1 100%':'1 1 auto',padding:'7px',background:userRatings[recipe.id]?'#1a1a1a':'#262626',color:userRatings[recipe.id]?'#fbbf24':'#999',border:'1px solid #333',borderRadius:'6px',fontSize:'11px',fontWeight:600,cursor:'pointer'}}>
-                              {userRatings[recipe.id] ? `★ ${userRatings[recipe.id].rating}` : '☆ Rate'}
-                            </button>
-                            <button onClick={e => { e.stopPropagation(); setShowSaveToFolderModal(recipe); }} style={{flex:isMobile?'1 1 48%':'1 1 auto',padding:'7px',background:'#1a1a1a',color:'#fff',border:'1px solid #333',borderRadius:'6px',fontSize:'11px',fontWeight:600,cursor:'pointer'}}>
-                              🗂 Folder
-                            </button>
-                            <button onClick={e => { e.stopPropagation(); setShowAddToCalendar(recipe); }} style={{flex:isMobile?'1 1 48%':'1 1 auto',padding:'7px',background:'#fff',color:'#000',border:'none',borderRadius:'6px',fontSize:'11px',fontWeight:600,cursor:'pointer'}}>
-                              📅 Cal
-                            </button>
-                          </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   );
                 })()}
@@ -2415,6 +2439,52 @@ const MealPrepApp = () => {
                 }}
                 style={{flex:1,padding:'11px',background:newFolderName.trim()?'#fff':'#333',border:'none',borderRadius:'8px',cursor:newFolderName.trim()?'pointer':'not-allowed',fontWeight:600,color:newFolderName.trim()?'#000':'#666',transition:'all 0.15s'}}>
                 Create Folder
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* BULK DELETE BAR */}
+      {selectionMode && (
+        <div style={{position:'fixed',bottom:0,left:0,right:0,background:'#1a1a1a',borderTop:'1px solid #262626',padding:'16px 20px',display:'flex',alignItems:'center',gap:'12px',zIndex:500,boxShadow:'0 -4px 24px rgba(0,0,0,0.5)'}}>
+          <span style={{color:'#fff',fontWeight:600,fontSize:'14px',flex:1}}>
+            {selectedRecipeIds.size > 0 ? `${selectedRecipeIds.size} selected` : 'Long press to select'}
+          </span>
+          {selectedRecipeIds.size > 0 && (
+            <button onClick={() => setShowBulkDeleteConfirm(true)}
+              style={{padding:'10px 20px',background:'#ff4444',border:'none',borderRadius:'8px',fontWeight:700,fontSize:'14px',color:'#fff',cursor:'pointer'}}>
+              🗑 Delete {selectedRecipeIds.size}
+            </button>
+          )}
+          <button onClick={() => { setSelectionMode(false); setSelectedRecipeIds(new Set()); }}
+            style={{padding:'10px 16px',background:'#262626',border:'none',borderRadius:'8px',fontWeight:600,fontSize:'14px',color:'#fff',cursor:'pointer'}}>
+            Cancel
+          </button>
+        </div>
+      )}
+
+      {/* BULK DELETE CONFIRM */}
+      {showBulkDeleteConfirm && (
+        <div onClick={() => setShowBulkDeleteConfirm(false)} style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.85)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:600,padding:'20px'}}>
+          <div onClick={e => e.stopPropagation()} style={{background:'#1a1a1a',borderRadius:'16px',padding:'28px',maxWidth:'380px',width:'100%',border:'1px solid #262626',textAlign:'center'}}>
+            <div style={{fontSize:'40px',marginBottom:'12px'}}>🗑</div>
+            <h2 style={{margin:'0 0 8px 0',fontSize:'20px',fontWeight:700,color:'#fff'}}>Delete {selectedRecipeIds.size} {selectedRecipeIds.size === 1 ? 'Recipe' : 'Recipes'}?</h2>
+            <p style={{margin:'0 0 24px 0',fontSize:'14px',color:'#999'}}>This will permanently remove them from your Recipe Book and all folders.</p>
+            <div style={{display:'flex',gap:'10px'}}>
+              <button onClick={() => setShowBulkDeleteConfirm(false)} style={{flex:1,padding:'12px',background:'#262626',border:'none',borderRadius:'8px',cursor:'pointer',fontWeight:600,color:'#fff',fontSize:'14px'}}>Cancel</button>
+              <button onClick={async () => {
+                const ids = [...selectedRecipeIds];
+                setUserRecipes(prev => prev.filter(r => !ids.includes(r.id)));
+                setFolders(prev => prev.map(f => ({...f, recipes: f.recipes.filter(rid => !ids.includes(rid))})));
+                for (const id of ids) {
+                  await supabase.from('user_recipes').delete().eq('user_id', session.user.id).eq('recipe->>id', id);
+                }
+                setShowBulkDeleteConfirm(false);
+                setSelectionMode(false);
+                setSelectedRecipeIds(new Set());
+              }} style={{flex:1,padding:'12px',background:'#ff4444',border:'none',borderRadius:'8px',cursor:'pointer',fontWeight:700,color:'#fff',fontSize:'14px'}}>
+                Delete All
               </button>
             </div>
           </div>

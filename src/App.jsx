@@ -215,6 +215,35 @@ const AuthScreen = ({ onGuest }) => {
 };
 
 
+const PublicUserRecipes = ({ userId, onSelect }) => {
+  const [recipes, setRecipes] = useState([]);
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    const load = async () => {
+      const { data } = await supabase.from('user_recipes').select('recipe').eq('user_id', userId);
+      setRecipes(data ? data.map(r => r.recipe) : []);
+      setLoading(false);
+    };
+    load();
+  }, [userId]);
+  if (loading) return <p style={{color:'#666',fontSize:'13px',textAlign:'center',padding:'20px 0'}}>Loading...</p>;
+  if (recipes.length === 0) return <p style={{color:'#666',fontSize:'13px',textAlign:'center',padding:'20px 0'}}>No public recipes yet</p>;
+  return (
+    <div style={{display:'flex',flexDirection:'column',gap:'8px'}}>
+      {recipes.map(r => (
+        <div key={r.id} onClick={() => onSelect(r)}
+          style={{display:'flex',alignItems:'center',gap:'12px',padding:'10px',background:'#262626',borderRadius:'8px',cursor:'pointer'}}>
+          <div style={{width:'44px',height:'44px',borderRadius:'8px',backgroundImage:`url(${r.image})`,backgroundSize:'cover',backgroundPosition:'center',flexShrink:0,background:'#333'}} />
+          <div style={{flex:1,minWidth:0}}>
+            <div style={{fontWeight:600,color:'#fff',fontSize:'13px',marginBottom:'2px'}}>{r.name}</div>
+            <div style={{fontSize:'11px',color:'#666'}}>{r.prepTime} · {r.servings} servings</div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+};
+
 const SharedRecipeView = ({ shareId }) => {
   const [recipe, setRecipe] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -351,6 +380,13 @@ const MealPrepApp = ({ pendingJoinCode }) => {
   const [showShoppingList, setShowShoppingList] = useState(false);
   const [showMealPlanShare, setShowMealPlanShare] = useState(false);
   const [generatingCard, setGeneratingCard] = useState(false);
+  const [follows, setFollows] = useState(new Set()); // set of user_ids we follow
+  const [showFindPeople, setShowFindPeople] = useState(false);
+  const [peopleSearch, setPeopleSearch] = useState('');
+  const [peopleResults, setPeopleResults] = useState([]);
+  const [searchingPeople, setSearchingPeople] = useState(false);
+  const [viewingProfile, setViewingProfile] = useState(null); // public profile to view
+  const [communityFilter, setCommunityFilter] = useState('all'); // 'all' | 'following'
   const [household, setHousehold] = useState(null); // {id, owner_id, invite_code}
   const [householdMembers, setHouseholdMembers] = useState([]); // [{user_id, email}]
   const [showHouseholdModal, setShowHouseholdModal] = useState(false);
@@ -578,6 +614,21 @@ const MealPrepApp = ({ pendingJoinCode }) => {
     }
 
     setUserRecipes(loadedRecipes);
+    // Load follows
+    const { data: followData } = await supabase.from('follows').select('following_id').eq('follower_id', userId);
+    if (followData) setFollows(new Set(followData.map(f => f.following_id)));
+    // Upsert public profile
+    if (session?.user) {
+      const { data: prof } = await supabase.from('profiles').select('display_name,avatar_url').eq('id', userId).single();
+      if (prof?.display_name) {
+        await supabase.from('user_profiles_public').upsert({
+          user_id: userId,
+          username: prof.display_name,
+          avatar_url: prof.avatar_url || '',
+          recipe_count: loadedRecipes.length
+        }, { onConflict: 'user_id' });
+      }
+    }
     const { data: saved } = await supabase.from('saved_recipes').select('recipe_id').eq('user_id', userId);
     if (saved) setSavedRecipes(new Set(saved.map(r => r.recipe_id)));
     // Load profile
@@ -734,6 +785,39 @@ const MealPrepApp = ({ pendingJoinCode }) => {
     await navigator.clipboard.writeText(url);
     setHouseholdToast('copied');
     setTimeout(() => setHouseholdToast(''), 2500);
+  };
+
+  const searchPeople = async (query) => {
+    if (!query.trim()) { setPeopleResults([]); return; }
+    setSearchingPeople(true);
+    // Search by username or phone
+    const { data } = await supabase.from('user_profiles_public')
+      .select('*')
+      .or(`username.ilike.%${query}%,phone.ilike.%${query}%`)
+      .neq('user_id', session?.user?.id)
+      .limit(20);
+    setPeopleResults(data || []);
+    setSearchingPeople(false);
+  };
+
+  const followUser = async (targetUserId) => {
+    if (!session?.user) return;
+    const userId = session.user.id;
+    await supabase.from('follows').insert({ follower_id: userId, following_id: targetUserId });
+    setFollows(prev => new Set([...prev, targetUserId]));
+    // Increment follower count
+    await supabase.rpc('increment_follower_count', { target_user_id: targetUserId }).catch(() => {});
+  };
+
+  const unfollowUser = async (targetUserId) => {
+    if (!session?.user) return;
+    await supabase.from('follows').delete().eq('follower_id', session.user.id).eq('following_id', targetUserId);
+    setFollows(prev => { const n = new Set(prev); n.delete(targetUserId); return n; });
+  };
+
+  const toggleFollow = async (targetUserId) => {
+    if (follows.has(targetUserId)) await unfollowUser(targetUserId);
+    else await followUser(targetUserId);
   };
 
   const getDayDate = (dayIndex) => {
@@ -1576,8 +1660,22 @@ const MealPrepApp = ({ pendingJoinCode }) => {
         {currentView === 'community' && (
           <div>
             <div style={{marginBottom:'20px'}}>
-              <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',flexWrap:'wrap',gap:'8px',marginBottom:'4px'}}>
+              <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',flexWrap:'wrap',gap:'8px',marginBottom:'8px'}}>
                 <h2 style={{fontSize:isMobile?'24px':'30px',fontWeight:700,color:'#fff',margin:0}}>Community Recipes</h2>
+                <button onClick={() => setShowFindPeople(true)} style={{padding:'9px 16px',background:'#1a1a1a',border:'1px solid #333',borderRadius:'8px',fontWeight:600,fontSize:'13px',cursor:'pointer',color:'#a78bfa',whiteSpace:'nowrap'}}>
+                  👥 Find People
+                </button>
+              </div>
+              {/* Following filter pills */}
+              <div style={{display:'flex',gap:'8px',marginBottom:'12px'}}>
+                {['all','following'].map(f => (
+                  <button key={f} onClick={() => setCommunityFilter(f)}
+                    style={{padding:'6px 14px',borderRadius:'20px',border:'none',cursor:'pointer',fontWeight:600,fontSize:'12px',
+                    background: communityFilter===f ? '#fff' : '#1a1a1a',
+                    color: communityFilter===f ? '#000' : '#666'}}>
+                    {f === 'all' ? 'All Recipes' : `Following (${follows.size})`}
+                  </button>
+                ))}
               </div>
               <p style={{color:'#666',margin:0}}>{filterRecipes(communityRecipes).length} recipes</p>
             </div>
@@ -1597,18 +1695,22 @@ const MealPrepApp = ({ pendingJoinCode }) => {
             </div>
             <FilterBar showAuthor />
             <div style={{display:'grid',gridTemplateColumns:isMobile?'1fr':'repeat(auto-fill, minmax(260px, 1fr))',gap:'18px'}}>
-              {(communitySearch.trim()
-                ? filterRecipes(communityRecipes).filter(r => r.name.toLowerCase().includes(communitySearch.toLowerCase()) || (r.tags||[]).some(t => t.toLowerCase().includes(communitySearch.toLowerCase())) || r.author.toLowerCase().includes(communitySearch.toLowerCase()))
-                : filterRecipes(communityRecipes)
-              ).length === 0 ? (
+              {((() => {
+                let list = filterRecipes(communityRecipes);
+                if (communityFilter === 'following') list = list.filter(r => r.user_id && follows.has(r.user_id));
+                if (communitySearch.trim()) list = list.filter(r => r.name.toLowerCase().includes(communitySearch.toLowerCase()) || (r.tags||[]).some(t => t.toLowerCase().includes(communitySearch.toLowerCase())) || r.author.toLowerCase().includes(communitySearch.toLowerCase()));
+                return list;
+              })()).length === 0 ? (
                 <div style={{gridColumn:'1/-1',textAlign:'center',padding:'60px',background:'#1a1a1a',borderRadius:'12px',border:'1px solid #262626'}}>
                   <p style={{fontSize:'32px',margin:'0 0 10px 0'}}>{communitySearch ? '🔍' : '🍽'}</p>
-                  <p style={{color:'#999'}}>{communitySearch ? `No recipes match "${communitySearch}"` : 'No recipes match your filters'}</p>
+                  <p style={{color:'#999'}}>{communitySearch ? `No recipes match "${communitySearch}"` : communityFilter === 'following' ? 'Follow some users to see their recipes here' : 'No recipes match your filters'}</p>
                 </div>
-              ) : (communitySearch.trim()
-                ? filterRecipes(communityRecipes).filter(r => r.name.toLowerCase().includes(communitySearch.toLowerCase()) || (r.tags||[]).some(t => t.toLowerCase().includes(communitySearch.toLowerCase())) || r.author.toLowerCase().includes(communitySearch.toLowerCase()))
-                : filterRecipes(communityRecipes)
-              ).map(recipe => (
+              ) : ((() => {
+                let list = filterRecipes(communityRecipes);
+                if (communityFilter === 'following') list = list.filter(r => r.user_id && follows.has(r.user_id));
+                if (communitySearch.trim()) list = list.filter(r => r.name.toLowerCase().includes(communitySearch.toLowerCase()) || (r.tags||[]).some(t => t.toLowerCase().includes(communitySearch.toLowerCase())) || r.author.toLowerCase().includes(communitySearch.toLowerCase()));
+                return list;
+              })()).map(recipe => (
                 <div key={recipe.id} style={{background:'#1a1a1a',borderRadius:'12px',overflow:'hidden',border:'1px solid #262626'}}>
                   <div onClick={() => setSelectedRecipe(recipe)} style={{cursor:'pointer'}}>
                     <div style={{height:'170px',backgroundImage:`url(${recipe.image})`,backgroundSize:'cover',backgroundPosition:'center',position:'relative'}}>
@@ -1616,8 +1718,21 @@ const MealPrepApp = ({ pendingJoinCode }) => {
                     </div>
                     <div style={{padding:'14px 14px 8px'}}>
                       <div style={{display:'flex',alignItems:'center',gap:'8px',marginBottom:'6px'}}>
-                        <div style={{width:'26px',height:'26px',borderRadius:'50%',background:'#fff',display:'flex',alignItems:'center',justifyContent:'center',color:'#000',fontSize:'10px',fontWeight:700}}>{recipe.avatar}</div>
-                        <span style={{fontSize:'12px',color:'#666'}}>{recipe.author}</span>
+                        <div onClick={async e => { e.stopPropagation(); if (recipe.user_id) { const {data} = await supabase.from('user_profiles_public').select('*').eq('user_id', recipe.user_id).single(); if (data) setViewingProfile(data); } }}
+                          style={{display:'flex',alignItems:'center',gap:'6px',cursor:recipe.user_id?'pointer':'default'}}>
+                          <div style={{width:'26px',height:'26px',borderRadius:'50%',background:'#fff',display:'flex',alignItems:'center',justifyContent:'center',color:'#000',fontSize:'10px',fontWeight:700,overflow:'hidden',flexShrink:0}}>
+                            {recipe.avatarUrl ? <img src={recipe.avatarUrl} style={{width:'100%',height:'100%',objectFit:'cover'}} /> : recipe.avatar}
+                          </div>
+                          <span style={{fontSize:'12px',color: recipe.user_id ? '#a78bfa' : '#666'}}>{recipe.author}</span>
+                        </div>
+                        {recipe.user_id && recipe.user_id !== session?.user?.id && (
+                          <button onClick={e => { e.stopPropagation(); toggleFollow(recipe.user_id); }}
+                            style={{marginLeft:'auto',padding:'3px 8px',borderRadius:'20px',border:'none',cursor:'pointer',fontWeight:600,fontSize:'10px',
+                            background: follows.has(recipe.user_id) ? '#262626' : '#a78bfa',
+                            color: follows.has(recipe.user_id) ? '#666' : '#fff'}}>
+                            {follows.has(recipe.user_id) ? 'Following' : '+ Follow'}
+                          </button>
+                        )}
                       </div>
                       <h3 style={{margin:'0 0 6px 0',fontSize:'15px',fontWeight:700,color:'#fff'}}>{recipe.name}</h3>
                       <RatingDisplay recipeId={recipe.id} compact />
@@ -1714,6 +1829,97 @@ const MealPrepApp = ({ pendingJoinCode }) => {
         <div style={{position:'fixed',bottom:'24px',left:'50%',transform:'translateX(-50%)',background:'#1a1a1a',border:'1px solid #51cf66',borderRadius:'10px',padding:'12px 20px',zIndex:9999,display:'flex',alignItems:'center',gap:'8px',boxShadow:'0 4px 24px rgba(0,0,0,0.5)',whiteSpace:'nowrap'}}>
           <span style={{fontSize:'16px'}}>✅</span>
           <span style={{color:'#fff',fontWeight:600,fontSize:'14px'}}>Link copied to clipboard!</span>
+        </div>
+      )}
+
+      {/* FIND PEOPLE MODAL */}
+      {showFindPeople && (
+        <div onClick={() => { setShowFindPeople(false); setPeopleSearch(''); setPeopleResults([]); }} style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.85)',display:'flex',alignItems:'flex-start',justifyContent:'center',zIndex:1000,padding:'20px',paddingTop:'60px',overflowY:'auto'}}>
+          <div onClick={e => e.stopPropagation()} style={{background:'#1a1a1a',borderRadius:'16px',padding:'24px',maxWidth:'480px',width:'100%',border:'1px solid #262626'}}>
+            <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:'20px'}}>
+              <h2 style={{margin:0,fontSize:'20px',fontWeight:700,color:'#fff'}}>👥 Find People</h2>
+              <button onClick={() => { setShowFindPeople(false); setPeopleSearch(''); setPeopleResults([]); }} style={{background:'none',border:'none',cursor:'pointer'}}><X size={22} color="#999" /></button>
+            </div>
+            <div style={{position:'relative',marginBottom:'16px'}}>
+              <span style={{position:'absolute',left:'14px',top:'50%',transform:'translateY(-50%)',color:'#555',fontSize:'16px'}}>🔍</span>
+              <input
+                autoFocus
+                type="text"
+                placeholder="Search by username or phone number..."
+                value={peopleSearch}
+                onChange={e => { setPeopleSearch(e.target.value); searchPeople(e.target.value); }}
+                style={{width:'100%',padding:'12px 14px 12px 42px',background:'#0a0a0a',border:'1px solid #333',borderRadius:'10px',fontSize:'14px',color:'#fff',outline:'none',boxSizing:'border-box'}}
+              />
+              {peopleSearch && <button onClick={() => { setPeopleSearch(''); setPeopleResults([]); }} style={{position:'absolute',right:'12px',top:'50%',transform:'translateY(-50%)',background:'none',border:'none',cursor:'pointer',color:'#555',fontSize:'18px'}}>×</button>}
+            </div>
+            {searchingPeople && <p style={{color:'#666',fontSize:'13px',textAlign:'center',padding:'20px 0'}}>Searching...</p>}
+            {!searchingPeople && peopleSearch && peopleResults.length === 0 && (
+              <p style={{color:'#666',fontSize:'13px',textAlign:'center',padding:'20px 0'}}>No users found for "{peopleSearch}"</p>
+            )}
+            {!searchingPeople && peopleResults.length > 0 && (
+              <div style={{display:'flex',flexDirection:'column',gap:'10px'}}>
+                {peopleResults.map(person => (
+                  <div key={person.user_id} style={{display:'flex',alignItems:'center',gap:'12px',padding:'12px',background:'#262626',borderRadius:'10px'}}>
+                    <div onClick={() => { setViewingProfile(person); setShowFindPeople(false); }}
+                      style={{width:'42px',height:'42px',borderRadius:'50%',background:'#1a1a1a',overflow:'hidden',flexShrink:0,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'18px'}}>
+                      {person.avatar_url ? <img src={person.avatar_url} style={{width:'100%',height:'100%',objectFit:'cover'}} /> : '👤'}
+                    </div>
+                    <div style={{flex:1,minWidth:0}} onClick={() => { setViewingProfile(person); setShowFindPeople(false); }} style={{cursor:'pointer'}}>
+                      <div style={{fontWeight:700,color:'#fff',fontSize:'14px'}}>{person.username}</div>
+                      <div style={{fontSize:'12px',color:'#666'}}>{person.recipe_count || 0} recipes · {person.follower_count || 0} followers</div>
+                    </div>
+                    <button onClick={() => toggleFollow(person.user_id)}
+                      style={{padding:'8px 16px',borderRadius:'8px',border:'none',cursor:'pointer',fontWeight:600,fontSize:'13px',flexShrink:0,
+                      background: follows.has(person.user_id) ? '#262626' : '#fff',
+                      color: follows.has(person.user_id) ? '#666' : '#000',
+                      border: follows.has(person.user_id) ? '1px solid #333' : 'none'}}>
+                      {follows.has(person.user_id) ? 'Following' : '+ Follow'}
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+            {!peopleSearch && (
+              <div style={{textAlign:'center',padding:'20px 0'}}>
+                <div style={{fontSize:'32px',marginBottom:'8px'}}>👥</div>
+                <p style={{color:'#666',fontSize:'13px',margin:0}}>Search for friends by their username or phone number</p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* PUBLIC PROFILE VIEWER */}
+      {viewingProfile && (
+        <div onClick={() => setViewingProfile(null)} style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.85)',display:'flex',alignItems:'flex-start',justifyContent:'center',zIndex:1001,padding:'20px',paddingTop:'40px',overflowY:'auto'}}>
+          <div onClick={e => e.stopPropagation()} style={{background:'#1a1a1a',borderRadius:'16px',maxWidth:'480px',width:'100%',border:'1px solid #262626',overflow:'hidden'}}>
+            {/* Profile header */}
+            <div style={{background:'linear-gradient(135deg, #1a1a2e, #262626)',padding:'28px 24px 20px',textAlign:'center',position:'relative'}}>
+              <button onClick={() => setViewingProfile(null)} style={{position:'absolute',top:'14px',right:'14px',background:'none',border:'none',cursor:'pointer'}}><X size={22} color="#999" /></button>
+              <div style={{width:'72px',height:'72px',borderRadius:'50%',background:'#333',margin:'0 auto 12px',overflow:'hidden',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'32px'}}>
+                {viewingProfile.avatar_url ? <img src={viewingProfile.avatar_url} style={{width:'100%',height:'100%',objectFit:'cover'}} /> : '👤'}
+              </div>
+              <h2 style={{margin:'0 0 4px',fontSize:'22px',fontWeight:800,color:'#fff'}}>{viewingProfile.username}</h2>
+              <div style={{display:'flex',justifyContent:'center',gap:'20px',margin:'12px 0 16px',fontSize:'13px',color:'#666'}}>
+                <span><strong style={{color:'#fff'}}>{viewingProfile.recipe_count || 0}</strong> recipes</span>
+                <span><strong style={{color:'#fff'}}>{viewingProfile.follower_count || 0}</strong> followers</span>
+              </div>
+              {viewingProfile.user_id !== session?.user?.id && (
+                <button onClick={() => toggleFollow(viewingProfile.user_id)}
+                  style={{padding:'10px 32px',borderRadius:'8px',border:'none',cursor:'pointer',fontWeight:700,fontSize:'14px',
+                  background: follows.has(viewingProfile.user_id) ? '#262626' : '#fff',
+                  color: follows.has(viewingProfile.user_id) ? '#999' : '#000',
+                  border: follows.has(viewingProfile.user_id) ? '1px solid #333' : 'none'}}>
+                  {follows.has(viewingProfile.user_id) ? '✓ Following' : '+ Follow'}
+                </button>
+              )}
+            </div>
+            {/* Their public recipes */}
+            <div style={{padding:'20px 24px'}}>
+              <h3 style={{margin:'0 0 14px',fontSize:'15px',fontWeight:700,color:'#fff'}}>Their Recipes</h3>
+              <PublicUserRecipes userId={viewingProfile.user_id} onSelect={r => { setSelectedRecipe(r); setViewingProfile(null); }} />
+            </div>
+          </div>
         </div>
       )}
 

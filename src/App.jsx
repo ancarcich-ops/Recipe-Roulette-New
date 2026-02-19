@@ -319,6 +319,7 @@ const MealPrepApp = () => {
   });
   const [disabledSlots, setDisabledSlots] = useState({});
   const [mealPlan, setMealPlan] = useState(emptyMealPlan);
+  const [weekStartDate, setWeekStartDate] = useState(null);
 
   const daysOfWeek = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
   const mealTypes = ['breakfast','lunch','dinner'];
@@ -393,13 +394,62 @@ const MealPrepApp = () => {
 
   const loadUserData = async (userId) => {
     const { data: meals } = await supabase.from('meal_plans').select('*').eq('user_id', userId);
+    const { data: recipes } = await supabase.from('user_recipes').select('*').eq('user_id', userId);
+    let loadedRecipes = recipes ? recipes.map(r => r.recipe) : [];
+
     if (meals && meals.length > 0) {
       const plan = JSON.parse(JSON.stringify(emptyMealPlan));
-      meals.forEach(m => { if (plan[m.day_index]) plan[m.day_index][m.meal_type] = m.recipe; });
+      const today = new Date(); today.setHours(0,0,0,0);
+      const pastMealRecipeIds = new Set();
+      const futureMeals = [];
+
+      meals.forEach(m => {
+        // Figure out the actual date of this meal slot
+        const wsd = m.week_start_date;
+        if (wsd) {
+          const slotDate = new Date(wsd);
+          slotDate.setDate(slotDate.getDate() + m.day_index);
+          slotDate.setHours(0,0,0,0);
+          if (slotDate < today) {
+            // This meal day has passed — mark recipe as made
+            if (m.recipe?.id) pastMealRecipeIds.add(m.recipe.id);
+            return; // don't add to active plan
+          }
+        }
+        futureMeals.push(m);
+        if (plan[m.day_index]) plan[m.day_index][m.meal_type] = m.recipe;
+      });
+
+      // Auto-increment timesMade for past meals
+      if (pastMealRecipeIds.size > 0) {
+        loadedRecipes = loadedRecipes.map(r => {
+          if (pastMealRecipeIds.has(r.id)) {
+            const updated = {...r, timesMade: (r.timesMade || 0) + 1};
+            // Save to Supabase in background
+            supabase.from('user_recipes').update({recipe: updated}).eq('user_id', userId).eq('recipe->>id', r.id);
+            return updated;
+          }
+          return r;
+        });
+        // Remove past meals from DB
+        const pastIds = meals.filter(m => {
+          const wsd = m.week_start_date;
+          if (!wsd) return false;
+          const slotDate = new Date(wsd);
+          slotDate.setDate(slotDate.getDate() + m.day_index);
+          slotDate.setHours(0,0,0,0);
+          return slotDate < today;
+        }).map(m => m.id);
+        if (pastIds.length > 0) {
+          await supabase.from('meal_plans').delete().in('id', pastIds);
+        }
+      }
+
       setMealPlan(plan);
+      if (meals[0]?.week_start_date) setWeekStartDate(meals[0].week_start_date);
     }
-    const { data: recipes } = await supabase.from('user_recipes').select('*').eq('user_id', userId);
-    if (recipes) setUserRecipes(recipes.map(r => r.recipe));
+
+    setUserRecipes(loadedRecipes);
     const { data: saved } = await supabase.from('saved_recipes').select('recipe_id').eq('user_id', userId);
     if (saved) setSavedRecipes(new Set(saved.map(r => r.recipe_id)));
     // Load profile
@@ -505,15 +555,47 @@ const MealPrepApp = () => {
     setTimeout(() => { setProfileSaved(false); setShowProfilePanel(false); }, 1500);
   };
 
+  const getDayDate = (dayIndex) => {
+    const now = new Date();
+    const sunday = new Date(now);
+    sunday.setDate(now.getDate() - now.getDay());
+    sunday.setHours(0,0,0,0);
+    const d = new Date(sunday);
+    d.setDate(sunday.getDate() + dayIndex);
+    return d;
+  };
+
+  const formatDayDate = (dayIndex) => {
+    const d = getDayDate(dayIndex);
+    return `${d.getMonth()+1}/${d.getDate()}`;
+  };
+
+  const isToday = (dayIndex) => {
+    const d = getDayDate(dayIndex);
+    const now = new Date();
+    return d.getDate() === now.getDate() && d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+  };
+
+  const getWeekStart = () => {
+    const now = new Date();
+    const day = now.getDay(); // 0=Sun
+    const sunday = new Date(now);
+    sunday.setDate(now.getDate() - day);
+    sunday.setHours(0,0,0,0);
+    return sunday.toISOString().split('T')[0]; // YYYY-MM-DD
+  };
+
   const saveMealPlan = async (newPlan) => {
     if (!session?.user) return;
     setSaving(true);
     const userId = session.user.id;
+    const wsd = getWeekStart();
+    setWeekStartDate(wsd);
     await supabase.from('meal_plans').delete().eq('user_id', userId);
     const rows = [];
     for (let d = 0; d < 7; d++) {
       for (const mt of mealTypes) {
-        if (newPlan[d][mt]) rows.push({user_id:userId,day_index:d,meal_type:mt,recipe:newPlan[d][mt]});
+        if (newPlan[d][mt]) rows.push({user_id:userId,day_index:d,meal_type:mt,recipe:newPlan[d][mt],week_start_date:wsd});
       }
     }
     if (rows.length > 0) await supabase.from('meal_plans').insert(rows);
@@ -1050,8 +1132,9 @@ const MealPrepApp = () => {
             <div style={{background:'#1a1a1a',borderRadius:'8px',padding:'20px',border:'1px solid #262626',overflowX: isMobile ? 'auto' : 'visible',WebkitOverflowScrolling:'touch'}}>
               <div style={{display:'grid',gridTemplateColumns: isMobile ? 'repeat(7, 140px)' : 'repeat(7, 1fr)',gap:'10px',minWidth: isMobile ? 'max-content' : 'auto'}}>
                 {daysOfWeek.map((day, dayIndex) => (
-                  <div key={day} style={{background:'#262626',borderRadius:'8px',padding:'10px'}}>
-                    <h3 style={{margin:'0 0 10px 0',fontSize:'11px',fontWeight:700,color:'#fff',textAlign:'center',textTransform:'uppercase',letterSpacing:'0.5px'}}>{day.slice(0,3)}</h3>
+                  <div key={day} style={{background: isToday(dayIndex) ? '#1e3a2f' : '#262626',borderRadius:'8px',padding:'10px',border: isToday(dayIndex) ? '1px solid #51cf66' : '1px solid transparent'}}>
+                    <h3 style={{margin:'0 0 2px 0',fontSize:'11px',fontWeight:700,color: isToday(dayIndex) ? '#51cf66' : '#fff',textAlign:'center',textTransform:'uppercase',letterSpacing:'0.5px'}}>{day.slice(0,3)}</h3>
+                    <p style={{margin:'0 0 8px 0',fontSize:'10px',color: isToday(dayIndex) ? '#51cf66' : '#666',textAlign:'center',fontWeight:500}}>{formatDayDate(dayIndex)}</p>
                     {mealTypes.map(mealType => {
                       const disabled = isSlotDisabled(dayIndex, mealType);
                       const meal = mealPlan[dayIndex][mealType];
@@ -2251,12 +2334,20 @@ const MealPrepApp = () => {
                 </div>
               </div>
               {userRecipes.find(r => r.id === selectedRecipe.id) && (
-                <div style={{display:'flex',gap:'8px',marginBottom:'16px'}}>
-                  <button onClick={() => { setShowEditRecipeModal(selectedRecipe); setSelectedRecipe(null); }} style={{flex:1,padding:'9px 14px',background:'#1a1a1a',border:'1px solid #333',borderRadius:'8px',fontWeight:600,fontSize:'13px',cursor:'pointer',color:'#7dd3fc'}}>
-                    ✏️ Edit Recipe
+                <div style={{display:'flex',gap:'8px',marginBottom:'16px',flexWrap:'wrap'}}>
+                  <button onClick={async () => {
+                    const updated = {...selectedRecipe, timesMade: (selectedRecipe.timesMade || 0) + 1};
+                    setUserRecipes(prev => prev.map(r => r.id === updated.id ? updated : r));
+                    setSelectedRecipe(updated);
+                    await supabase.from('user_recipes').update({recipe: updated}).eq('user_id', session.user.id).eq('recipe->>id', updated.id);
+                  }} style={{flex:'1 1 auto',padding:'9px 14px',background:'#1a1a1a',border:'1px solid #333',borderRadius:'8px',fontWeight:600,fontSize:'13px',cursor:'pointer',color:'#51cf66'}}>
+                    ✅ Made It! ({selectedRecipe.timesMade || 0}x)
                   </button>
-                  <button onClick={() => { setShowDeleteConfirm(selectedRecipe); setSelectedRecipe(null); }} style={{flex:1,padding:'9px 14px',background:'#1a1a1a',border:'1px solid #333',borderRadius:'8px',fontWeight:600,fontSize:'13px',cursor:'pointer',color:'#ff6b6b'}}>
-                    🗑 Delete Recipe
+                  <button onClick={() => { setShowEditRecipeModal(selectedRecipe); setSelectedRecipe(null); }} style={{flex:'1 1 auto',padding:'9px 14px',background:'#1a1a1a',border:'1px solid #333',borderRadius:'8px',fontWeight:600,fontSize:'13px',cursor:'pointer',color:'#7dd3fc'}}>
+                    ✏️ Edit
+                  </button>
+                  <button onClick={() => { setShowDeleteConfirm(selectedRecipe); setSelectedRecipe(null); }} style={{flex:'1 1 auto',padding:'9px 14px',background:'#1a1a1a',border:'1px solid #333',borderRadius:'8px',fontWeight:600,fontSize:'13px',cursor:'pointer',color:'#ff6b6b'}}>
+                    🗑 Delete
                   </button>
                 </div>
               )}

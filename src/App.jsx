@@ -2466,7 +2466,10 @@ const MealPrepApp = () => {
               {/* Card header */}
               <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:'20px'}}>
                 <div>
-                  <div style={{fontSize:'22px',fontWeight:800,color:'#fff',letterSpacing:'-0.5px'}}>🎲 My Week</div>
+                  <div style={{display:'flex',alignItems:'center',gap:'10px'}}>
+                    <img src="/logo.png" alt="Logo" style={{width:'52px',height:'52px',objectFit:'contain'}} />
+                    <div style={{fontSize:'22px',fontWeight:800,color:'#fff',letterSpacing:'-0.5px'}}>My Week</div>
+                  </div>
                   <div style={{fontSize:'12px',color:'#666',marginTop:'2px'}}>
                     {(() => { const d = getDayDate(0); return `${d.getMonth()+1}/${d.getDate()} — ${(() => { const e = getDayDate(6); return `${e.getMonth()+1}/${e.getDate()}`; })()}`; })()}
                   </div>
@@ -2480,8 +2483,8 @@ const MealPrepApp = () => {
                   const meals = mealTypes.filter(mt => mealPlan[dayIndex][mt]);
                   const hasAny = meals.length > 0;
                   return (
-                    <div key={day} style={{background: isToday(dayIndex) ? 'rgba(81,207,102,0.1)' : 'rgba(255,255,255,0.04)',borderRadius:'10px',padding:'8px 5px',border: isToday(dayIndex) ? '1px solid rgba(81,207,102,0.4)' : '1px solid rgba(255,255,255,0.06)',minHeight:'120px'}}>
-                      <div style={{fontSize:'9px',fontWeight:700,color: isToday(dayIndex) ? '#51cf66' : '#888',textAlign:'center',textTransform:'uppercase',letterSpacing:'0.5px',marginBottom:'3px'}}>{day.slice(0,3)}</div>
+                    <div key={day} style={{background:'rgba(255,255,255,0.04)',borderRadius:'10px',padding:'8px 5px',border:'1px solid rgba(255,255,255,0.06)',minHeight:'120px'}}>
+                      <div style={{fontSize:'9px',fontWeight:700,color:'#888',textAlign:'center',textTransform:'uppercase',letterSpacing:'0.5px',marginBottom:'3px'}}>{day.slice(0,3)}</div>
                       <div style={{fontSize:'9px',color:'#555',textAlign:'center',marginBottom:'8px'}}>{formatDayDate(dayIndex)}</div>
                       {hasAny ? (
                         <div style={{display:'flex',flexDirection:'column',gap:'5px'}}>
@@ -2510,7 +2513,8 @@ const MealPrepApp = () => {
               {/* Card footer */}
               <div style={{marginTop:'16px',paddingTop:'14px',borderTop:'1px solid rgba(255,255,255,0.06)',display:'flex',alignItems:'center',justifyContent:'center',gap:'8px'}}>
                 <span style={{fontSize:'11px',color:'#555'}}>Made with</span>
-                <span style={{fontSize:'11px',color:'#777',fontWeight:600}}>🎲 Recipe Roulette</span>
+                <img src="/logo.png" alt="" style={{width:'16px',height:'16px',objectFit:'contain'}} />
+                <span style={{fontSize:'11px',color:'#777',fontWeight:600}}>Recipe Roulette</span>
               </div>
             </div>
 

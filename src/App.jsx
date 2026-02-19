@@ -2421,6 +2421,14 @@ const MealPrepApp = () => {
         </div>
       )}
 
+      {/* SHARE TOAST */}
+      {shareToast === 'copied' && (
+        <div style={{position:'fixed',bottom:'28px',left:'50%',transform:'translateX(-50%)',background:'#1a1a1a',border:'1px solid #51cf66',borderRadius:'12px',padding:'12px 22px',zIndex:2000,display:'flex',alignItems:'center',gap:'8px',boxShadow:'0 8px 32px rgba(0,0,0,0.5)',animation:'fadeIn 0.2s ease'}}>
+          <span style={{color:'#51cf66',fontSize:'18px'}}>✓</span>
+          <span style={{color:'#fff',fontWeight:600,fontSize:'14px',whiteSpace:'nowrap'}}>Link copied to clipboard!</span>
+        </div>
+      )}
+
       {/* RECIPE DETAIL MODAL */}
       {selectedRecipe && (
         <div onClick={() => setSelectedRecipe(null)} style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.8)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:1000,padding:'20px'}}>

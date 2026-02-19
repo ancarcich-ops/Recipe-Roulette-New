@@ -2351,11 +2351,19 @@ const MealPrepApp = () => {
                   </button>
                 </div>
               )}
-              <div style={{display:'flex',gap:'18px',marginBottom:'20px',fontSize:'13px',color:'#999'}}>
+              <div style={{display:'flex',gap:'18px',marginBottom: selectedRecipe.sourceUrl ? '10px' : '20px',fontSize:'13px',color:'#999',flexWrap:'wrap'}}>
                 <span>⏱ {selectedRecipe.prepTime}</span>
                 <span>🍽 {profile.householdSize || selectedRecipe.servings} servings{profile.householdSize && selectedRecipe.servings && profile.householdSize !== selectedRecipe.servings ? ` (scaled from ${selectedRecipe.servings})` : ''}</span>
                 {selectedRecipe.timesMade !== undefined && <span>Made {selectedRecipe.timesMade}x</span>}
               </div>
+              {selectedRecipe.sourceUrl && (
+                <div style={{marginBottom:'20px'}}>
+                  <a href={selectedRecipe.sourceUrl} target="_blank" rel="noopener noreferrer"
+                    style={{fontSize:'12px',color:'#7dd3fc',textDecoration:'none',display:'inline-flex',alignItems:'center',gap:'5px',background:'#0a0a0a',padding:'6px 12px',borderRadius:'6px',border:'1px solid #262626'}}>
+                    🔗 View original recipe at {selectedRecipe.sourceUrl.replace(/^https?:\/\/(www\.)?/,'').split('/')[0]}
+                  </a>
+                </div>
+              )}
               {selectedRecipe.ingredients && (<>
                 <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',margin:'0 0 8px 0'}}>
                   <h3 style={{margin:0,fontSize:'15px',fontWeight:700,color:'#fff'}}>Ingredients</h3>

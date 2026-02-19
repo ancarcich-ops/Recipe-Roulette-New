@@ -1704,44 +1704,7 @@ const MealPrepApp = ({ pendingJoinCode }) => {
               </div>
             </div>
 
-            {/* Household Sync */}
-            <div style={{background:'#1a1a1a',borderRadius:'8px',padding:isMobile?'16px':'28px',border:'1px solid #262626',marginTop:'20px'}}>
-              <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:'16px'}}>
-                <div>
-                  <h3 style={{margin:'0 0 4px 0',fontSize:'18px',fontWeight:700,color:'#fff'}}>👨‍👩‍👧 Household Sync</h3>
-                  <p style={{margin:0,fontSize:'13px',color:'#666'}}>Share your meal plan and recipes with up to 4 people</p>
-                </div>
-              </div>
-              {household ? (
-                <div>
-                  <div style={{background:'#262626',borderRadius:'8px',padding:'14px',marginBottom:'14px'}}>
-                    <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:'8px'}}>
-                      <span style={{fontSize:'13px',fontWeight:600,color:'#fff'}}>Your household</span>
-                      <span style={{fontSize:'12px',color:'#51cf66',fontWeight:600}}>{householdMembers.length}/4 members</span>
-                    </div>
-                    <div style={{fontSize:'12px',color:'#666',marginBottom:'12px'}}>Invite code: <span style={{color:'#fff',fontWeight:700,letterSpacing:'2px'}}>{household.invite_code}</span></div>
-                    <button onClick={copyInviteLink} style={{width:'100%',padding:'10px',background:'#1a1a1a',border:'1px solid #333',borderRadius:'8px',cursor:'pointer',fontWeight:600,fontSize:'13px',color:'#a78bfa'}}>
-                      {householdToast === 'copied' ? '✓ Link Copied!' : '🔗 Copy Invite Link'}
-                    </button>
-                  </div>
-                  <button onClick={async () => { if (window.confirm('Leave this household?')) await leaveHousehold(); }}
-                    style={{width:'100%',padding:'10px',background:'transparent',border:'1px solid #333',borderRadius:'8px',cursor:'pointer',fontWeight:600,fontSize:'13px',color:'#ff6b6b'}}>
-                    Leave Household
-                  </button>
-                </div>
-              ) : (
-                <div style={{display:'flex',gap:'10px',flexWrap:'wrap'}}>
-                  <button onClick={async () => { await createHousehold(); setShowHouseholdModal(true); }}
-                    style={{flex:'1 1 auto',padding:'11px',background:'#fff',border:'none',borderRadius:'8px',cursor:'pointer',fontWeight:700,fontSize:'13px',color:'#000'}}>
-                    + Create Household
-                  </button>
-                  <button onClick={() => setShowHouseholdModal(true)}
-                    style={{flex:'1 1 auto',padding:'11px',background:'#1a1a1a',border:'1px solid #333',borderRadius:'8px',cursor:'pointer',fontWeight:600,fontSize:'13px',color:'#fff'}}>
-                    Join with Code
-                  </button>
-                </div>
-              )}
-            </div>
+
           </div>
         )}
       </div>
@@ -1939,6 +1902,43 @@ const MealPrepApp = ({ pendingJoinCode }) => {
                 <p style={{margin:'4px 0 0',fontSize:'12px',color:'#555'}}>
                   {profile.householdSize === 1 ? 'Just you 🧑' : `${profile.householdSize} total (${profile.adults} adult${profile.adults !== 1 ? 's' : ''}${profile.children > 0 ? `, ${profile.children} child${profile.children !== 1 ? 'ren' : ''}` : ''}) 👨‍👩‍👧‍👦`}
                 </p>
+              </div>
+
+              {/* Household Sync */}
+              <div style={{borderTop:'1px solid #262626',paddingTop:'20px'}}>
+                <label style={{display:'block',marginBottom:'12px',fontWeight:600,color:'#fff',fontSize:'13px',textTransform:'uppercase',letterSpacing:'0.5px'}}>
+                  👨‍👩‍👧 Household Sync
+                </label>
+                <p style={{margin:'0 0 14px 0',fontSize:'12px',color:'#666'}}>Share your meal plan and recipes with up to 4 people</p>
+                {household ? (
+                  <div>
+                    <div style={{background:'#111',border:'1px solid #262626',borderRadius:'10px',padding:'14px',marginBottom:'12px'}}>
+                      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:'8px'}}>
+                        <span style={{fontSize:'13px',fontWeight:600,color:'#fff'}}>Active household</span>
+                        <span style={{fontSize:'12px',color:'#51cf66',fontWeight:600}}>{householdMembers.length}/4 members</span>
+                      </div>
+                      <div style={{fontSize:'12px',color:'#666',marginBottom:'12px'}}>Code: <span style={{color:'#fff',fontWeight:700,letterSpacing:'3px'}}>{household.invite_code}</span></div>
+                      <button onClick={copyInviteLink} style={{width:'100%',padding:'9px',background:'#1a1a1a',border:'1px solid #333',borderRadius:'8px',cursor:'pointer',fontWeight:600,fontSize:'13px',color:'#a78bfa'}}>
+                        {householdToast === 'copied' ? '✓ Link Copied!' : '🔗 Copy Invite Link'}
+                      </button>
+                    </div>
+                    <button onClick={async () => { if (window.confirm('Leave this household?')) await leaveHousehold(); }}
+                      style={{width:'100%',padding:'9px',background:'transparent',border:'1px solid #333',borderRadius:'8px',cursor:'pointer',fontWeight:600,fontSize:'13px',color:'#ff6b6b'}}>
+                      Leave Household
+                    </button>
+                  </div>
+                ) : (
+                  <div style={{display:'flex',gap:'10px'}}>
+                    <button onClick={async () => { await createHousehold(); setShowHouseholdModal(true); }}
+                      style={{flex:1,padding:'10px',background:'#fff',border:'none',borderRadius:'8px',cursor:'pointer',fontWeight:700,fontSize:'13px',color:'#000'}}>
+                      + Create
+                    </button>
+                    <button onClick={() => setShowHouseholdModal(true)}
+                      style={{flex:1,padding:'10px',background:'#1a1a1a',border:'1px solid #333',borderRadius:'8px',cursor:'pointer',fontWeight:600,fontSize:'13px',color:'#fff'}}>
+                      Join with Code
+                    </button>
+                  </div>
+                )}
               </div>
 
               {/* Dietary preferences */}

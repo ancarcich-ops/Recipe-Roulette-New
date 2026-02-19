@@ -1111,7 +1111,7 @@ const MealPrepApp = () => {
                       <Plus size={16} /> New Folder
                     </button>
                     <button onClick={() => { setShowImportModal(true); setImportStep('url'); setImportUrl(''); setImportError(''); setImportedRecipe(null); setImportFolderIds([]); setImportMode('url'); setImportImageFile(null); setImportImagePreview(null); }} style={{padding:'10px 18px',background:'#1a1a1a',border:'1px solid #262626',borderRadius:'8px',cursor:'pointer',display:'flex',alignItems:'center',gap:'6px',fontWeight:600,fontSize:'13px',color:'#fff'}}>
-                      🔗 Import URL
+                      🔗 Import Recipe
                     </button>
                     <button onClick={() => setShowAddRecipeModal(true)} style={{padding:'10px 18px',background:'#fff',border:'none',borderRadius:'8px',cursor:'pointer',display:'flex',alignItems:'center',gap:'6px',fontWeight:600,fontSize:'13px',color:'#000'}}>
                       <Plus size={16} /> Add Recipe
@@ -1195,7 +1195,7 @@ const MealPrepApp = () => {
                     </div>
                   </div>
                   <button onClick={() => { setShowImportModal(true); setImportStep('url'); setImportUrl(''); setImportError(''); setImportedRecipe(null); setImportFolderIds([]); setImportMode('url'); setImportImageFile(null); setImportImagePreview(null); }} style={{padding:'10px 18px',background:'#1a1a1a',border:'1px solid #262626',borderRadius:'8px',cursor:'pointer',display:'flex',alignItems:'center',gap:'6px',fontWeight:600,fontSize:'13px',color:'#fff'}}>
-                    🔗 Import URL
+                    🔗 Import Recipe
                   </button>
                   <button onClick={() => setShowAddRecipeModal(true)} style={{padding:'10px 18px',background:'#fff',border:'none',borderRadius:'8px',cursor:'pointer',display:'flex',alignItems:'center',gap:'6px',fontWeight:600,fontSize:'13px',color:'#000'}}>
                     <Plus size={16} /> Add Recipe
@@ -1954,11 +1954,9 @@ const MealPrepApp = () => {
                       }
 
                     } else {
-                      // Image mode
                       if (!importImageFile) { setImportError('Please select a photo first.'); return; }
                       setImportStep('loading');
                       try {
-                        // Convert image to base64
                         const base64 = await new Promise((res, rej) => {
                           const r = new FileReader();
                           r.onload = () => res(r.result.split(',')[1]);

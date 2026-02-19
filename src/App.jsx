@@ -349,6 +349,8 @@ const MealPrepApp = () => {
   const [wheelShimmer,       setWheelShimmer]       = useState(false);
   const [showRecipeSelector, setShowRecipeSelector] = useState(null);
   const [showShoppingList, setShowShoppingList] = useState(false);
+  const [showMealPlanShare, setShowMealPlanShare] = useState(false);
+  const [generatingCard, setGeneratingCard] = useState(false);
   const [checkedItems, setCheckedItems] = useState(new Set());
   const [recipeSearch, setRecipeSearch] = useState('');
   const [communitySearch, setCommunitySearch] = useState('');
@@ -1231,6 +1233,9 @@ const MealPrepApp = () => {
                 </button>
                 <button onClick={() => setShowShoppingList(true)} style={{flex: isMobile ? '1 1 auto' : 'none', padding:'10px 18px',background:'#1a1a1a',border:'1px solid #262626',borderRadius:'8px',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:'6px',fontWeight:600,fontSize:'13px',color:'#fff'}}>
                   <ShoppingCart size={16} /> Shopping List
+                </button>
+                <button onClick={() => setShowMealPlanShare(true)} style={{flex: isMobile ? '1 1 auto' : 'none', padding:'10px 18px',background:'#1a1a1a',border:'1px solid #262626',borderRadius:'8px',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:'6px',fontWeight:600,fontSize:'13px',color:'#a78bfa'}}>
+                  📤 Share Week
                 </button>
                 <button onClick={clearAllMeals} style={{flex: isMobile ? '1 1 auto' : 'none', padding:'10px 18px',background:'#1a1a1a',border:'1px solid #ff4444',borderRadius:'8px',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:'6px',fontWeight:600,fontSize:'13px',color:'#ff4444'}}>
                   <X size={16} /> Clear All
@@ -2441,6 +2446,114 @@ const MealPrepApp = () => {
                 Create Folder
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* MEAL PLAN SHARE CARD MODAL */}
+      {showMealPlanShare && (
+        <div onClick={() => setShowMealPlanShare(false)} style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.9)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:1000,padding:'20px',overflowY:'auto'}}>
+          <div onClick={e => e.stopPropagation()} style={{width:'100%',maxWidth:'540px'}}>
+
+            {/* Controls */}
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'16px'}}>
+              <h2 style={{margin:0,fontSize:'18px',fontWeight:700,color:'#fff'}}>📤 Share My Week</h2>
+              <button onClick={() => setShowMealPlanShare(false)} style={{background:'none',border:'none',cursor:'pointer'}}><X size={22} color="#999" /></button>
+            </div>
+
+            {/* THE CARD - this is what gets captured */}
+            <div id="meal-plan-card" style={{background:'linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #0a0a0a 100%)',borderRadius:'20px',padding:'28px',border:'1px solid #262626',fontFamily:'system-ui,sans-serif'}}>
+              {/* Card header */}
+              <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:'20px'}}>
+                <div>
+                  <div style={{fontSize:'22px',fontWeight:800,color:'#fff',letterSpacing:'-0.5px'}}>🎲 My Week</div>
+                  <div style={{fontSize:'12px',color:'#666',marginTop:'2px'}}>
+                    {(() => { const d = getDayDate(0); return `${d.getMonth()+1}/${d.getDate()} — ${(() => { const e = getDayDate(6); return `${e.getMonth()+1}/${e.getDate()}`; })()}`; })()}
+                  </div>
+                </div>
+                <div style={{fontSize:'11px',color:'#555',fontWeight:600}}>Recipe Roulette</div>
+              </div>
+
+              {/* Day columns */}
+              <div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:'6px'}}>
+                {daysOfWeek.map((day, dayIndex) => {
+                  const meals = mealTypes.filter(mt => mealPlan[dayIndex][mt]);
+                  const hasAny = meals.length > 0;
+                  return (
+                    <div key={day} style={{background: isToday(dayIndex) ? 'rgba(81,207,102,0.1)' : 'rgba(255,255,255,0.04)',borderRadius:'10px',padding:'8px 5px',border: isToday(dayIndex) ? '1px solid rgba(81,207,102,0.4)' : '1px solid rgba(255,255,255,0.06)',minHeight:'120px'}}>
+                      <div style={{fontSize:'9px',fontWeight:700,color: isToday(dayIndex) ? '#51cf66' : '#888',textAlign:'center',textTransform:'uppercase',letterSpacing:'0.5px',marginBottom:'3px'}}>{day.slice(0,3)}</div>
+                      <div style={{fontSize:'9px',color:'#555',textAlign:'center',marginBottom:'8px'}}>{formatDayDate(dayIndex)}</div>
+                      {hasAny ? (
+                        <div style={{display:'flex',flexDirection:'column',gap:'5px'}}>
+                          {mealTypes.map(mt => {
+                            const recipe = mealPlan[dayIndex][mt];
+                            if (!recipe) return null;
+                            const colors = {breakfast:'#fbbf24',lunch:'#51cf66',dinner:'#7dd3fc'};
+                            return (
+                              <div key={mt} style={{background:'rgba(255,255,255,0.06)',borderRadius:'6px',padding:'5px 4px',borderLeft:`2px solid ${colors[mt]}`}}>
+                                <div style={{fontSize:'7px',color:colors[mt],fontWeight:700,textTransform:'uppercase',letterSpacing:'0.3px',marginBottom:'2px'}}>{mt.slice(0,1).toUpperCase()}</div>
+                                <div style={{fontSize:'8px',color:'#ddd',fontWeight:600,lineHeight:1.2,wordBreak:'break-word'}}>{recipe.name.length > 18 ? recipe.name.slice(0,18)+'…' : recipe.name}</div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      ) : (
+                        <div style={{textAlign:'center',paddingTop:'12px'}}>
+                          <div style={{fontSize:'16px',opacity:0.2}}>·</div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Card footer */}
+              <div style={{marginTop:'16px',paddingTop:'14px',borderTop:'1px solid rgba(255,255,255,0.06)',display:'flex',alignItems:'center',justifyContent:'center',gap:'8px'}}>
+                <span style={{fontSize:'11px',color:'#555'}}>Made with</span>
+                <span style={{fontSize:'11px',color:'#777',fontWeight:600}}>🎲 Recipe Roulette</span>
+              </div>
+            </div>
+
+            {/* Action buttons */}
+            <div style={{display:'flex',gap:'10px',marginTop:'16px'}}>
+              <button
+                onClick={async () => {
+                  setGeneratingCard(true);
+                  try {
+                    // Load html2canvas dynamically
+                    const script = document.createElement('script');
+                    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+                    script.onload = async () => {
+                      const card = document.getElementById('meal-plan-card');
+                      const canvas = await window.html2canvas(card, { backgroundColor: null, scale: 2, useCORS: true });
+                      if (navigator.share && navigator.canShare) {
+                        canvas.toBlob(async (blob) => {
+                          try {
+                            const file = new File([blob], 'my-week.png', { type: 'image/png' });
+                            await navigator.share({ files: [file], title: 'My Meal Plan', text: 'Check out my meals this week! 🎲' });
+                          } catch {
+                            // Fallback to download
+                            const a = document.createElement('a'); a.download = 'my-week.png'; a.href = canvas.toDataURL(); a.click();
+                          }
+                          setGeneratingCard(false);
+                        });
+                      } else {
+                        const a = document.createElement('a'); a.download = 'my-week.png'; a.href = canvas.toDataURL(); a.click();
+                        setGeneratingCard(false);
+                      }
+                    };
+                    document.head.appendChild(script);
+                  } catch { setGeneratingCard(false); }
+                }}
+                style={{flex:1,padding:'12px',background:'#fff',border:'none',borderRadius:'10px',cursor:'pointer',fontWeight:700,color:'#000',fontSize:'14px'}}
+              >
+                {generatingCard ? '⏳ Generating...' : (navigator.share ? '📤 Share Image' : '⬇️ Save Image')}
+              </button>
+              <button onClick={() => setShowMealPlanShare(false)} style={{padding:'12px 18px',background:'#262626',border:'none',borderRadius:'10px',cursor:'pointer',fontWeight:600,color:'#fff',fontSize:'14px'}}>
+                Close
+              </button>
+            </div>
+            <p style={{textAlign:'center',fontSize:'12px',color:'#555',margin:'10px 0 0 0'}}>Tap Share Image to post to Stories, iMessage, or anywhere</p>
           </div>
         </div>
       )}

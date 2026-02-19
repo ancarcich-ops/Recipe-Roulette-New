@@ -341,6 +341,7 @@ const MealPrepApp = ({ pendingJoinCode }) => {
   const [showProfilePanel, setShowProfilePanel] = useState(false);
   const [profile, setProfile] = useState({
     displayName: '',
+    phone: '',
     avatarUrl: '',
     avatarPreview: '',
     dietaryPrefs: [],
@@ -624,6 +625,7 @@ const MealPrepApp = ({ pendingJoinCode }) => {
         await supabase.from('user_profiles_public').upsert({
           user_id: userId,
           username: prof.display_name,
+          phone: prof.phone || '',
           avatar_url: prof.avatar_url || '',
           recipe_count: loadedRecipes.length
         }, { onConflict: 'user_id' });
@@ -636,6 +638,7 @@ const MealPrepApp = ({ pendingJoinCode }) => {
     if (prof) {
       setProfile({
         displayName: prof.display_name || '',
+        phone: prof.phone || '',
         avatarUrl: prof.avatar_url || '',
         avatarPreview: prof.avatar_url || '',
         dietaryPrefs: prof.dietary_prefs || [],
@@ -708,6 +711,7 @@ const MealPrepApp = ({ pendingJoinCode }) => {
     const { error } = await supabase.from('profiles').upsert({
       id: userId,
       display_name: profile.displayName,
+      phone: profile.phone,
       avatar_url: profile.avatarPreview,
       dietary_prefs: profile.dietaryPrefs,
       household_size: profile.householdSize,
@@ -723,6 +727,7 @@ const MealPrepApp = ({ pendingJoinCode }) => {
     if (prof) {
       setProfile({
         displayName: prof.display_name || '',
+        phone: prof.phone || '',
         avatarUrl: prof.avatar_url || '',
         avatarPreview: prof.avatar_url || '',
         dietaryPrefs: prof.dietary_prefs || [],
@@ -2074,6 +2079,19 @@ const MealPrepApp = ({ pendingJoinCode }) => {
                 <div style={{padding:'11px 14px',border:'1px solid #1e1e1e',borderRadius:'8px',fontSize:'14px',background:'#0d0d0d',color:'#555'}}>
                   {session?.user?.email}
                 </div>
+              </div>
+
+              {/* Phone number */}
+              <div>
+                <label style={{display:'block',marginBottom:'8px',fontWeight:600,color:'#fff',fontSize:'13px',textTransform:'uppercase',letterSpacing:'0.5px'}}>Phone Number</label>
+                <input
+                  type="tel"
+                  value={profile.phone}
+                  onChange={e => setProfile(p => ({...p, phone: e.target.value}))}
+                  placeholder="e.g. 310-555-0123"
+                  style={{width:'100%',padding:'11px 14px',border:'1px solid #2a2a2a',borderRadius:'8px',fontSize:'14px',background:'#1a1a1a',color:'#fff',outline:'none',boxSizing:'border-box'}}
+                />
+                <p style={{margin:'6px 0 0 0',fontSize:'11px',color:'#555'}}>Optional — lets friends find you by phone number</p>
               </div>
 
               {/* Household size */}

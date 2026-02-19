@@ -1893,7 +1893,7 @@ const MealPrepApp = () => {
                         </div>
                       ) : (
                         <>
-                          <input type="file" accept="image/*" capture="environment" onChange={e => {
+                          <input type="file" accept="image/*" onChange={e => {
                             const f = e.target.files[0];
                             if (f) { setImportImageFile(f); const r = new FileReader(); r.onloadend = () => setImportImagePreview(r.result); r.readAsDataURL(f); }
                           }} style={{position:'absolute',inset:0,opacity:0,cursor:'pointer',width:'100%',height:'100%'}} />

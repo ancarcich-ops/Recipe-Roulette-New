@@ -3149,14 +3149,26 @@ const MealPrepApp = ({ pendingJoinCode }) => {
             </div>
             {/* Emoji picker */}
             <div style={{marginBottom:'16px'}}>
-              <label style={{display:'block',marginBottom:'8px',fontWeight:600,color:'#fff',fontSize:'13px'}}>Choose an emoji</label>
-              <div style={{display:'flex',flexWrap:'wrap',gap:'8px'}}>
+              <label style={{display:'block',marginBottom:'8px',fontWeight:600,color:'#fff',fontSize:'13px'}}>Choose an icon</label>
+              <div style={{display:'flex',flexWrap:'wrap',gap:'8px',marginBottom:'10px'}}>
                 {['🍽️','🥗','🍲','🥩','🐟','🥦','🧁','🍕','🌮','🥘','🍜','🥚','🥑','🍋','💪','⚡','🕯️','👶','🏠','📁'].map(e => (
                   <button key={e} onClick={() => setNewFolderEmoji(e)}
                     style={{width:'40px',height:'40px',background:newFolderEmoji===e?'#fff':'#262626',border:newFolderEmoji===e?'2px solid #fff':'2px solid #333',borderRadius:'8px',cursor:'pointer',fontSize:'20px',display:'flex',alignItems:'center',justifyContent:'center'}}>
                     {e}
                   </button>
                 ))}
+              </div>
+              {/* Custom emoji input */}
+              <div style={{display:'flex',alignItems:'center',gap:'8px'}}>
+                <span style={{fontSize:'12px',color:'#666',whiteSpace:'nowrap'}}>Or type your own:</span>
+                <input
+                  type="text"
+                  placeholder="✍️"
+                  maxLength={2}
+                  value={['🍽️','🥗','🍲','🥩','🐟','🥦','🧁','🍕','🌮','🥘','🍜','🥚','🥑','🍋','💪','⚡','🕯️','👶','🏠','📁'].includes(newFolderEmoji) ? '' : newFolderEmoji}
+                  onChange={e => { const val = e.target.value; if (val) setNewFolderEmoji(val); }}
+                  style={{width:'60px',padding:'8px',background:'#0a0a0a',border:'1px solid #333',borderRadius:'8px',fontSize:'20px',color:'#fff',textAlign:'center',outline:'none',boxSizing:'border-box'}}
+                />
               </div>
             </div>
             {/* Folder name */}

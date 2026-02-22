@@ -2844,8 +2844,25 @@ const MealPrepApp = ({ pendingJoinCode }) => {
                       if (!importImageFile) { setImportError('Please select a photo first.'); return; }
                       setImportStep('loading');
                       try {
-                        const base64 = await new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result.split(',')[1]); r.onerror = rej; r.readAsDataURL(importImageFile); });
-                        const { data, error } = await supabase.functions.invoke('import-recipe-image', { body: { image: base64, mediaType: importImageFile.type } });
+                        // Convert image to JPEG if it's HEIC or unsupported format
+                        const supportedTypes = ['image/jpeg','image/png','image/gif','image/webp'];
+                        let fileToSend = importImageFile;
+                        let mediaTypeToSend = importImageFile.type;
+                        if (!supportedTypes.includes(mediaTypeToSend)) {
+                          // Draw to canvas and export as JPEG
+                          const img = new Image();
+                          const objectUrl = URL.createObjectURL(importImageFile);
+                          await new Promise(resolve => { img.onload = resolve; img.src = objectUrl; });
+                          const canvas = document.createElement('canvas');
+                          canvas.width = img.width; canvas.height = img.height;
+                          canvas.getContext('2d').drawImage(img, 0, 0);
+                          URL.revokeObjectURL(objectUrl);
+                          const blob = await new Promise(res => canvas.toBlob(res, 'image/jpeg', 0.9));
+                          fileToSend = blob;
+                          mediaTypeToSend = 'image/jpeg';
+                        }
+                        const base64 = await new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result.split(',')[1]); r.onerror = rej; r.readAsDataURL(fileToSend); });
+                        const { data, error } = await supabase.functions.invoke('import-recipe-image', { body: { image: base64, mediaType: mediaTypeToSend } });
                         if (error || !data?.name) { setImportStep('url'); setImportError(data?.error || "Couldn't read a recipe from that image. Try a clearer photo."); return; }
                         setImportedRecipe({ ...data, id: Date.now(), author: session.user.email.split('@')[0], timesMade: 0, isEasy: (data.cookTime || 30) < 20,
                           image: importImagePreview, tags: data.tags || [], ingredients: Array.isArray(data.ingredients) ? data.ingredients : [],
@@ -2954,6 +2971,29 @@ const MealPrepApp = ({ pendingJoinCode }) => {
             <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'18px'}}>
               <h2 style={{margin:0,fontSize:'20px',fontWeight:700,color:'#fff'}}>✏️ Edit Recipe</h2>
               <button onClick={() => setShowEditRecipeModal(null)} style={{background:'none',border:'none',cursor:'pointer'}}><X size={22} color="#999" /></button>
+            </div>
+            {/* Photo editor */}
+            <div style={{marginBottom:'16px'}}>
+              <label style={{display:'block',marginBottom:'6px',fontWeight:600,color:'#fff',fontSize:'13px'}}>Photo</label>
+              <div style={{position:'relative',borderRadius:'10px',overflow:'hidden',background:'#0a0a0a',border:'1px solid #262626',minHeight:'120px',display:'flex',alignItems:'center',justifyContent:'center'}}>
+                {showEditRecipeModal.image
+                  ? <img src={showEditRecipeModal.image} style={{width:'100%',maxHeight:'160px',objectFit:'cover',display:'block'}} />
+                  : <div style={{textAlign:'center',padding:'20px',color:'#555'}}><div style={{fontSize:'32px',marginBottom:'6px'}}>📸</div><p style={{margin:0,fontSize:'12px'}}>No photo yet</p></div>
+                }
+                <label style={{position:'absolute',bottom:'8px',right:'8px',background:'rgba(0,0,0,0.8)',border:'1px solid #444',borderRadius:'8px',padding:'6px 12px',cursor:'pointer',fontSize:'12px',fontWeight:600,color:'#fff',display:'flex',alignItems:'center',gap:'6px'}}>
+                  📷 {showEditRecipeModal.image ? 'Change Photo' : 'Add Photo'}
+                  <input type="file" accept="image/*" style={{display:'none'}} onChange={e => {
+                    const f = e.target.files[0];
+                    if (f) { const r = new FileReader(); r.onloadend = () => setShowEditRecipeModal(prev => ({...prev, image: r.result})); r.readAsDataURL(f); }
+                  }} />
+                </label>
+                {showEditRecipeModal.image && (
+                  <button onClick={() => setShowEditRecipeModal(prev => ({...prev, image: ''}))}
+                    style={{position:'absolute',top:'8px',right:'8px',background:'rgba(0,0,0,0.7)',border:'none',borderRadius:'50%',width:'28px',height:'28px',display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer'}}>
+                    <X size={14} color="white" />
+                  </button>
+                )}
+              </div>
             </div>
             <div style={{marginBottom:'12px'}}>
               <label style={{display:'block',marginBottom:'5px',fontWeight:600,color:'#fff',fontSize:'13px'}}>Recipe Name</label>

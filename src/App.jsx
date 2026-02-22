@@ -365,6 +365,11 @@ const MealPrepApp = ({ pendingJoinCode }) => {
   const [showSaveToFolderModal, setShowSaveToFolderModal] = useState(null); // recipe to save
   const [newFolderName, setNewFolderName] = useState('');
   const [newFolderEmoji, setNewFolderEmoji] = useState('📁');
+  const [showFolderOptionsMenu, setShowFolderOptionsMenu] = useState(null); // folder id
+  const [showEditFolderModal, setShowEditFolderModal] = useState(null); // folder object
+  const [showDeleteFolderConfirm, setShowDeleteFolderConfirm] = useState(null); // folder object
+  const [editFolderName, setEditFolderName] = useState('');
+  const [editFolderEmoji, setEditFolderEmoji] = useState('📁');
   const [selectedRecipe, setSelectedRecipe] = useState(null);
   const [showAutoFillModal, setShowAutoFillModal] = useState(false);
   const [showSpinningWheel, setShowSpinningWheel] = useState(false);
@@ -1558,10 +1563,11 @@ const MealPrepApp = ({ pendingJoinCode }) => {
                   {folders.map(folder => {
                     const folderRecipes = folder.recipes.map(rid => allMyRecipes.find(r => r.id === rid)).filter(Boolean);
                     return (
-                      <div key={folder.id} onClick={() => setActiveFolder(folder.id)} style={{background:'#1a1a1a',borderRadius:'16px',overflow:'hidden',border:'1px solid #262626',cursor:'pointer',transition:'border-color 0.15s'}}>
+                      <div key={folder.id} style={{background:'#1a1a1a',borderRadius:'16px',overflow:'hidden',border:'1px solid #262626',cursor:'pointer',transition:'border-color 0.15s',position:'relative'}}
+                        onClick={() => setActiveFolder(folder.id)}>
                         <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gridTemplateRows:'1fr 1fr',height:'180px',gap:'2px',position:'relative'}}>
                           {folderRecipes.slice(0,4).map((r,i) => (
-                            <div key={i} style={{backgroundImage:`url(${r.image})`,backgroundSize:'cover',backgroundPosition:'center'}} />
+                            <div key={i} style={{backgroundImage:r.image?`url(${r.image})`:'none',backgroundSize:'cover',backgroundPosition:'center',background:r.image?'transparent':'#262626'}} />
                           ))}
                           {folderRecipes.length < 4 && Array.from({length: 4 - Math.min(folderRecipes.length,4)}).map((_,i) => (
                             <div key={i} style={{background:'#262626',display:'flex',alignItems:'center',justifyContent:'center'}}>
@@ -1569,10 +1575,29 @@ const MealPrepApp = ({ pendingJoinCode }) => {
                             </div>
                           ))}
                         </div>
-                        <div style={{padding:'14px'}}>
-                          <p style={{margin:'0 0 2px 0',fontSize:'16px',fontWeight:700,color:'#fff'}}>{folder.emoji} {folder.name}</p>
-                          <p style={{margin:0,fontSize:'12px',color:'#666'}}>{folderRecipes.length} {folderRecipes.length === 1 ? 'recipe' : 'recipes'}</p>
+                        <div style={{padding:'14px',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+                          <div>
+                            <p style={{margin:'0 0 2px 0',fontSize:'16px',fontWeight:700,color:'#fff'}}>{folder.emoji} {folder.name}</p>
+                            <p style={{margin:0,fontSize:'12px',color:'#666'}}>{folderRecipes.length} {folderRecipes.length === 1 ? 'recipe' : 'recipes'}</p>
+                          </div>
+                          <button onClick={e => { e.stopPropagation(); setShowFolderOptionsMenu(showFolderOptionsMenu === folder.id ? null : folder.id); }}
+                            style={{background:'#262626',border:'none',borderRadius:'8px',width:'32px',height:'32px',display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',color:'#999',fontSize:'18px',fontWeight:700,flexShrink:0}}>
+                            ⋯
+                          </button>
                         </div>
+                        {/* Options dropdown */}
+                        {showFolderOptionsMenu === folder.id && (
+                          <div onClick={e => e.stopPropagation()} style={{position:'absolute',bottom:'60px',right:'14px',background:'#2a2a2a',border:'1px solid #333',borderRadius:'10px',padding:'6px',zIndex:100,minWidth:'140px',boxShadow:'0 4px 20px rgba(0,0,0,0.5)'}}>
+                            <button onClick={() => { setEditFolderName(folder.name); setEditFolderEmoji(folder.emoji); setShowEditFolderModal(folder); setShowFolderOptionsMenu(null); }}
+                              style={{width:'100%',padding:'9px 12px',background:'none',border:'none',borderRadius:'6px',cursor:'pointer',color:'#fff',fontSize:'13px',fontWeight:600,textAlign:'left',display:'flex',alignItems:'center',gap:'8px'}}>
+                              ✏️ Edit
+                            </button>
+                            <button onClick={() => { setShowDeleteFolderConfirm(folder); setShowFolderOptionsMenu(null); }}
+                              style={{width:'100%',padding:'9px 12px',background:'none',border:'none',borderRadius:'6px',cursor:'pointer',color:'#ff6b6b',fontSize:'13px',fontWeight:600,textAlign:'left',display:'flex',alignItems:'center',gap:'8px'}}>
+                              🗑 Delete
+                            </button>
+                          </div>
+                        )}
                       </div>
                     );
                   })}
@@ -2014,6 +2039,67 @@ const MealPrepApp = ({ pendingJoinCode }) => {
                 </div>
               </>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* ── EDIT FOLDER MODAL ── */}
+      {showEditFolderModal && (
+        <div onClick={() => setShowEditFolderModal(null)} style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.8)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:2000,padding:'20px'}}>
+          <div onClick={e => e.stopPropagation()} style={{background:'#1a1a1a',borderRadius:'16px',padding:'24px',maxWidth:'420px',width:'100%',border:'1px solid #262626'}}>
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'20px'}}>
+              <h2 style={{margin:0,fontSize:'20px',fontWeight:700,color:'#fff'}}>Edit Folder</h2>
+              <button onClick={() => setShowEditFolderModal(null)} style={{background:'none',border:'none',cursor:'pointer'}}><X size={22} color="#999" /></button>
+            </div>
+            <label style={{display:'block',marginBottom:'8px',fontWeight:600,color:'#fff',fontSize:'13px'}}>Icon</label>
+            <div style={{display:'flex',flexWrap:'wrap',gap:'8px',marginBottom:'10px'}}>
+              {['🍽️','🥗','🍲','🥩','🐟','🥦','🧁','🍕','🌮','🥘','🍜','🥚','🥑','🍋','💪','⚡','🕯️','👶','🏠','📁'].map(e => (
+                <button key={e} onClick={() => setEditFolderEmoji(e)}
+                  style={{width:'40px',height:'40px',background:editFolderEmoji===e?'#fff':'#262626',border:editFolderEmoji===e?'2px solid #fff':'2px solid #333',borderRadius:'8px',cursor:'pointer',fontSize:'20px',display:'flex',alignItems:'center',justifyContent:'center'}}>
+                  {e}
+                </button>
+              ))}
+            </div>
+            <div style={{display:'flex',alignItems:'center',gap:'8px',marginBottom:'16px'}}>
+              <span style={{fontSize:'12px',color:'#666',whiteSpace:'nowrap'}}>Or type your own:</span>
+              <input type="text" maxLength={2} placeholder="✍️"
+                value={['🍽️','🥗','🍲','🥩','🐟','🥦','🧁','🍕','🌮','🥘','🍜','🥚','🥑','🍋','💪','⚡','🕯️','👶','🏠','📁'].includes(editFolderEmoji) ? '' : editFolderEmoji}
+                onChange={e => { if (e.target.value) setEditFolderEmoji(e.target.value); }}
+                style={{width:'60px',padding:'8px',background:'#0a0a0a',border:'1px solid #333',borderRadius:'8px',fontSize:'20px',color:'#fff',textAlign:'center',outline:'none',boxSizing:'border-box'}} />
+            </div>
+            <label style={{display:'block',marginBottom:'8px',fontWeight:600,color:'#fff',fontSize:'13px'}}>Folder Name</label>
+            <input type="text" value={editFolderName} onChange={e => setEditFolderName(e.target.value)}
+              style={{width:'100%',padding:'11px 14px',border:'1px solid #333',borderRadius:'8px',fontSize:'14px',background:'#0a0a0a',color:'#fff',outline:'none',boxSizing:'border-box',marginBottom:'20px'}} />
+            <div style={{display:'flex',gap:'10px'}}>
+              <button onClick={() => setShowEditFolderModal(null)} style={{flex:1,padding:'11px',background:'#262626',border:'none',borderRadius:'8px',cursor:'pointer',fontWeight:600,color:'#fff'}}>Cancel</button>
+              <button disabled={!editFolderName.trim()} onClick={() => {
+                setFolders(prev => prev.map(f => f.id === showEditFolderModal.id ? {...f, name: editFolderName.trim(), emoji: editFolderEmoji} : f));
+                setShowEditFolderModal(null);
+              }} style={{flex:2,padding:'11px',background:editFolderName.trim()?'#fff':'#333',border:'none',borderRadius:'8px',cursor:editFolderName.trim()?'pointer':'not-allowed',fontWeight:700,color:editFolderName.trim()?'#000':'#666'}}>
+                Save Changes
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── DELETE FOLDER CONFIRM ── */}
+      {showDeleteFolderConfirm && (
+        <div onClick={() => setShowDeleteFolderConfirm(null)} style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.8)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:2000,padding:'20px'}}>
+          <div onClick={e => e.stopPropagation()} style={{background:'#1a1a1a',borderRadius:'16px',padding:'24px',maxWidth:'380px',width:'100%',border:'1px solid #262626',textAlign:'center'}}>
+            <div style={{fontSize:'48px',marginBottom:'16px'}}>🗑</div>
+            <h2 style={{margin:'0 0 8px 0',fontSize:'20px',fontWeight:700,color:'#fff'}}>Delete "{showDeleteFolderConfirm.name}"?</h2>
+            <p style={{margin:'0 0 24px 0',fontSize:'14px',color:'#666'}}>The folder will be deleted but your recipes will stay in your recipe book.</p>
+            <div style={{display:'flex',gap:'10px'}}>
+              <button onClick={() => setShowDeleteFolderConfirm(null)} style={{flex:1,padding:'12px',background:'#262626',border:'none',borderRadius:'8px',cursor:'pointer',fontWeight:600,color:'#fff'}}>Cancel</button>
+              <button onClick={() => {
+                setFolders(prev => prev.filter(f => f.id !== showDeleteFolderConfirm.id));
+                if (activeFolder === showDeleteFolderConfirm.id) setActiveFolder(null);
+                setShowDeleteFolderConfirm(null);
+              }} style={{flex:1,padding:'12px',background:'#ff4444',border:'none',borderRadius:'8px',cursor:'pointer',fontWeight:700,color:'#fff'}}>
+                Delete
+              </button>
+            </div>
           </div>
         </div>
       )}

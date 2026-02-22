@@ -344,6 +344,7 @@ const MealPrepApp = ({ pendingJoinCode }) => {
   const [profile, setProfile] = useState({
     displayName: '',
     phone: '',
+    zipCode: '',
     avatarUrl: '',
     avatarPreview: '',
     dietaryPrefs: [],
@@ -634,6 +635,7 @@ const MealPrepApp = ({ pendingJoinCode }) => {
           user_id: userId,
           username: prof.display_name,
           phone: prof.phone || '',
+        zipCode: prof.zip_code || '',
           avatar_url: prof.avatar_url || '',
           recipe_count: loadedRecipes.length
         }, { onConflict: 'user_id' });
@@ -647,6 +649,7 @@ const MealPrepApp = ({ pendingJoinCode }) => {
       setProfile({
         displayName: prof.display_name || '',
         phone: prof.phone || '',
+        zipCode: prof.zip_code || '',
         avatarUrl: prof.avatar_url || '',
         avatarPreview: prof.avatar_url || '',
         dietaryPrefs: prof.dietary_prefs || [],
@@ -728,6 +731,7 @@ const MealPrepApp = ({ pendingJoinCode }) => {
       id: userId,
       display_name: profile.displayName,
       phone: profile.phone,
+      zip_code: profile.zipCode,
       avatar_url: profile.avatarPreview,
       dietary_prefs: profile.dietaryPrefs,
       household_size: profile.householdSize,
@@ -2175,9 +2179,17 @@ const MealPrepApp = ({ pendingJoinCode }) => {
                     placeholder="Phone number (optional)"
                     value={profile.phone}
                     onChange={e => setProfile(p => ({...p, phone: e.target.value}))}
-                    style={{width:'100%',padding:'13px 14px',background:'#0d0d0d',border:'1px solid #333',borderRadius:'10px',fontSize:'15px',color:'#fff',outline:'none',boxSizing:'border-box',marginBottom:'24px'}}
+                    style={{width:'100%',padding:'13px 14px',background:'#0d0d0d',border:'1px solid #333',borderRadius:'10px',fontSize:'15px',color:'#fff',outline:'none',boxSizing:'border-box',marginBottom:'6px'}}
                   />
-                  <p style={{fontSize:'11px',color:'#555',margin:'-18px 0 24px 0'}}>Phone lets friends find you in search</p>
+                  <p style={{fontSize:'11px',color:'#555',margin:'0 0 12px 0'}}>Phone lets friends find you in search</p>
+                  <input
+                    type="text"
+                    placeholder="ZIP code (optional)"
+                    value={profile.zipCode}
+                    onChange={e => setProfile(p => ({...p, zipCode: e.target.value.replace(/\D/g,'').slice(0,5)}))}
+                    style={{width:'100%',padding:'13px 14px',background:'#0d0d0d',border:'1px solid #333',borderRadius:'10px',fontSize:'15px',color:'#fff',outline:'none',boxSizing:'border-box',marginBottom:'6px'}}
+                  />
+                  <p style={{fontSize:'11px',color:'#555',margin:'0 0 24px 0'}}>We use your ZIP to estimate accurate local grocery prices 🛒</p>
 
                   <div style={{display:'flex',gap:'10px'}}>
                     <button onClick={() => setOnboardingStep(1)} style={{flex:1,padding:'13px',background:'#262626',border:'none',borderRadius:'10px',fontWeight:600,fontSize:'14px',color:'#fff',cursor:'pointer'}}>← Back</button>
@@ -2318,6 +2330,7 @@ const MealPrepApp = ({ pendingJoinCode }) => {
                       id: session.user.id,
                       display_name: profile.displayName,
                       phone: profile.phone,
+                      zip_code: profile.zipCode,
                       avatar_url: profile.avatarPreview,
                       dietary_prefs: profile.dietaryPrefs,
                       household_size: profile.householdSize,
@@ -2448,6 +2461,20 @@ const MealPrepApp = ({ pendingJoinCode }) => {
                   style={{width:'100%',padding:'11px 14px',border:'1px solid #2a2a2a',borderRadius:'8px',fontSize:'14px',background:'#1a1a1a',color:'#fff',outline:'none',boxSizing:'border-box'}}
                 />
                 <p style={{margin:'6px 0 0 0',fontSize:'11px',color:'#555'}}>Optional — lets friends find you by phone number</p>
+              </div>
+
+              {/* ZIP Code */}
+              <div>
+                <label style={{display:'block',marginBottom:'8px',fontWeight:600,color:'#fff',fontSize:'13px',textTransform:'uppercase',letterSpacing:'0.5px'}}>ZIP Code</label>
+                <input
+                  type="text"
+                  value={profile.zipCode}
+                  onChange={e => setProfile(p => ({...p, zipCode: e.target.value.replace(/\D/g,'').slice(0,5)}))}
+                  placeholder="e.g. 90210"
+                  maxLength={5}
+                  style={{width:'100%',padding:'11px 14px',border:'1px solid #2a2a2a',borderRadius:'8px',fontSize:'14px',background:'#1a1a1a',color:'#fff',outline:'none',boxSizing:'border-box'}}
+                />
+                <p style={{margin:'6px 0 0 0',fontSize:'11px',color:'#555'}}>Used to estimate local grocery prices for budget meal planning 🛒</p>
               </div>
 
               {/* Household size */}
@@ -2798,7 +2825,7 @@ const MealPrepApp = ({ pendingJoinCode }) => {
               <div style={{display:'flex',justifyContent:'space-between',marginBottom:'2px'}}>
                 <div>
                   <label style={{fontWeight:600,color:'#51cf66',fontSize:'14px'}}>💰 Budget Friendly Meals</label>
-                  <p style={{margin:'2px 0 0',fontSize:'11px',color:'#4a8a4a'}}>$5 or less per serving · AI estimated using CA prices</p>
+                  <p style={{margin:'2px 0 0',fontSize:'11px',color:'#4a8a4a'}}>$5 or less per serving</p>
                 </div>
                 <span style={{background:'#51cf66',color:'#000',padding:'2px 10px',borderRadius:'8px',fontWeight:700,fontSize:'14px',alignSelf:'flex-start'}}>{autoFillSettings.budgetMeals}</span>
               </div>
@@ -2823,7 +2850,7 @@ const MealPrepApp = ({ pendingJoinCode }) => {
                                 max_tokens: 100,
                                 messages: [{
                                   role: 'user',
-                                  content: `Estimate the cost per serving in USD for this recipe using average California grocery store prices (2024). Reply with ONLY a number like 4.50, nothing else.
+                                  content: `Estimate the cost per serving in USD for this recipe using average grocery store prices${profile.zipCode ? ` for ZIP code ${profile.zipCode}` : ' in California'}. Reply with ONLY a number like 4.50, nothing else.
 
 Recipe: ${recipe.name}
 Servings: ${recipe.servings}

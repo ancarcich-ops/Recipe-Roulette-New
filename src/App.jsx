@@ -1256,8 +1256,10 @@ const MealPrepApp = ({ pendingJoinCode }) => {
             <div style={{display:'flex',alignItems:'center',gap:'10px'}}>
               <img src="/logo.png" alt="Recipe Roulette Logo" style={{width:isMobile?'104px':'128px',height:isMobile?'104px':'128px',objectFit:'contain',flexShrink:0}} />
               <div>
-                <h1 style={{margin:0,fontSize:isMobile?'18px':'22px',fontWeight:600,color:'#f0ece4',lineHeight:1.1,fontFamily:"'Libre Baskerville',serif"}}>Recipe Roulette</h1>
-                <p style={{margin:0,fontSize:'11px',color:'#4a6a52',letterSpacing:'1px'}}>Plan together, eat better</p>
+                <h1 style={{margin:0,fontSize:isMobile?'18px':'22px',lineHeight:1.1,fontFamily:"'Libre Baskerville',serif"}}>
+                  <span style={{fontWeight:700,color:'#f0ece4'}}>Recipe </span><span style={{fontWeight:400,fontStyle:'italic',color:'#c46a3a'}}>Roulette</span>
+                </h1>
+                <p style={{margin:0,fontSize:'10px',color:'#4a6a52',letterSpacing:'2px',fontFamily:"'Jost',sans-serif",textTransform:'uppercase'}}>Plan together, eat better</p>
               </div>
             </div>
             {/* Profile button - always top right */}
@@ -1300,7 +1302,7 @@ const MealPrepApp = ({ pendingJoinCode }) => {
 
             {/* Greeting */}
             <div style={{marginBottom:'28px'}}>
-              <h2 style={{fontSize:isMobile?'22px':'28px',fontWeight:700,color:'#1c2820',margin:'0 0 4px 0'}}>
+              <h2 style={{fontSize:isMobile?'26px':'32px',fontWeight:600,color:'#1c2820',margin:'0 0 4px 0',fontFamily:"'Cormorant Garamond',serif"}}>
                 {(() => { const h = new Date().getHours(); const name = loadingProfile ? '' : (profile.displayName || session?.user?.email?.split('@')[0]); return `Good ${h < 12 ? 'morning' : h < 17 ? 'afternoon' : 'evening'}${name ? `, ${name}` : ''} 👋`; })()}
               </h2>
               <p style={{color:'#6a6050',margin:0,fontSize:'14px'}}>Here is what is cooking today</p>
@@ -1323,7 +1325,7 @@ const MealPrepApp = ({ pendingJoinCode }) => {
                   <div style={{display:'flex',gap:'8px',marginBottom:'24px',overflowX:'auto',paddingBottom:'8px',scrollbarWidth:'none',msOverflowStyle:'none',WebkitOverflowScrolling:'touch'}}>
                     {filters.map(f => (
                       <button key={f.id} onClick={() => setActiveFilter(f.id)}
-                        style={{padding:'6px 14px',background:activeFilter===f.id?'#1c2820':'transparent',color:activeFilter===f.id?'#f0ece4':'#9a9080',border:activeFilter===f.id?'1px solid #1c2820':'1px solid #d8d0c4',borderRadius:'20px',cursor:'pointer',fontWeight:activeFilter===f.id?600:400,fontSize:'12px',whiteSpace:'nowrap',transition:'all 0.15s'}}>
+                        style={{padding:'7px 16px',background:activeFilter===f.id?'#1c2820':'#fefcf8',color:activeFilter===f.id?'#f0ece4':'#6a6050',border:activeFilter===f.id?'1px solid #1c2820':'1px solid #ddd8d0',borderRadius:'20px',cursor:'pointer',fontWeight:activeFilter===f.id?600:400,fontSize:'12px',whiteSpace:'nowrap',transition:'all 0.15s',fontFamily:"'Jost',sans-serif"}}>
                         {f.label}
                       </button>
                     ))}
@@ -1516,7 +1518,7 @@ const MealPrepApp = ({ pendingJoinCode }) => {
               /* ── FOLDER GRID VIEW ── */
               <div>
                 <div style={{marginBottom:'24px'}}>
-                  <h2 style={{fontSize:isMobile?'24px':'30px',fontWeight:700,color:'#1c2820',margin:'0 0 8px 0'}}>Recipe Book</h2>
+                  <h2 style={{fontSize:isMobile?'26px':'30px',fontWeight:600,color:'#1c2820',margin:'0 0 8px 0',fontFamily:"'Cormorant Garamond',serif"}}>Recipe Book</h2>
                   <div style={{display:'flex',flexWrap:'wrap',alignItems:'center',justifyContent:'space-between',gap:'12px'}}>
                     <p style={{color:'#6a6050',margin:0}}>{allMyRecipes.length > 0 ? `${folders.length} folders • ${allMyRecipes.length} recipes` : 'No recipes yet — add your first one!'}</p>
                     <div style={{display:'flex',gap:'8px',flexWrap:'wrap'}}>

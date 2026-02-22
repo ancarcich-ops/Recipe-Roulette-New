@@ -1249,30 +1249,30 @@ const MealPrepApp = ({ pendingJoinCode }) => {
         </div>
       )}
 
-      <div style={{background:'rgba(20,30,22,0.95)',borderBottom:'1px solid #e8e0d4',position:'sticky',top:0,zIndex:100}}>
+      <div style={{background:'#1c2820',borderBottom:'1px solid #2c3c30',position:'sticky',top:0,zIndex:100}}>
         <div style={{maxWidth:'1400px',margin:'0 auto',padding:isMobile?'8px 12px':'10px 24px'}}>
           {/* Top row: logo + profile */}
           <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:isMobile?'8px':0}}>
             <div style={{display:'flex',alignItems:'center',gap:'10px'}}>
               <img src="/logo.png" alt="Recipe Roulette Logo" style={{width:isMobile?'104px':'128px',height:isMobile?'104px':'128px',objectFit:'contain',flexShrink:0}} />
               <div>
-                <h1 style={{margin:0,fontSize:isMobile?'18px':'26px',fontWeight:700,color:'#1c2820',lineHeight:1.1}}>Recipe Roulette</h1>
-                <p style={{margin:0,fontSize:'12px',color:'#6a6050'}}>Plan together, eat better</p>
+                <h1 style={{margin:0,fontSize:isMobile?'18px':'22px',fontWeight:600,color:'#f0ece4',lineHeight:1.1,fontFamily:"'Libre Baskerville',serif"}}>Recipe Roulette</h1>
+                <p style={{margin:0,fontSize:'11px',color:'#4a6a52',letterSpacing:'1px'}}>Plan together, eat better</p>
               </div>
             </div>
             {/* Profile button - always top right */}
             <div style={{display:'flex',alignItems:'center',gap:'8px'}}>
               {saving && <span style={{fontSize:'11px',color:'#5a9a6a',fontWeight:600}}>Saving...</span>}
               <button onClick={() => setShowProfilePanel(true)}
-                style={{display:'flex',alignItems:'center',gap:'8px',background:'#fefcf8',border:'1px solid #e0d8cc',borderRadius:'24px',padding:'5px 12px 5px 5px',cursor:'pointer',transition:'border-color 0.15s'}}>
-                <div style={{width:'30px',height:'30px',borderRadius:'50%',overflow:'hidden',background:'#f0ece4',flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center'}}>
+                style={{display:'flex',alignItems:'center',gap:'8px',background:'rgba(255,255,255,0.08)',border:'1px solid #3a5040',borderRadius:'24px',padding:'5px 12px 5px 5px',cursor:'pointer',transition:'border-color 0.15s'}}>
+                <div style={{width:'30px',height:'30px',borderRadius:'50%',overflow:'hidden',background:'#2c3c2c',flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center'}}>
                   {profile.avatarUrl
                     ? <img src={profile.avatarUrl} alt="avatar" style={{width:'100%',height:'100%',objectFit:'cover'}} />
-                    : <span style={{fontSize:'15px',fontWeight:600,color:'#1c2820',fontFamily:"'Cormorant Garamond',serif"}}>{(profile.displayName || session?.user?.email || 'G')?.charAt(0).toUpperCase()}</span>
+                    : <span style={{fontSize:'15px',fontWeight:600,color:'#f0ece4',fontFamily:"'Cormorant Garamond',serif"}}>{(profile.displayName || session?.user?.email || 'G')?.charAt(0).toUpperCase()}</span>
                   }
                 </div>
                 {!isMobile && (
-                  <span style={{fontSize:'13px',fontWeight:600,color:'#1c2820',maxWidth:'110px',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>
+                  <span style={{fontSize:'13px',fontWeight:500,color:'#c8d8c8',maxWidth:'110px',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>
                     {profile.displayName || session?.user?.email?.split('@')[0]}
                   </span>
                 )}
@@ -1283,7 +1283,7 @@ const MealPrepApp = ({ pendingJoinCode }) => {
           <nav style={{display:'flex',gap:'6px',overflowX:'auto',WebkitOverflowScrolling:'touch',paddingBottom:isMobile?'2px':0,paddingLeft:'2px',scrollbarWidth:'none',msOverflowStyle:'none'}}>
             {[{id:'home',label:'Home'},{id:'calendar',label:'My Meals'},{id:'recipes',label:'Recipe Book'},{id:'community',label:'Community'},{id:'settings',label:'Settings'}].map(item => (
               <button key={item.id} onClick={() => setCurrentView(item.id)}
-                style={{padding:isMobile?'7px 14px':'8px 16px',background:currentView===item.id?'#ffffff':'transparent',color:currentView===item.id?'#000':'#999',border:currentView===item.id?'none':'1px solid #262626',borderRadius:'8px',cursor:'pointer',fontWeight:600,fontSize:isMobile?'12px':'13px',whiteSpace:'nowrap',flexShrink:0}}>
+                style={{padding:isMobile?'8px 14px':'9px 16px',background:'transparent',color:currentView===item.id?'#5a9a6a':'#4a6a52',borderBottom:currentView===item.id?'2px solid #5a9a6a':'2px solid transparent',border:'none',borderRadius:0,cursor:'pointer',fontWeight:currentView===item.id?600:400,fontSize:isMobile?'12px':'13px',whiteSpace:'nowrap',flexShrink:0,letterSpacing:'0.5px',fontFamily:"'Jost',sans-serif"}}>
                 {item.label}
               </button>
             ))}
@@ -1323,7 +1323,7 @@ const MealPrepApp = ({ pendingJoinCode }) => {
                   <div style={{display:'flex',gap:'8px',marginBottom:'24px',overflowX:'auto',paddingBottom:'8px',scrollbarWidth:'none',msOverflowStyle:'none',WebkitOverflowScrolling:'touch'}}>
                     {filters.map(f => (
                       <button key={f.id} onClick={() => setActiveFilter(f.id)}
-                        style={{padding:'7px 16px',background:activeFilter===f.id?'#ffffff':'#1a1a1a',color:activeFilter===f.id?'#000':'#999',border:activeFilter===f.id?'none':'1px solid #262626',borderRadius:'20px',cursor:'pointer',fontWeight:600,fontSize:'13px',whiteSpace:'nowrap',transition:'all 0.15s'}}>
+                        style={{padding:'6px 14px',background:activeFilter===f.id?'#1c2820':'transparent',color:activeFilter===f.id?'#f0ece4':'#9a9080',border:activeFilter===f.id?'1px solid #1c2820':'1px solid #d8d0c4',borderRadius:'20px',cursor:'pointer',fontWeight:activeFilter===f.id?600:400,fontSize:'12px',whiteSpace:'nowrap',transition:'all 0.15s'}}>
                         {f.label}
                       </button>
                     ))}
@@ -1431,49 +1431,48 @@ const MealPrepApp = ({ pendingJoinCode }) => {
         {currentView === 'calendar' && (
           <div>
             <div style={{marginBottom:'24px'}}>
-              <h2 style={{fontSize:isMobile?'24px':'30px',fontWeight:700,color:'#1c2820',margin:'0 0 2px 0'}} style={{fontFamily:"'Cormorant Garamond',serif",fontStyle:'italic'}}>Weekly Meal Plan</h2>
+              <h2 style={{fontSize:isMobile?'24px':'30px',fontWeight:600,color:'#1c2820',margin:'0 0 2px 0',fontFamily:"'Cormorant Garamond',serif",fontStyle:'italic'}}>Weekly Meal Plan</h2>
               <p style={{color:'#6a6050',margin:'0 0 14px 0',fontSize:'13px'}}>Drag meals to rearrange • Click to view details</p>
-              <p style={{color:'#6a6050',margin:'0 0 14px 0',fontSize:'13px'}}>✨ Auto-Fill to populate the week instantly</p>
-              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'10px'}}>
-                <button onClick={() => setShowAutoFillModal(true)} style={{padding:'11px',background:'#ffffff',border:'none',borderRadius:'8px',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:'6px',fontWeight:600,fontSize:'13px',color:'#1c2820'}}>
-                  <Wand2 size={16} /> Auto-Fill
+              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'8px'}}>
+                <button onClick={() => setShowAutoFillModal(true)} style={{padding:'11px',background:'#fefcf8',border:'1px solid #1c2820',borderRadius:'4px',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:'6px',fontWeight:500,fontSize:'13px',color:'#1c2820',fontFamily:"'Jost',sans-serif"}}>
+                  <Wand2 size={15} /> Auto-Fill
                 </button>
-                <button onClick={() => setShowShoppingList(true)} style={{padding:'11px',background:'#fefcf8',border:'1px solid #e0d8cc',borderRadius:'8px',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:'6px',fontWeight:600,fontSize:'13px',color:'#1c2820'}}>
-                  <ShoppingCart size={16} /> Shopping List
+                <button onClick={() => setShowShoppingList(true)} style={{padding:'11px',background:'#fefcf8',border:'1px solid #1c2820',borderRadius:'4px',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:'6px',fontWeight:500,fontSize:'13px',color:'#1c2820',fontFamily:"'Jost',sans-serif"}}>
+                  <ShoppingCart size={15} /> Shopping List
                 </button>
-                <button onClick={() => setShowMealPlanShare(true)} style={{padding:'11px',background:'#fefcf8',border:'1px solid #e0d8cc',borderRadius:'8px',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:'6px',fontWeight:600,fontSize:'13px',color:'#a78bfa'}}>
+                <button onClick={() => setShowMealPlanShare(true)} style={{padding:'11px',background:'#fefcf8',border:'1px solid #d0c8bc',borderRadius:'4px',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:'6px',fontWeight:500,fontSize:'13px',color:'#9a9080',fontFamily:"'Jost',sans-serif"}}>
                   📤 Share Week
                 </button>
-                <button onClick={clearAllMeals} style={{padding:'11px',background:'#fefcf8',border:'1px solid #ff4444',borderRadius:'8px',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:'6px',fontWeight:600,fontSize:'13px',color:'#ff4444'}}>
-                  <X size={16} /> Clear All
+                <button onClick={clearAllMeals} style={{padding:'11px',background:'#fefcf8',border:'1px solid #c46a3a',borderRadius:'4px',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:'6px',fontWeight:500,fontSize:'13px',color:'#c46a3a',fontFamily:"'Jost',sans-serif"}}>
+                  <X size={15} /> Clear All
                 </button>
               </div>
             </div>
             <div style={{display:'flex',flexDirection:'column',gap:'10px'}}>
               {daysOfWeek.map((day, dayIndex) => (
-                <div key={day} style={{background: isToday(dayIndex) ? '#1e3a2f' : '#1a1a1a',borderRadius:'12px',border: isToday(dayIndex) ? '1px solid #51cf66' : '1px solid #262626',overflow:'hidden'}}>
+                <div key={day} style={{background:'#fff',borderRadius:'6px',borderTop:`1px solid ${isToday(dayIndex)?'#c0dcc8':'#e8e0d4'}`,borderRight:`1px solid ${isToday(dayIndex)?'#c0dcc8':'#e8e0d4'}`,borderBottom:`1px solid ${isToday(dayIndex)?'#c0dcc8':'#e8e0d4'}`,borderLeft:isToday(dayIndex)?'3px solid #5a9a6a':'3px solid #d8d0c4',overflow:'hidden',boxShadow:'0 1px 4px rgba(0,0,0,0.04)'}}>
                   {/* Day header */}
-                  <div style={{display:'flex',alignItems:'center',gap:'10px',padding:'12px 16px',borderBottom:'1px solid',borderBottomColor: isToday(dayIndex) ? 'rgba(81,207,102,0.2)' : '#262626'}}>
-                    <span style={{fontSize:'14px',fontWeight:700,color: isToday(dayIndex) ? '#51cf66' : '#fff',textTransform:'uppercase',letterSpacing:'0.5px'}}>{day}</span>
-                    <span style={{fontSize:'13px',color: isToday(dayIndex) ? '#51cf66' : '#555',fontWeight:500}}>{formatDayDate(dayIndex)}</span>
-                    {isToday(dayIndex) && <span style={{marginLeft:'auto',fontSize:'11px',fontWeight:600,color:'#5a9a6a',background:'rgba(81,207,102,0.1)',padding:'3px 8px',borderRadius:'20px'}}>Today</span>}
+                  <div style={{display:'flex',alignItems:'center',gap:'10px',padding:'10px 14px',borderBottom:'1px solid',borderBottomColor: isToday(dayIndex) ? '#e0f0e4' : '#f0ece4',background: isToday(dayIndex) ? '#f4fbf6' : '#faf8f4'}}>
+                    <span style={{fontSize:'16px',fontWeight:600,color:'#1c2820',fontFamily:"'Cormorant Garamond',serif"}}>{day}</span>
+                    <span style={{fontSize:'11px',color:'#9a9080',fontFamily:"'Jost',sans-serif"}}>{formatDayDate(dayIndex)}</span>
+                    {isToday(dayIndex) && <span style={{marginLeft:'auto',fontSize:'9px',fontWeight:500,color:'#5a9a6a',border:'1px solid #5a9a6a',padding:'2px 8px',borderRadius:'2px',letterSpacing:'2px',textTransform:'uppercase',fontFamily:"'Jost',sans-serif"}}>Today</span>}
                   </div>
                   {/* Meal slots - 3 columns */}
                   <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:'8px',padding:'12px 16px'}}>
                     {mealTypes.map(mealType => {
                       const disabled = isSlotDisabled(dayIndex, mealType);
                       const meal = mealPlan[dayIndex][mealType];
-                      const mealColors = {breakfast:'#fbbf24',lunch:'#51cf66',dinner:'#7dd3fc'};
+                      const mealColors = {breakfast:'#b06a10',lunch:'#3a6a40',dinner:'#2a3a7a'};
                       return (
                         <div key={mealType}
                           data-dropzone="true" data-day={dayIndex} data-meal={mealType}
                           onDragOver={handleDragOver} onDrop={(e) => handleDrop(e, dayIndex, mealType)}
-                          style={{borderRadius:'8px',padding:'8px',minHeight:'80px',border: disabled ? '2px solid #1e1e1e' : draggedMeal && !(draggedMeal.d===dayIndex && draggedMeal.mt===mealType) ? '2px dashed #51cf66' : '2px dashed #2a2a2a',position:'relative',opacity:disabled?0.4:1,transition:'border-color 0.15s',background:'#f0ece4'}}>
+                          style={{borderRadius:'4px',padding:'8px',minHeight:'80px',border: disabled ? '1px dashed #d8d0c4' : draggedMeal && !(draggedMeal.d===dayIndex && draggedMeal.mt===mealType) ? '1px dashed #5a9a6a' : '1px solid #e8e4dc',position:'relative',opacity:disabled?0.4:1,transition:'border-color 0.15s',background: isToday(dayIndex) ? '#f6fbf8' : '#faf8f4'}}>
                           <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:'6px'}}>
                             <p style={{margin:0,fontSize:'9px',color:mealColors[mealType],textTransform:'uppercase',fontWeight:700,letterSpacing:'0.5px'}}>{mealType}</p>
                             {!meal && (
                               <button onClick={() => toggleSlotDisabled(dayIndex, mealType)}
-                                style={{background:'none',border:'none',cursor:'pointer',padding:0,color:disabled?'#51cf66':'#2a2a2a',fontSize:'16px',lineHeight:1}}>
+                                style={{background:'none',border:'none',cursor:'pointer',padding:0,color:disabled?'#5a9a6a':'#9a9080',fontSize:'16px',lineHeight:1}}>
                                 {disabled ? '+' : '×'}
                               </button>
                             )}

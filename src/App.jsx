@@ -337,6 +337,8 @@ const MealPrepApp = ({ pendingJoinCode }) => {
   const [loadingSession, setLoadingSession] = useState(true);
   const [guestMode, setGuestMode] = useState(false);
   const [loadingProfile, setLoadingProfile] = useState(true);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [onboardingStep, setOnboardingStep] = useState(1);
   const [saving, setSaving] = useState(false);
   const [showProfilePanel, setShowProfilePanel] = useState(false);
   const [profile, setProfile] = useState({
@@ -644,6 +646,14 @@ const MealPrepApp = ({ pendingJoinCode }) => {
         dietaryPrefs: prof.dietary_prefs || [],
         householdSize: (prof.adults || 2) + (prof.children || 0), adults: prof.adults ?? 2, children: prof.children ?? 0
       });
+      if (!prof.onboarding_complete) {
+        setShowOnboarding(true);
+        setOnboardingStep(1);
+      }
+    } else {
+      // Brand new user — no profile yet
+      setShowOnboarding(true);
+      setOnboardingStep(1);
     }
     setLoadingProfile(false);
     // Load user ratings
@@ -1427,40 +1437,29 @@ const MealPrepApp = ({ pendingJoinCode }) => {
                 </button>
               </div>
             </div>
-            <div style={{display:'flex',flexDirection:'column',gap:'10px'}}>
-              {daysOfWeek.map((day, dayIndex) => (
-                <div key={day} style={{background: isToday(dayIndex) ? '#1e3a2f' : '#1a1a1a',borderRadius:'12px',border: isToday(dayIndex) ? '1px solid #51cf66' : '1px solid #262626',overflow:'hidden'}}>
-                  {/* Day header */}
-                  <div style={{display:'flex',alignItems:'center',gap:'10px',padding:'12px 16px',borderBottom:'1px solid',borderBottomColor: isToday(dayIndex) ? 'rgba(81,207,102,0.2)' : '#262626'}}>
-                    <div>
-                      <span style={{fontSize:'14px',fontWeight:700,color: isToday(dayIndex) ? '#51cf66' : '#fff',textTransform:'uppercase',letterSpacing:'0.5px'}}>{day}</span>
-                      <span style={{fontSize:'13px',color: isToday(dayIndex) ? '#51cf66' : '#555',marginLeft:'8px',fontWeight:500}}>{formatDayDate(dayIndex)}</span>
-                    </div>
-                    {isToday(dayIndex) && <span style={{marginLeft:'auto',fontSize:'11px',fontWeight:600,color:'#51cf66',background:'rgba(81,207,102,0.1)',padding:'3px 8px',borderRadius:'20px'}}>Today</span>}
-                  </div>
-                  {/* Meal slots - horizontal row */}
-                  <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:'8px',padding:'12px 16px'}}>
+            <div style={{background:'#1a1a1a',borderRadius:'8px',padding:'20px',border:'1px solid #262626',overflowX: isMobile ? 'auto' : 'visible',WebkitOverflowScrolling:'touch'}}>
+              <div style={{display:'grid',gridTemplateColumns: isMobile ? 'repeat(7, 140px)' : 'repeat(7, 1fr)',gap:'10px',minWidth: isMobile ? 'max-content' : 'auto'}}>
+                {daysOfWeek.map((day, dayIndex) => (
+                  <div key={day} style={{background: isToday(dayIndex) ? '#1e3a2f' : '#262626',borderRadius:'8px',padding:'10px',border: isToday(dayIndex) ? '1px solid #51cf66' : '1px solid transparent'}}>
+                    <h3 style={{margin:'0 0 2px 0',fontSize:'11px',fontWeight:700,color: isToday(dayIndex) ? '#51cf66' : '#fff',textAlign:'center',textTransform:'uppercase',letterSpacing:'0.5px'}}>{day.slice(0,3)}</h3>
+                    <p style={{margin:'0 0 8px 0',fontSize:'10px',color: isToday(dayIndex) ? '#51cf66' : '#666',textAlign:'center',fontWeight:500}}>{formatDayDate(dayIndex)}</p>
                     {mealTypes.map(mealType => {
                       const disabled = isSlotDisabled(dayIndex, mealType);
                       const meal = mealPlan[dayIndex][mealType];
-                      const mealColors = {breakfast:'#fbbf24',lunch:'#51cf66',dinner:'#7dd3fc'};
                       return (
                         <div key={mealType}
                           data-dropzone="true" data-day={dayIndex} data-meal={mealType}
                           onDragOver={handleDragOver} onDrop={(e) => handleDrop(e, dayIndex, mealType)}
-                          style={{borderRadius:'8px',padding:'8px',minHeight:'80px',border: disabled ? '2px solid #262626' : draggedMeal && !(draggedMeal.d===dayIndex && draggedMeal.mt===mealType) ? '2px dashed #51cf66' : '2px dashed #2a2a2a',position:'relative',opacity:disabled?0.4:1,transition:'border-color 0.15s',background:'#0d0d0d'}}>
-                          {/* Meal type label */}
-                          <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:'6px'}}>
-                            <p style={{margin:0,fontSize:'9px',color:mealColors[mealType],textTransform:'uppercase',fontWeight:700,letterSpacing:'0.5px'}}>{mealType}</p>
-                            {!meal && (
-                              <button onClick={() => toggleSlotDisabled(dayIndex, mealType)}
-                                style={{background:'none',border:'none',cursor:'pointer',padding:0,color:disabled?'#51cf66':'#333',fontSize:'14px',lineHeight:1}}>
-                                {disabled ? '+' : '×'}
-                              </button>
-                            )}
-                          </div>
+                          style={{background:'#1a1a1a',borderRadius:'8px',padding:'8px',marginBottom:'8px',minHeight:'68px',border:disabled?'2px solid #333': draggedMeal && !(draggedMeal.d===dayIndex && draggedMeal.mt===mealType) ? '2px dashed #51cf66' : '2px dashed #262626',position:'relative',opacity:disabled?0.5:1,transition:'border-color 0.15s'}}>
+                          {!meal && (
+                            <button onClick={() => toggleSlotDisabled(dayIndex, mealType)}
+                              style={{position:'absolute',top:'-7px',right:'-7px',background:disabled?'#51cf66':'#ff4444',border:'2px solid #1a1a1a',borderRadius:'50%',width:'20px',height:'20px',display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',padding:0,zIndex:10,color:'white',fontSize:'13px',fontWeight:'bold'}}>
+                              {disabled ? '+' : <X size={10} />}
+                            </button>
+                          )}
+                          <p style={{margin:'0 0 5px 0',fontSize:'9px',color:'#999',textTransform:'uppercase',fontWeight:600}}>{mealType}</p>
                           {disabled ? (
-                            <p style={{margin:0,fontSize:'10px',color:'#333',textAlign:'center',paddingTop:'4px'}}>Off</p>
+                            <p style={{margin:0,fontSize:'10px',color:'#555',textAlign:'center',paddingTop:'6px'}}>Disabled</p>
                           ) : meal ? (
                             <div draggable={true}
                               onDragStart={(e) => handleDragStart(e, dayIndex, mealType, meal)}
@@ -1468,22 +1467,24 @@ const MealPrepApp = ({ pendingJoinCode }) => {
                               onTouchMove={handleTouchMove}
                               onTouchEnd={handleTouchEnd}
                               onClick={() => setSelectedRecipe(meal)}
-                              style={{cursor:'pointer',userSelect:'none',WebkitUserSelect:'none',touchAction:'none'}}>
-                              {meal.image && <div style={{height:'48px',backgroundImage:`url(${meal.image})`,backgroundSize:'cover',backgroundPosition:'center',borderRadius:'5px',marginBottom:'5px'}} />}
-                              <p style={{margin:0,fontSize:'10px',color:'#fff',fontWeight:600,lineHeight:1.3}}>{meal.name}</p>
+                              style={{background:'#fff',borderRadius:'6px',padding:'6px',position:'relative',cursor:'grab',userSelect:'none',WebkitUserSelect:'none',touchAction:'none'}}>
                               <button onClick={e => { e.stopPropagation(); removeMealFromPlan(dayIndex, mealType); }}
-                                style={{marginTop:'4px',background:'none',border:'none',cursor:'pointer',color:'#555',fontSize:'10px',padding:0}}>Remove</button>
+                                style={{position:'absolute',top:'3px',right:'3px',background:'rgba(0,0,0,0.4)',border:'none',borderRadius:'50%',width:'16px',height:'16px',display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',padding:0}}>
+                                <X size={10} color="white" />
+                              </button>
+                              <p style={{margin:0,fontSize:'10px',color:'#000',fontWeight:600,paddingRight:'14px',lineHeight:1.3}}>{meal.name}</p>
+                              {meal.cookTime < 20 && <span style={{fontSize:'9px',color:'#555'}}>Quick</span>}
                             </div>
                           ) : (
                             <button onClick={() => setShowRecipeSelector({dayIndex, mealType})}
-                              style={{background:'none',border:'none',cursor:'pointer',color:'#333',fontSize:'22px',width:'100%',height:'44px',display:'flex',alignItems:'center',justifyContent:'center'}}>+</button>
+                              style={{background:'none',border:'none',cursor:'pointer',color:'#555',fontSize:'20px',width:'100%',height:'30px',display:'flex',alignItems:'center',justifyContent:'center'}}>+</button>
                           )}
                         </div>
                       );
                     })}
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           </div>
         )}
@@ -1996,6 +1997,246 @@ const MealPrepApp = ({ pendingJoinCode }) => {
                 </div>
               </>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* ── ONBOARDING MODAL ── */}
+      {showOnboarding && session?.user && (
+        <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.95)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:9000,padding:'20px',overflowY:'auto'}}>
+          <div style={{background:'#1a1a1a',borderRadius:'20px',maxWidth:'460px',width:'100%',border:'1px solid #262626',overflow:'hidden'}}>
+
+            {/* Progress bar */}
+            <div style={{height:'3px',background:'#262626'}}>
+              <div style={{height:'100%',background:'#fff',width:`${(onboardingStep/6)*100}%`,transition:'width 0.3s ease'}} />
+            </div>
+
+            <div style={{padding:'32px 28px'}}>
+
+              {/* STEP 1 — Welcome */}
+              {onboardingStep === 1 && (
+                <div style={{textAlign:'center'}}>
+                  <img src="/logo.png" alt="Logo" style={{width:'80px',height:'80px',objectFit:'contain',marginBottom:'20px'}} />
+                  <h1 style={{fontSize:'28px',fontWeight:800,color:'#fff',margin:'0 0 10px 0'}}>Welcome to Recipe Roulette!</h1>
+                  <p style={{fontSize:'15px',color:'#666',margin:'0 0 32px 0',lineHeight:1.6}}>Let's get your account set up in just a few steps so we can personalize your experience.</p>
+                  <button onClick={() => setOnboardingStep(2)}
+                    style={{width:'100%',padding:'14px',background:'#fff',border:'none',borderRadius:'10px',fontWeight:700,fontSize:'16px',color:'#000',cursor:'pointer'}}>
+                    Let's Go →
+                  </button>
+                  <button onClick={async () => {
+                    await supabase.from('profiles').upsert({ id: session.user.id, onboarding_complete: true }, { onConflict: 'id' });
+                    setShowOnboarding(false);
+                  }} style={{marginTop:'12px',background:'none',border:'none',cursor:'pointer',color:'#444',fontSize:'13px',textDecoration:'underline'}}>
+                    Skip for now
+                  </button>
+                </div>
+              )}
+
+              {/* STEP 2 — Name + Avatar */}
+              {onboardingStep === 2 && (
+                <div>
+                  <p style={{fontSize:'12px',color:'#666',margin:'0 0 4px 0',textTransform:'uppercase',letterSpacing:'1px',fontWeight:600}}>Step 1 of 4</p>
+                  <h2 style={{fontSize:'22px',fontWeight:800,color:'#fff',margin:'0 0 6px 0'}}>What's your name?</h2>
+                  <p style={{fontSize:'14px',color:'#666',margin:'0 0 24px 0'}}>This is how you'll appear to other users</p>
+
+                  {/* Avatar picker */}
+                  <div style={{display:'flex',justifyContent:'center',marginBottom:'20px'}}>
+                    <label style={{cursor:'pointer',position:'relative'}}>
+                      <div style={{width:'80px',height:'80px',borderRadius:'50%',background:'#262626',border:'2px dashed #444',display:'flex',alignItems:'center',justifyContent:'center',overflow:'hidden',fontSize:'32px'}}>
+                        {profile.avatarPreview ? <img src={profile.avatarPreview} style={{width:'100%',height:'100%',objectFit:'cover'}} /> : '📷'}
+                      </div>
+                      <div style={{position:'absolute',bottom:0,right:0,background:'#fff',borderRadius:'50%',width:'24px',height:'24px',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'12px'}}>✏️</div>
+                      <input type="file" accept="image/*" style={{display:'none'}} onChange={e => {
+                        const file = e.target.files[0];
+                        if (file) {
+                          const reader = new FileReader();
+                          reader.onload = ev => setProfile(p => ({...p, avatarPreview: ev.target.result}));
+                          reader.readAsDataURL(file);
+                        }
+                      }} />
+                    </label>
+                  </div>
+
+                  <input
+                    type="text"
+                    placeholder="Your display name"
+                    value={profile.displayName}
+                    onChange={e => setProfile(p => ({...p, displayName: e.target.value}))}
+                    style={{width:'100%',padding:'13px 14px',background:'#0d0d0d',border:'1px solid #333',borderRadius:'10px',fontSize:'15px',color:'#fff',outline:'none',boxSizing:'border-box',marginBottom:'12px'}}
+                  />
+                  <input
+                    type="tel"
+                    placeholder="Phone number (optional)"
+                    value={profile.phone}
+                    onChange={e => setProfile(p => ({...p, phone: e.target.value}))}
+                    style={{width:'100%',padding:'13px 14px',background:'#0d0d0d',border:'1px solid #333',borderRadius:'10px',fontSize:'15px',color:'#fff',outline:'none',boxSizing:'border-box',marginBottom:'24px'}}
+                  />
+                  <p style={{fontSize:'11px',color:'#555',margin:'-18px 0 24px 0'}}>Phone lets friends find you in search</p>
+
+                  <div style={{display:'flex',gap:'10px'}}>
+                    <button onClick={() => setOnboardingStep(1)} style={{flex:1,padding:'13px',background:'#262626',border:'none',borderRadius:'10px',fontWeight:600,fontSize:'14px',color:'#fff',cursor:'pointer'}}>← Back</button>
+                    <button onClick={() => setOnboardingStep(3)} disabled={!profile.displayName.trim()}
+                      style={{flex:2,padding:'13px',background:profile.displayName.trim()?'#fff':'#333',border:'none',borderRadius:'10px',fontWeight:700,fontSize:'14px',color:profile.displayName.trim()?'#000':'#666',cursor:profile.displayName.trim()?'pointer':'not-allowed'}}>
+                      Continue →
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* STEP 3 — Household size */}
+              {onboardingStep === 3 && (
+                <div>
+                  <p style={{fontSize:'12px',color:'#666',margin:'0 0 4px 0',textTransform:'uppercase',letterSpacing:'1px',fontWeight:600}}>Step 2 of 4</p>
+                  <h2 style={{fontSize:'22px',fontWeight:800,color:'#fff',margin:'0 0 6px 0'}}>Who are you cooking for?</h2>
+                  <p style={{fontSize:'14px',color:'#666',margin:'0 0 24px 0'}}>We'll use this to scale ingredient quantities</p>
+
+                  <div style={{display:'flex',gap:'12px',marginBottom:'24px'}}>
+                    {[{key:'adults',label:'👩 Adults',min:1},{key:'children',label:'🧒 Children',min:0}].map(({key,label,min}) => (
+                      <div key={key} style={{flex:1,background:'#0d0d0d',border:'1px solid #262626',borderRadius:'12px',padding:'16px',textAlign:'center'}}>
+                        <p style={{margin:'0 0 12px 0',fontSize:'12px',fontWeight:600,color:'#999',textTransform:'uppercase',letterSpacing:'0.5px'}}>{label}</p>
+                        <div style={{display:'flex',alignItems:'center',justifyContent:'center',gap:'16px'}}>
+                          <button onClick={() => setProfile(p => {const v=Math.max(min,p[key]-1);return{...p,[key]:v,householdSize:(key==='adults'?v:p.adults)+(key==='children'?v:p.children)};} )}
+                            style={{width:'36px',height:'36px',borderRadius:'50%',background:'#262626',border:'none',cursor:'pointer',color:'#fff',fontSize:'20px',fontWeight:700,display:'flex',alignItems:'center',justifyContent:'center'}}>−</button>
+                          <span style={{fontSize:'28px',fontWeight:800,color:'#fff',minWidth:'32px',textAlign:'center'}}>{profile[key]}</span>
+                          <button onClick={() => setProfile(p => {const v=Math.min(10,p[key]+1);return{...p,[key]:v,householdSize:(key==='adults'?v:p.adults)+(key==='children'?v:p.children)};} )}
+                            style={{width:'36px',height:'36px',borderRadius:'50%',background:'#262626',border:'none',cursor:'pointer',color:'#fff',fontSize:'20px',fontWeight:700,display:'flex',alignItems:'center',justifyContent:'center'}}>+</button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <p style={{fontSize:'13px',color:'#555',textAlign:'center',marginBottom:'24px'}}>
+                    {profile.householdSize === 1 ? 'Just you 🧑' : `${profile.householdSize} people total 👨‍👩‍👧‍👦`}
+                  </p>
+
+                  <div style={{display:'flex',gap:'10px'}}>
+                    <button onClick={() => setOnboardingStep(2)} style={{flex:1,padding:'13px',background:'#262626',border:'none',borderRadius:'10px',fontWeight:600,fontSize:'14px',color:'#fff',cursor:'pointer'}}>← Back</button>
+                    <button onClick={() => setOnboardingStep(4)} style={{flex:2,padding:'13px',background:'#fff',border:'none',borderRadius:'10px',fontWeight:700,fontSize:'14px',color:'#000',cursor:'pointer'}}>Continue →</button>
+                  </div>
+                </div>
+              )}
+
+              {/* STEP 4 — Dietary prefs */}
+              {onboardingStep === 4 && (
+                <div>
+                  <p style={{fontSize:'12px',color:'#666',margin:'0 0 4px 0',textTransform:'uppercase',letterSpacing:'1px',fontWeight:600}}>Step 3 of 4</p>
+                  <h2 style={{fontSize:'22px',fontWeight:800,color:'#fff',margin:'0 0 6px 0'}}>Any dietary preferences?</h2>
+                  <p style={{fontSize:'14px',color:'#666',margin:'0 0 20px 0'}}>Select all that apply — you can change these anytime</p>
+
+                  <div style={{display:'flex',flexWrap:'wrap',gap:'8px',marginBottom:'24px'}}>
+                    {[
+                      {id:'whole30',label:'💪 Whole30'},
+                      {id:'vegetarian',label:'🥦 Vegetarian'},
+                      {id:'vegan',label:'🌱 Vegan'},
+                      {id:'gluten-free',label:'🌾 Gluten-Free'},
+                      {id:'dairy-free',label:'🥛 Dairy-Free'},
+                      {id:'keto',label:'🥩 Keto'},
+                      {id:'paleo',label:'🍖 Paleo'},
+                      {id:'nut-free',label:'🥜 Nut-Free'},
+                      {id:'low-carb',label:'📉 Low-Carb'},
+                      {id:'high-protein',label:'💪 High-Protein'},
+                    ].map(pref => {
+                      const active = profile.dietaryPrefs.includes(pref.id);
+                      return (
+                        <button key={pref.id} onClick={() => setProfile(p => ({...p, dietaryPrefs: active ? p.dietaryPrefs.filter(x=>x!==pref.id) : [...p.dietaryPrefs, pref.id]}))}
+                          style={{padding:'9px 14px',borderRadius:'20px',border:`1px solid ${active?'#fff':'#333'}`,background:active?'#fff':'transparent',color:active?'#000':'#999',fontWeight:600,fontSize:'13px',cursor:'pointer'}}>
+                          {pref.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  <div style={{display:'flex',gap:'10px'}}>
+                    <button onClick={() => setOnboardingStep(3)} style={{flex:1,padding:'13px',background:'#262626',border:'none',borderRadius:'10px',fontWeight:600,fontSize:'14px',color:'#fff',cursor:'pointer'}}>← Back</button>
+                    <button onClick={() => setOnboardingStep(5)} style={{flex:2,padding:'13px',background:'#fff',border:'none',borderRadius:'10px',fontWeight:700,fontSize:'14px',color:'#000',cursor:'pointer'}}>Continue →</button>
+                  </div>
+                </div>
+              )}
+
+              {/* STEP 5 — Find people / invite */}
+              {onboardingStep === 5 && (
+                <div>
+                  <p style={{fontSize:'12px',color:'#666',margin:'0 0 4px 0',textTransform:'uppercase',letterSpacing:'1px',fontWeight:600}}>Step 4 of 4</p>
+                  <h2 style={{fontSize:'22px',fontWeight:800,color:'#fff',margin:'0 0 6px 0'}}>Cook with someone?</h2>
+                  <p style={{fontSize:'14px',color:'#666',margin:'0 0 20px 0'}}>Invite a partner or roommate to share your meal plan</p>
+
+                  <div style={{display:'flex',flexDirection:'column',gap:'10px',marginBottom:'24px'}}>
+                    <button onClick={async () => {
+                      const hh = await createHousehold();
+                      if (hh) {
+                        const url = `${window.location.origin}${window.location.pathname}?join=${hh.invite_code}`;
+                        await navigator.clipboard.writeText(url);
+                        setHouseholdToast('copied');
+                        setTimeout(() => setHouseholdToast(''), 2500);
+                      }
+                    }} style={{padding:'14px',background:'#fff',border:'none',borderRadius:'10px',fontWeight:700,fontSize:'14px',color:'#000',cursor:'pointer',textAlign:'left',display:'flex',alignItems:'center',gap:'12px'}}>
+                      <span style={{fontSize:'24px'}}>👨‍👩‍👧</span>
+                      <div>
+                        <div>Create a Household</div>
+                        <div style={{fontSize:'12px',color:'#666',fontWeight:400,marginTop:'2px'}}>Get an invite link to share with up to 3 people</div>
+                      </div>
+                    </button>
+                    <button onClick={() => { setShowOnboarding(false); setShowFindPeople(true); }}
+                      style={{padding:'14px',background:'#1a1a1a',border:'1px solid #333',borderRadius:'10px',fontWeight:600,fontSize:'14px',color:'#fff',cursor:'pointer',textAlign:'left',display:'flex',alignItems:'center',gap:'12px'}}>
+                      <span style={{fontSize:'24px'}}>🔍</span>
+                      <div>
+                        <div>Find Friends</div>
+                        <div style={{fontSize:'12px',color:'#666',fontWeight:400,marginTop:'2px'}}>Search by username or phone number</div>
+                      </div>
+                    </button>
+                  </div>
+                  {householdToast === 'copied' && <p style={{color:'#51cf66',fontSize:'13px',textAlign:'center',marginBottom:'12px'}}>✓ Invite link copied to clipboard!</p>}
+
+                  <div style={{display:'flex',gap:'10px'}}>
+                    <button onClick={() => setOnboardingStep(4)} style={{flex:1,padding:'13px',background:'#262626',border:'none',borderRadius:'10px',fontWeight:600,fontSize:'14px',color:'#fff',cursor:'pointer'}}>← Back</button>
+                    <button onClick={() => setOnboardingStep(6)} style={{flex:2,padding:'13px',background:'#1a1a1a',border:'1px solid #333',borderRadius:'10px',fontWeight:600,fontSize:'14px',color:'#999',cursor:'pointer'}}>Skip →</button>
+                  </div>
+                </div>
+              )}
+
+              {/* STEP 6 — All set! */}
+              {onboardingStep === 6 && (
+                <div style={{textAlign:'center'}}>
+                  <div style={{fontSize:'60px',marginBottom:'16px'}}>🎉</div>
+                  <h2 style={{fontSize:'26px',fontWeight:800,color:'#fff',margin:'0 0 10px 0'}}>You're all set!</h2>
+                  <p style={{fontSize:'14px',color:'#666',margin:'0 0 24px 0',lineHeight:1.6}}>
+                    {profile.displayName ? `Welcome, ${profile.displayName}! ` : ''}Time to start planning some amazing meals.
+                  </p>
+                  <div style={{background:'#0d0d0d',borderRadius:'12px',padding:'16px',marginBottom:'24px',textAlign:'left'}}>
+                    {profile.displayName && <div style={{fontSize:'13px',color:'#999',marginBottom:'6px'}}>✓ Name: <span style={{color:'#fff'}}>{profile.displayName}</span></div>}
+                    <div style={{fontSize:'13px',color:'#999',marginBottom:'6px'}}>✓ Household: <span style={{color:'#fff'}}>{profile.householdSize} {profile.householdSize === 1 ? 'person' : 'people'}</span></div>
+                    {profile.dietaryPrefs.length > 0 && <div style={{fontSize:'13px',color:'#999'}}>✓ Diet: <span style={{color:'#fff'}}>{profile.dietaryPrefs.join(', ')}</span></div>}
+                  </div>
+                  <button onClick={async () => {
+                    // Save everything to Supabase
+                    await supabase.from('profiles').upsert({
+                      id: session.user.id,
+                      display_name: profile.displayName,
+                      phone: profile.phone,
+                      avatar_url: profile.avatarPreview,
+                      dietary_prefs: profile.dietaryPrefs,
+                      household_size: profile.householdSize,
+                      adults: profile.adults,
+                      children: profile.children,
+                      onboarding_complete: true,
+                      updated_at: new Date().toISOString()
+                    }, { onConflict: 'id' });
+                    // Update public profile
+                    if (profile.displayName) {
+                      await supabase.from('user_profiles_public').upsert({
+                        user_id: session.user.id,
+                        username: profile.displayName,
+                        phone: profile.phone,
+                        avatar_url: profile.avatarPreview,
+                      }, { onConflict: 'user_id' });
+                    }
+                    setShowOnboarding(false);
+                  }} style={{width:'100%',padding:'14px',background:'#fff',border:'none',borderRadius:'10px',fontWeight:700,fontSize:'16px',color:'#000',cursor:'pointer'}}>
+                    Let's Cook! 🎲
+                  </button>
+                </div>
+              )}
+
+            </div>
           </div>
         </div>
       )}

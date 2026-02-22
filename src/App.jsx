@@ -1645,10 +1645,13 @@ const MealPrepApp = ({ pendingJoinCode }) => {
                               </div>
                             )}
                             <div onClick={() => { if (selectionMode && isUserRecipe) { setSelectedRecipeIds(prev => { const n = new Set(prev); n.has(recipe.id) ? n.delete(recipe.id) : n.add(recipe.id); return n; }); } else if (!selectionMode) { setSelectedRecipe(recipe); } }} style={{cursor:'pointer'}}>
-                              <div style={{height:'170px',backgroundImage:recipe.image?`url(${recipe.image})`:'none',backgroundSize:'cover',backgroundPosition:'center',position:'relative',background:recipe.image?'transparent':'#0d0d0d',display:'flex',alignItems:'center',justifyContent:'center'}}>
-                                {!recipe.image && <p style={{margin:0,fontSize:'16px',fontWeight:700,color:'#fff',textAlign:'center',padding:'0 12px',lineHeight:1.3,zIndex:1}}>{recipe.name}</p>}
-                                {recipe.timesMade === 0 && !selectionMode && <div style={{position:'absolute',top:'10px',right:'10px',background:'#ff6b6b',color:'white',padding:'3px 8px',borderRadius:'6px',fontSize:'11px',fontWeight:600}}>Not Tried</div>}
-                                {recipe.cookTime < 20 && <div style={{position:'absolute',top:'10px',left:'10px',background:'#51cf66',color:'white',padding:'3px 8px',borderRadius:'6px',fontSize:'11px',fontWeight:600,display:'flex',alignItems:'center',gap:'3px'}}><Clock size={11} /> Quick</div>}
+                              <div style={{height:'170px',position:'relative'}}>
+                                {recipe.image
+                                  ? <div style={{height:'170px',backgroundImage:`url(${recipe.image})`,backgroundSize:'cover',backgroundPosition:'center'}} />
+                                  : <div style={{height:'170px',background:'#0d0d0d',display:'flex',alignItems:'center',justifyContent:'center',padding:'12px'}}><p style={{margin:0,fontSize:'18px',fontWeight:800,color:'#fff',textAlign:'center',lineHeight:1.3}}>{recipe.name}</p></div>
+                                }
+                                {recipe.timesMade === 0 && !selectionMode && <div style={{position:'absolute',top:'10px',right:'10px',background:'#ff6b6b',color:'white',padding:'3px 8px',borderRadius:'6px',fontSize:'11px',fontWeight:600,zIndex:2}}>Not Tried</div>}
+                                {recipe.cookTime < 20 && <div style={{position:'absolute',top:'10px',left:'10px',background:'#51cf66',color:'white',padding:'3px 8px',borderRadius:'6px',fontSize:'11px',fontWeight:600,display:'flex',alignItems:'center',gap:'3px',zIndex:2}}><Clock size={11} /> Quick</div>}
                               </div>
                               <div style={{padding:'14px 14px 8px',opacity:selectionMode&&!isUserRecipe?0.4:1}}>
                                 <h3 style={{margin:'0 0 6px 0',fontSize:'15px',fontWeight:700,color:'#fff'}}>{recipe.name}</h3>
@@ -1738,8 +1741,11 @@ const MealPrepApp = ({ pendingJoinCode }) => {
               })()).map(recipe => (
                 <div key={recipe.id} style={{background:'#1a1a1a',borderRadius:'12px',overflow:'hidden',border:'1px solid #262626'}}>
                   <div onClick={() => setSelectedRecipe(recipe)} style={{cursor:'pointer'}}>
-                    <div style={{height:'170px',backgroundImage:recipe.image?`url(${recipe.image})`:'none',backgroundSize:'cover',backgroundPosition:'center',position:'relative',background:recipe.image?'transparent':'#0d0d0d',display:'flex',alignItems:'center',justifyContent:'center'}}>
-                      {!recipe.image && <p style={{margin:0,fontSize:'16px',fontWeight:700,color:'#fff',textAlign:'center',padding:'0 12px',lineHeight:1.3,zIndex:1}}>{recipe.name}</p>}
+                    <div style={{height:'170px',position:'relative'}}>
+                      {recipe.image
+                        ? <div style={{height:'170px',backgroundImage:`url(${recipe.image})`,backgroundSize:'cover',backgroundPosition:'center'}} />
+                        : <div style={{height:'170px',background:'#0d0d0d',display:'flex',alignItems:'center',justifyContent:'center',padding:'12px'}}><p style={{margin:0,fontSize:'18px',fontWeight:800,color:'#fff',textAlign:'center',lineHeight:1.3}}>{recipe.name}</p></div>
+                      }
                       {recipe.cookTime < 20 && <div style={{position:'absolute',top:'10px',left:'10px',background:'#51cf66',color:'white',padding:'3px 8px',borderRadius:'6px',fontSize:'11px',fontWeight:600,display:'flex',alignItems:'center',gap:'3px'}}><Clock size={11} /> Quick</div>}
                     </div>
                     <div style={{padding:'14px 14px 8px'}}>

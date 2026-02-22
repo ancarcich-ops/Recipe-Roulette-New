@@ -1478,7 +1478,7 @@ const MealPrepApp = ({ pendingJoinCode }) => {
                               style={{cursor:'pointer',userSelect:'none',WebkitUserSelect:'none',touchAction:'none'}}>
                               {meal.image
                                 ? <div style={{height:'48px',backgroundImage:`url(${meal.image})`,backgroundSize:'cover',backgroundPosition:'center',borderRadius:'5px',marginBottom:'5px'}} />
-                                : <div style={{height:'48px',borderRadius:'5px',marginBottom:'5px',background:'#1a1a1a',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'20px'}}>🍽</div>
+                                : null
                               }
                               <p style={{margin:0,fontSize:'10px',color:'#fff',fontWeight:600,lineHeight:1.3}}>{meal.name}</p>
                               <button onClick={e => { e.stopPropagation(); removeMealFromPlan(dayIndex, mealType); }}
@@ -1645,7 +1645,8 @@ const MealPrepApp = ({ pendingJoinCode }) => {
                               </div>
                             )}
                             <div onClick={() => { if (selectionMode && isUserRecipe) { setSelectedRecipeIds(prev => { const n = new Set(prev); n.has(recipe.id) ? n.delete(recipe.id) : n.add(recipe.id); return n; }); } else if (!selectionMode) { setSelectedRecipe(recipe); } }} style={{cursor:'pointer'}}>
-                              <div style={{height:'170px',backgroundImage:`url(${recipe.image})`,backgroundSize:'cover',backgroundPosition:'center',position:'relative'}}>
+                              <div style={{height:'170px',backgroundImage:recipe.image?`url(${recipe.image})`:'none',backgroundSize:'cover',backgroundPosition:'center',position:'relative',background:recipe.image?'transparent':'#0d0d0d',display:'flex',alignItems:'center',justifyContent:'center'}}>
+                                {!recipe.image && <p style={{margin:0,fontSize:'16px',fontWeight:700,color:'#fff',textAlign:'center',padding:'0 12px',lineHeight:1.3,zIndex:1}}>{recipe.name}</p>}
                                 {recipe.timesMade === 0 && !selectionMode && <div style={{position:'absolute',top:'10px',right:'10px',background:'#ff6b6b',color:'white',padding:'3px 8px',borderRadius:'6px',fontSize:'11px',fontWeight:600}}>Not Tried</div>}
                                 {recipe.cookTime < 20 && <div style={{position:'absolute',top:'10px',left:'10px',background:'#51cf66',color:'white',padding:'3px 8px',borderRadius:'6px',fontSize:'11px',fontWeight:600,display:'flex',alignItems:'center',gap:'3px'}}><Clock size={11} /> Quick</div>}
                               </div>
@@ -1737,7 +1738,8 @@ const MealPrepApp = ({ pendingJoinCode }) => {
               })()).map(recipe => (
                 <div key={recipe.id} style={{background:'#1a1a1a',borderRadius:'12px',overflow:'hidden',border:'1px solid #262626'}}>
                   <div onClick={() => setSelectedRecipe(recipe)} style={{cursor:'pointer'}}>
-                    <div style={{height:'170px',backgroundImage:`url(${recipe.image})`,backgroundSize:'cover',backgroundPosition:'center',position:'relative'}}>
+                    <div style={{height:'170px',backgroundImage:recipe.image?`url(${recipe.image})`:'none',backgroundSize:'cover',backgroundPosition:'center',position:'relative',background:recipe.image?'transparent':'#0d0d0d',display:'flex',alignItems:'center',justifyContent:'center'}}>
+                      {!recipe.image && <p style={{margin:0,fontSize:'16px',fontWeight:700,color:'#fff',textAlign:'center',padding:'0 12px',lineHeight:1.3,zIndex:1}}>{recipe.name}</p>}
                       {recipe.cookTime < 20 && <div style={{position:'absolute',top:'10px',left:'10px',background:'#51cf66',color:'white',padding:'3px 8px',borderRadius:'6px',fontSize:'11px',fontWeight:600,display:'flex',alignItems:'center',gap:'3px'}}><Clock size={11} /> Quick</div>}
                     </div>
                     <div style={{padding:'14px 14px 8px'}}>
@@ -2487,7 +2489,10 @@ const MealPrepApp = ({ pendingJoinCode }) => {
               ).map(recipe => (
                 <div key={recipe.id} onClick={() => { addMealToPlan(showRecipeSelector.dayIndex, showRecipeSelector.mealType, recipe); setRecipeSearchQuery(''); }}
                   style={{background:'#262626',borderRadius:'10px',overflow:'hidden',cursor:'pointer',border:'1px solid #333'}}>
-                  <div style={{height:'90px',backgroundImage:`url(${recipe.image})`,backgroundSize:'cover',backgroundPosition:'center'}} />
+                  {recipe.image
+                    ? <div style={{height:'90px',backgroundImage:`url(${recipe.image})`,backgroundSize:'cover',backgroundPosition:'center'}} />
+                    : <div style={{height:'90px',background:'#0d0d0d',display:'flex',alignItems:'center',justifyContent:'center',padding:'8px'}}><p style={{margin:0,fontSize:'13px',fontWeight:700,color:'#fff',textAlign:'center',lineHeight:1.3}}>{recipe.name}</p></div>
+                  }
                   <div style={{padding:'10px'}}>
                     <p style={{margin:'0 0 2px 0',fontSize:'13px',fontWeight:600,color:'#fff'}}>{recipe.name}</p>
                     <p style={{margin:0,fontSize:'11px',color:'#999'}}>{recipe.prepTime}</p>
@@ -2896,9 +2901,26 @@ const MealPrepApp = ({ pendingJoinCode }) => {
                 </div>
                 <p style={{margin:'0 0 18px 0',fontSize:'13px',color:'#666'}}>Imported from <span style={{color:'#999'}}>{importUrl.replace(/^https?:\/\/(www\.)?/,'').split('/')[0]}</span>. Review and edit before saving.</p>
 
-                {importedRecipe.image && (
-                  <div style={{height:'160px',backgroundImage:`url(${importedRecipe.image})`,backgroundSize:'cover',backgroundPosition:'center',borderRadius:'10px',marginBottom:'16px',border:'1px solid #262626'}} />
-                )}
+                {/* Photo — tappable to change */}
+                <div style={{position:'relative',borderRadius:'10px',overflow:'hidden',background:'#0a0a0a',border:'1px solid #262626',minHeight:'120px',display:'flex',alignItems:'center',justifyContent:'center',marginBottom:'16px'}}>
+                  {importedRecipe.image
+                    ? <img src={importedRecipe.image} style={{width:'100%',maxHeight:'160px',objectFit:'cover',display:'block'}} />
+                    : <div style={{textAlign:'center',padding:'20px',color:'#555'}}><div style={{fontSize:'32px',marginBottom:'6px'}}>📸</div><p style={{margin:0,fontSize:'12px'}}>No photo</p></div>
+                  }
+                  <label style={{position:'absolute',bottom:'8px',right:'8px',background:'rgba(0,0,0,0.8)',border:'1px solid #444',borderRadius:'8px',padding:'6px 12px',cursor:'pointer',fontSize:'12px',fontWeight:600,color:'#fff',display:'flex',alignItems:'center',gap:'6px'}}>
+                    📷 {importedRecipe.image ? 'Change Photo' : 'Add Photo'}
+                    <input type="file" accept="image/*" style={{display:'none'}} onChange={e => {
+                      const f = e.target.files[0];
+                      if (f) { const r = new FileReader(); r.onloadend = () => setImportedRecipe(prev => ({...prev, image: r.result})); r.readAsDataURL(f); }
+                    }} />
+                  </label>
+                  {importedRecipe.image && (
+                    <button onClick={() => setImportedRecipe(prev => ({...prev, image: ''}))}
+                      style={{position:'absolute',top:'8px',right:'8px',background:'rgba(0,0,0,0.7)',border:'none',borderRadius:'50%',width:'28px',height:'28px',display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer'}}>
+                      <X size={14} color="white" />
+                    </button>
+                  )}
+                </div>
 
                 <div style={{marginBottom:'12px'}}>
                   <label style={{display:'block',marginBottom:'5px',fontWeight:600,color:'#fff',fontSize:'13px'}}>Recipe Name</label>
@@ -3343,9 +3365,15 @@ const MealPrepApp = ({ pendingJoinCode }) => {
       {selectedRecipe && (
         <div onClick={() => setSelectedRecipe(null)} style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.8)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:1000,padding:'20px'}}>
           <div onClick={e => e.stopPropagation()} style={{background:'#1a1a1a',borderRadius:'12px',maxWidth:'720px',width:'100%',maxHeight:'90vh',overflow:'auto',border:'1px solid #262626'}}>
-            <div style={{height:'240px',backgroundImage:`url(${selectedRecipe.image})`,backgroundSize:'cover',backgroundPosition:'center',position:'relative',borderRadius:'12px 12px 0 0'}}>
-              <button onClick={() => setSelectedRecipe(null)} style={{position:'absolute',top:'12px',right:'12px',background:'rgba(0,0,0,0.7)',border:'none',borderRadius:'50%',width:'34px',height:'34px',display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer'}}><X size={18} color="white" /></button>
-            </div>
+            {selectedRecipe.image
+              ? <div style={{height:'240px',backgroundImage:`url(${selectedRecipe.image})`,backgroundSize:'cover',backgroundPosition:'center',position:'relative',borderRadius:'12px 12px 0 0'}}>
+                  <button onClick={() => setSelectedRecipe(null)} style={{position:'absolute',top:'12px',right:'12px',background:'rgba(0,0,0,0.7)',border:'none',borderRadius:'50%',width:'34px',height:'34px',display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer'}}><X size={18} color="white" /></button>
+                </div>
+              : <div style={{height:'140px',background:'#0d0d0d',borderRadius:'12px 12px 0 0',display:'flex',alignItems:'center',justifyContent:'center',position:'relative',borderBottom:'1px solid #262626'}}>
+                  <p style={{margin:0,fontSize:'28px',fontWeight:800,color:'#fff',textAlign:'center',padding:'0 24px',lineHeight:1.2}}>{selectedRecipe.name}</p>
+                  <button onClick={() => setSelectedRecipe(null)} style={{position:'absolute',top:'12px',right:'12px',background:'rgba(0,0,0,0.7)',border:'none',borderRadius:'50%',width:'34px',height:'34px',display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer'}}><X size={18} color="white" /></button>
+                </div>
+            }
             <div style={{padding:'24px'}}>
               <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:'10px'}}>
                 <div>

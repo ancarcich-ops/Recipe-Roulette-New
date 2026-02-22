@@ -1422,17 +1422,17 @@ const MealPrepApp = ({ pendingJoinCode }) => {
               <h2 style={{fontSize:isMobile?'24px':'30px',fontWeight:700,color:'#fff',margin:'0 0 2px 0'}}>Weekly Meal Plan</h2>
               <p style={{color:'#666',margin:'0 0 14px 0',fontSize:'13px'}}>Drag meals to rearrange • Click to view details</p>
               <p style={{color:'#666',margin:'0 0 14px 0',fontSize:'13px'}}>✨ Auto-Fill to populate the week instantly</p>
-              <div style={{display:'flex',gap:'10px',flexWrap: isMobile ? 'wrap' : 'nowrap'}}>
-                <button onClick={() => setShowAutoFillModal(true)} style={{flex: isMobile ? '1 1 auto' : 'none', padding:'10px 18px',background:'#ffffff',border:'none',borderRadius:'8px',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:'6px',fontWeight:600,fontSize:'13px',color:'#000'}}>
+              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'10px'}}>
+                <button onClick={() => setShowAutoFillModal(true)} style={{padding:'11px',background:'#ffffff',border:'none',borderRadius:'8px',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:'6px',fontWeight:600,fontSize:'13px',color:'#000'}}>
                   <Wand2 size={16} /> Auto-Fill
                 </button>
-                <button onClick={() => setShowShoppingList(true)} style={{flex: isMobile ? '1 1 auto' : 'none', padding:'10px 18px',background:'#1a1a1a',border:'1px solid #262626',borderRadius:'8px',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:'6px',fontWeight:600,fontSize:'13px',color:'#fff'}}>
+                <button onClick={() => setShowShoppingList(true)} style={{padding:'11px',background:'#1a1a1a',border:'1px solid #262626',borderRadius:'8px',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:'6px',fontWeight:600,fontSize:'13px',color:'#fff'}}>
                   <ShoppingCart size={16} /> Shopping List
                 </button>
-                <button onClick={() => setShowMealPlanShare(true)} style={{flex: isMobile ? '1 1 auto' : 'none', padding:'10px 18px',background:'#1a1a1a',border:'1px solid #262626',borderRadius:'8px',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:'6px',fontWeight:600,fontSize:'13px',color:'#a78bfa'}}>
+                <button onClick={() => setShowMealPlanShare(true)} style={{padding:'11px',background:'#1a1a1a',border:'1px solid #262626',borderRadius:'8px',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:'6px',fontWeight:600,fontSize:'13px',color:'#a78bfa'}}>
                   📤 Share Week
                 </button>
-                <button onClick={clearAllMeals} style={{flex: isMobile ? '1 1 auto' : 'none', padding:'10px 18px',background:'#1a1a1a',border:'1px solid #ff4444',borderRadius:'8px',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:'6px',fontWeight:600,fontSize:'13px',color:'#ff4444'}}>
+                <button onClick={clearAllMeals} style={{padding:'11px',background:'#1a1a1a',border:'1px solid #ff4444',borderRadius:'8px',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:'6px',fontWeight:600,fontSize:'13px',color:'#ff4444'}}>
                   <X size={16} /> Clear All
                 </button>
               </div>

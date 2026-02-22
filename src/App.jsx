@@ -2870,7 +2870,7 @@ const MealPrepApp = ({ pendingJoinCode }) => {
                         const { data, error } = await supabase.functions.invoke('import-recipe-image', { body: { image: base64, mediaType: mediaTypeToSend } });
                         if (error || !data?.name) { setImportStep('url'); setImportError(data?.error || "Couldn't read a recipe from that image. Try a clearer photo."); return; }
                         setImportedRecipe({ ...data, id: Date.now(), author: session.user.email.split('@')[0], timesMade: 0, isEasy: (data.cookTime || 30) < 20,
-                          image: importImagePreview, tags: data.tags || [], ingredients: Array.isArray(data.ingredients) ? data.ingredients : [],
+                          image: '', tags: data.tags || [], ingredients: Array.isArray(data.ingredients) ? data.ingredients : [],
                           instructions: Array.isArray(data.instructions) ? data.instructions : [],
                           prepTime: data.prepTime || '30 min', servings: data.servings || 4, cookTime: data.cookTime || 30 });
                         setImportStep('review');

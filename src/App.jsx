@@ -441,7 +441,8 @@ const MealPrepApp = ({ pendingJoinCode }) => {
   const [recipeImagePreview, setRecipeImagePreview] = useState(null);
   const [draggedMeal, setDraggedMeal] = useState(null);
   const [recipeFilters, setRecipeFilters] = useState({cookTime:'all',mealType:'all',tried:'all',author:'all'});
-  const [autoFillSettings, setAutoFillSettings] = useState({easyMeals:3,communityMeals:2,untriedRecipes:2});
+  const [autoFillSettings, setAutoFillSettings] = useState({easyMeals:3,communityMeals:2,untriedRecipes:2,budgetMeals:0});
+  const [recipeCostCache, setRecipeCostCache] = useState({}); // { recipeId: costPerServing }
   const [mealTypeSettings, setMealTypeSettings] = useState({
     0:{breakfast:true,lunch:false,dinner:true},
     1:{breakfast:true,lunch:true,dinner:true},
@@ -1094,12 +1095,14 @@ const MealPrepApp = ({ pendingJoinCode }) => {
           if (mealTypeSettings[d][mt] && !newPlan[d][mt] && !isSlotDisabled(d, mt)) empty.push({d, mt});
         const slots = empty.sort(() => Math.random() - 0.5);
         let i = 0;
-        const easy = all.filter(r => r.cookTime < 20).sort(() => Math.random() - 0.5);
+        const easy = all.filter(r => (r.cookTime + (parseInt(r.prepTime) || 0)) <= 30 || r.cookTime <= 30).sort(() => Math.random() - 0.5);
         for (let j = 0; j < autoFillSettings.easyMeals && i < slots.length; j++, i++) newPlan[slots[i].d][slots[i].mt] = easy[j % easy.length];
         const popular = [...communityRecipes].sort((a,b) => b.likes - a.likes);
         for (let j = 0; j < autoFillSettings.communityMeals && i < slots.length; j++, i++) newPlan[slots[i].d][slots[i].mt] = popular[j % popular.length];
         const untried = myRecipes.filter(r => r.timesMade === 0).sort(() => Math.random() - 0.5);
         for (let j = 0; j < autoFillSettings.untriedRecipes && i < slots.length; j++, i++) newPlan[slots[i].d][slots[i].mt] = untried[j % untried.length];
+        const budget = all.filter(r => recipeCostCache[r.id] !== undefined && recipeCostCache[r.id] <= 5).sort(() => Math.random() - 0.5);
+        for (let j = 0; j < autoFillSettings.budgetMeals && i < slots.length; j++, i++) newPlan[slots[i].d][slots[i].mt] = budget[j % (budget.length || 1)];
         setMealPlan(newPlan); saveMealPlan(newPlan);
       }, 1200);
     }
@@ -2753,15 +2756,97 @@ const MealPrepApp = ({ pendingJoinCode }) => {
           <div style={{background:'#1a1a1a',borderRadius:'12px',padding:'24px',maxWidth:'440px',width:'100%',border:'1px solid #262626'}}>
             <h2 style={{margin:'0 0 4px 0',fontSize:'20px',fontWeight:700,color:'#fff'}}>Auto-Fill Settings</h2>
             <p style={{margin:'0 0 20px 0',fontSize:'13px',color:'#999'}}>Customize how many of each type to add</p>
-            {[['easyMeals','Quick and Easy Meals'],['communityMeals','Popular Community Meals'],['untriedRecipes','Recipes Not Yet Tried']].map(([key, label]) => (
-              <div key={key} style={{marginBottom:'16px'}}>
-                <div style={{display:'flex',justifyContent:'space-between',marginBottom:'5px'}}>
-                  <label style={{fontWeight:600,color:'#fff',fontSize:'14px'}}>{label}</label>
-                  <span style={{background:'#fff',color:'#000',padding:'2px 10px',borderRadius:'8px',fontWeight:700,fontSize:'14px'}}>{autoFillSettings[key]}</span>
+
+            {/* Quick & Easy */}
+            <div style={{marginBottom:'16px'}}>
+              <div style={{display:'flex',justifyContent:'space-between',marginBottom:'2px'}}>
+                <div>
+                  <label style={{fontWeight:600,color:'#fff',fontSize:'14px'}}>⚡ Quick & Easy Meals</label>
+                  <p style={{margin:'2px 0 0',fontSize:'11px',color:'#666'}}>Ready in 30 mins or less</p>
                 </div>
-                <input type="range" min="0" max="7" value={autoFillSettings[key]} onChange={e => setAutoFillSettings(p => ({...p,[key]:parseInt(e.target.value)}))} style={{width:'100%'}} />
+                <span style={{background:'#fff',color:'#000',padding:'2px 10px',borderRadius:'8px',fontWeight:700,fontSize:'14px',alignSelf:'flex-start'}}>{autoFillSettings.easyMeals}</span>
               </div>
-            ))}
+              <input type="range" min="0" max="7" value={autoFillSettings.easyMeals} onChange={e => setAutoFillSettings(p => ({...p,easyMeals:parseInt(e.target.value)}))} style={{width:'100%',marginTop:'6px'}} />
+            </div>
+
+            {/* Popular Community */}
+            <div style={{marginBottom:'16px'}}>
+              <div style={{display:'flex',justifyContent:'space-between',marginBottom:'2px'}}>
+                <div>
+                  <label style={{fontWeight:600,color:'#fff',fontSize:'14px'}}>🌟 Popular Community Meals</label>
+                  <p style={{margin:'2px 0 0',fontSize:'11px',color:'#666'}}>Top rated by the community</p>
+                </div>
+                <span style={{background:'#fff',color:'#000',padding:'2px 10px',borderRadius:'8px',fontWeight:700,fontSize:'14px',alignSelf:'flex-start'}}>{autoFillSettings.communityMeals}</span>
+              </div>
+              <input type="range" min="0" max="7" value={autoFillSettings.communityMeals} onChange={e => setAutoFillSettings(p => ({...p,communityMeals:parseInt(e.target.value)}))} style={{width:'100%',marginTop:'6px'}} />
+            </div>
+
+            {/* Untried */}
+            <div style={{marginBottom:'16px'}}>
+              <div style={{display:'flex',justifyContent:'space-between',marginBottom:'2px'}}>
+                <div>
+                  <label style={{fontWeight:600,color:'#fff',fontSize:'14px'}}>🆕 Recipes Not Yet Tried</label>
+                  <p style={{margin:'2px 0 0',fontSize:'11px',color:'#666'}}>Branch out and try something new</p>
+                </div>
+                <span style={{background:'#fff',color:'#000',padding:'2px 10px',borderRadius:'8px',fontWeight:700,fontSize:'14px',alignSelf:'flex-start'}}>{autoFillSettings.untriedRecipes}</span>
+              </div>
+              <input type="range" min="0" max="7" value={autoFillSettings.untriedRecipes} onChange={e => setAutoFillSettings(p => ({...p,untriedRecipes:parseInt(e.target.value)}))} style={{width:'100%',marginTop:'6px'}} />
+            </div>
+
+            {/* Budget Friendly */}
+            <div style={{marginBottom:'8px',background:'#0f1f0f',border:'1px solid #1a3a1a',borderRadius:'10px',padding:'12px'}}>
+              <div style={{display:'flex',justifyContent:'space-between',marginBottom:'2px'}}>
+                <div>
+                  <label style={{fontWeight:600,color:'#51cf66',fontSize:'14px'}}>💰 Budget Friendly Meals</label>
+                  <p style={{margin:'2px 0 0',fontSize:'11px',color:'#4a8a4a'}}>$5 or less per serving · AI estimated using CA prices</p>
+                </div>
+                <span style={{background:'#51cf66',color:'#000',padding:'2px 10px',borderRadius:'8px',fontWeight:700,fontSize:'14px',alignSelf:'flex-start'}}>{autoFillSettings.budgetMeals}</span>
+              </div>
+              <input type="range" min="0" max="7" value={autoFillSettings.budgetMeals} onChange={e => setAutoFillSettings(p => ({...p,budgetMeals:parseInt(e.target.value)}))} style={{width:'100%',marginTop:'6px',accentColor:'#51cf66'}} />
+              {autoFillSettings.budgetMeals > 0 && (
+                <div style={{marginTop:'10px'}}>
+                  {(() => {
+                    const allR = [...(guestMode ? [...sampleRecipes,...userRecipes] : userRecipes),...communityRecipes];
+                    const unpriced = allR.filter(r => recipeCostCache[r.id] === undefined);
+                    const budgetCount = allR.filter(r => recipeCostCache[r.id] !== undefined && recipeCostCache[r.id] <= 5).length;
+                    if (unpriced.length > 0) return (
+                      <button onClick={async () => {
+                        const toPrice = unpriced.slice(0, 10);
+                        const newCache = {...recipeCostCache};
+                        for (const recipe of toPrice) {
+                          try {
+                            const resp = await fetch('https://api.anthropic.com/v1/messages', {
+                              method: 'POST',
+                              headers: {'Content-Type':'application/json'},
+                              body: JSON.stringify({
+                                model: 'claude-sonnet-4-6',
+                                max_tokens: 100,
+                                messages: [{
+                                  role: 'user',
+                                  content: `Estimate the cost per serving in USD for this recipe using average California grocery store prices (2024). Reply with ONLY a number like 4.50, nothing else.
+
+Recipe: ${recipe.name}
+Servings: ${recipe.servings}
+Ingredients: ${(recipe.ingredients||[]).join(', ')}`
+                                }]
+                              })
+                            });
+                            const data = await resp.json();
+                            const cost = parseFloat(data?.content?.[0]?.text?.trim());
+                            if (!isNaN(cost)) newCache[recipe.id] = cost;
+                          } catch(e) { console.error('cost est failed', e); }
+                        }
+                        setRecipeCostCache(newCache);
+                      }} style={{width:'100%',padding:'8px',background:'#51cf66',border:'none',borderRadius:'6px',cursor:'pointer',fontWeight:700,fontSize:'12px',color:'#000'}}>
+                        ✦ Estimate Costs with AI ({unpriced.length} recipes need pricing)
+                      </button>
+                    );
+                    return <p style={{fontSize:'12px',color:'#51cf66',margin:0}}>✓ {budgetCount} budget-friendly recipes found in your collection</p>;
+                  })()}
+                </div>
+              )}
+            </div>
+
             <div style={{display:'flex',gap:'10px',marginTop:'20px'}}>
               <button onClick={() => setShowAutoFillModal(false)} style={{flex:1,padding:'11px',background:'#262626',border:'none',borderRadius:'8px',cursor:'pointer',fontWeight:600,color:'#fff'}}>Cancel</button>
               <button onClick={autoFillCalendar} style={{flex:1,padding:'11px',background:'#fff',border:'none',borderRadius:'8px',cursor:'pointer',fontWeight:600,color:'#000'}}>Fill Calendar</button>

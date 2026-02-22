@@ -1437,29 +1437,37 @@ const MealPrepApp = ({ pendingJoinCode }) => {
                 </button>
               </div>
             </div>
-            <div style={{background:'#1a1a1a',borderRadius:'8px',padding:'20px',border:'1px solid #262626',overflowX: isMobile ? 'auto' : 'visible',WebkitOverflowScrolling:'touch'}}>
-              <div style={{display:'grid',gridTemplateColumns: isMobile ? 'repeat(7, 140px)' : 'repeat(7, 1fr)',gap:'10px',minWidth: isMobile ? 'max-content' : 'auto'}}>
-                {daysOfWeek.map((day, dayIndex) => (
-                  <div key={day} style={{background: isToday(dayIndex) ? '#1e3a2f' : '#262626',borderRadius:'8px',padding:'10px',border: isToday(dayIndex) ? '1px solid #51cf66' : '1px solid transparent'}}>
-                    <h3 style={{margin:'0 0 2px 0',fontSize:'11px',fontWeight:700,color: isToday(dayIndex) ? '#51cf66' : '#fff',textAlign:'center',textTransform:'uppercase',letterSpacing:'0.5px'}}>{day.slice(0,3)}</h3>
-                    <p style={{margin:'0 0 8px 0',fontSize:'10px',color: isToday(dayIndex) ? '#51cf66' : '#666',textAlign:'center',fontWeight:500}}>{formatDayDate(dayIndex)}</p>
+            <div style={{display:'flex',flexDirection:'column',gap:'10px'}}>
+              {daysOfWeek.map((day, dayIndex) => (
+                <div key={day} style={{background: isToday(dayIndex) ? '#1e3a2f' : '#1a1a1a',borderRadius:'12px',border: isToday(dayIndex) ? '1px solid #51cf66' : '1px solid #262626',overflow:'hidden'}}>
+                  {/* Day header */}
+                  <div style={{display:'flex',alignItems:'center',gap:'10px',padding:'12px 16px',borderBottom:'1px solid',borderBottomColor: isToday(dayIndex) ? 'rgba(81,207,102,0.2)' : '#262626'}}>
+                    <span style={{fontSize:'14px',fontWeight:700,color: isToday(dayIndex) ? '#51cf66' : '#fff',textTransform:'uppercase',letterSpacing:'0.5px'}}>{day}</span>
+                    <span style={{fontSize:'13px',color: isToday(dayIndex) ? '#51cf66' : '#555',fontWeight:500}}>{formatDayDate(dayIndex)}</span>
+                    {isToday(dayIndex) && <span style={{marginLeft:'auto',fontSize:'11px',fontWeight:600,color:'#51cf66',background:'rgba(81,207,102,0.1)',padding:'3px 8px',borderRadius:'20px'}}>Today</span>}
+                  </div>
+                  {/* Meal slots - 3 columns */}
+                  <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:'8px',padding:'12px 16px'}}>
                     {mealTypes.map(mealType => {
                       const disabled = isSlotDisabled(dayIndex, mealType);
                       const meal = mealPlan[dayIndex][mealType];
+                      const mealColors = {breakfast:'#fbbf24',lunch:'#51cf66',dinner:'#7dd3fc'};
                       return (
                         <div key={mealType}
                           data-dropzone="true" data-day={dayIndex} data-meal={mealType}
                           onDragOver={handleDragOver} onDrop={(e) => handleDrop(e, dayIndex, mealType)}
-                          style={{background:'#1a1a1a',borderRadius:'8px',padding:'8px',marginBottom:'8px',minHeight:'68px',border:disabled?'2px solid #333': draggedMeal && !(draggedMeal.d===dayIndex && draggedMeal.mt===mealType) ? '2px dashed #51cf66' : '2px dashed #262626',position:'relative',opacity:disabled?0.5:1,transition:'border-color 0.15s'}}>
-                          {!meal && (
-                            <button onClick={() => toggleSlotDisabled(dayIndex, mealType)}
-                              style={{position:'absolute',top:'-7px',right:'-7px',background:disabled?'#51cf66':'#ff4444',border:'2px solid #1a1a1a',borderRadius:'50%',width:'20px',height:'20px',display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',padding:0,zIndex:10,color:'white',fontSize:'13px',fontWeight:'bold'}}>
-                              {disabled ? '+' : <X size={10} />}
-                            </button>
-                          )}
-                          <p style={{margin:'0 0 5px 0',fontSize:'9px',color:'#999',textTransform:'uppercase',fontWeight:600}}>{mealType}</p>
+                          style={{borderRadius:'8px',padding:'8px',minHeight:'80px',border: disabled ? '2px solid #1e1e1e' : draggedMeal && !(draggedMeal.d===dayIndex && draggedMeal.mt===mealType) ? '2px dashed #51cf66' : '2px dashed #2a2a2a',position:'relative',opacity:disabled?0.4:1,transition:'border-color 0.15s',background:'#0d0d0d'}}>
+                          <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:'6px'}}>
+                            <p style={{margin:0,fontSize:'9px',color:mealColors[mealType],textTransform:'uppercase',fontWeight:700,letterSpacing:'0.5px'}}>{mealType}</p>
+                            {!meal && (
+                              <button onClick={() => toggleSlotDisabled(dayIndex, mealType)}
+                                style={{background:'none',border:'none',cursor:'pointer',padding:0,color:disabled?'#51cf66':'#2a2a2a',fontSize:'16px',lineHeight:1}}>
+                                {disabled ? '+' : '×'}
+                              </button>
+                            )}
+                          </div>
                           {disabled ? (
-                            <p style={{margin:0,fontSize:'10px',color:'#555',textAlign:'center',paddingTop:'6px'}}>Disabled</p>
+                            <p style={{margin:0,fontSize:'10px',color:'#333',textAlign:'center',paddingTop:'4px'}}>Off</p>
                           ) : meal ? (
                             <div draggable={true}
                               onDragStart={(e) => handleDragStart(e, dayIndex, mealType, meal)}
@@ -1467,24 +1475,25 @@ const MealPrepApp = ({ pendingJoinCode }) => {
                               onTouchMove={handleTouchMove}
                               onTouchEnd={handleTouchEnd}
                               onClick={() => setSelectedRecipe(meal)}
-                              style={{background:'#fff',borderRadius:'6px',padding:'6px',position:'relative',cursor:'grab',userSelect:'none',WebkitUserSelect:'none',touchAction:'none'}}>
+                              style={{cursor:'pointer',userSelect:'none',WebkitUserSelect:'none',touchAction:'none'}}>
+                              {meal.image
+                                ? <div style={{height:'48px',backgroundImage:`url(${meal.image})`,backgroundSize:'cover',backgroundPosition:'center',borderRadius:'5px',marginBottom:'5px'}} />
+                                : <div style={{height:'48px',borderRadius:'5px',marginBottom:'5px',background:'#1a1a1a',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'20px'}}>🍽</div>
+                              }
+                              <p style={{margin:0,fontSize:'10px',color:'#fff',fontWeight:600,lineHeight:1.3}}>{meal.name}</p>
                               <button onClick={e => { e.stopPropagation(); removeMealFromPlan(dayIndex, mealType); }}
-                                style={{position:'absolute',top:'3px',right:'3px',background:'rgba(0,0,0,0.4)',border:'none',borderRadius:'50%',width:'16px',height:'16px',display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',padding:0}}>
-                                <X size={10} color="white" />
-                              </button>
-                              <p style={{margin:0,fontSize:'10px',color:'#000',fontWeight:600,paddingRight:'14px',lineHeight:1.3}}>{meal.name}</p>
-                              {meal.cookTime < 20 && <span style={{fontSize:'9px',color:'#555'}}>Quick</span>}
+                                style={{marginTop:'4px',background:'none',border:'none',cursor:'pointer',color:'#555',fontSize:'10px',padding:0}}>Remove</button>
                             </div>
                           ) : (
                             <button onClick={() => setShowRecipeSelector({dayIndex, mealType})}
-                              style={{background:'none',border:'none',cursor:'pointer',color:'#555',fontSize:'20px',width:'100%',height:'30px',display:'flex',alignItems:'center',justifyContent:'center'}}>+</button>
+                              style={{background:'none',border:'none',cursor:'pointer',color:'#333',fontSize:'22px',width:'100%',height:'44px',display:'flex',alignItems:'center',justifyContent:'center'}}>+</button>
                           )}
                         </div>
                       );
                     })}
                   </div>
-                ))}
-              </div>
+                </div>
+              ))}
             </div>
           </div>
         )}
@@ -2681,7 +2690,7 @@ const MealPrepApp = ({ pendingJoinCode }) => {
                 prepTime: fd.get('prepTime') || '30 min',
                 cookTime: parseInt(fd.get('cookTime')) || 30,
                 servings: parseInt(fd.get('servings')) || 4,
-                image: recipeImagePreview || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&h=300&fit=crop',
+                image: recipeImagePreview || '',
                 ingredients: fd.get('ingredients').split('\n').filter(i => i.trim()),
                 instructions: fd.get('instructions').split('\n').filter(i => i.trim()),
                 tags: [fd.get('mealType'), ...fd.get('tags').split(',').map(t => t.trim()).filter(t => t)],
@@ -2706,7 +2715,11 @@ const MealPrepApp = ({ pendingJoinCode }) => {
                   ) : (
                     <>
                       <input type="file" accept="image/*" onChange={e => { const f=e.target.files[0]; if(f){const r=new FileReader();r.onloadend=()=>setRecipeImagePreview(r.result);r.readAsDataURL(f);} }} style={{position:'absolute',inset:0,opacity:0,cursor:'pointer'}} />
-                      <div style={{color:'#666',fontSize:'13px'}}><div style={{fontSize:'26px',marginBottom:'4px'}}>📷</div><p style={{margin:0}}>Click to upload</p></div>
+                      <div style={{color:'#555',fontSize:'13px',padding:'8px'}}>
+                        <div style={{fontSize:'28px',marginBottom:'6px'}}>📸</div>
+                        <p style={{margin:'0 0 4px 0',fontWeight:600,color:'#fff'}}>Add a photo of the finished dish</p>
+                        <p style={{margin:0,fontSize:'11px',color:'#555'}}>Tap to upload — your own photo looks way better!</p>
+                      </div>
                     </>
                   )}
                 </div>

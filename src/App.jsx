@@ -1725,7 +1725,6 @@ const MealPrepApp = ({ pendingJoinCode }) => {
               </div>
             )}
           </div>
-              </div>
             </div>
 
             {/* ── COMMUNITY RECIPES section ── */}
@@ -1735,9 +1734,9 @@ const MealPrepApp = ({ pendingJoinCode }) => {
                 <h2 style={{fontSize:isMobile?'22px':'26px',fontWeight:600,color:'#1c2820',margin:0,fontFamily:"'Cormorant Garamond',serif",whiteSpace:'nowrap'}}>Community Recipes</h2>
                 <div style={{flex:1,height:'1px',background:'#e8e0d4'}} />
               </div>
-<div style={{marginBottom:'20px'}}>
+              <div style={{marginBottom:'20px'}}>
               <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',flexWrap:'wrap',gap:'8px',marginBottom:'8px'}}>
-                <button onClick={() => setShowFindPeople(true)} style={{padding:'9px 16px',background:'#fefcf8',border:'1px solid #d8d0c4',borderRadius:'8px',fontWeight:600,fontSize:'13px',cursor:'pointer',color:'#a78bfa',whiteSpace:'nowrap'}}>
+                <button onClick={() => setShowFindPeople(true)} style={{padding:'9px 16px',background:'#fefcf8',border:'1px solid #d8d0c4',borderRadius:'8px',fontWeight:600,fontSize:'13px',cursor:'pointer',color:'#5a9a6a',whiteSpace:'nowrap'}}>
                   👥 Find People
                 </button>
               </div>
@@ -1745,9 +1744,9 @@ const MealPrepApp = ({ pendingJoinCode }) => {
               <div style={{display:'flex',gap:'8px',marginBottom:'12px'}}>
                 {['all','following'].map(f => (
                   <button key={f} onClick={() => setCommunityFilter(f)}
-                    style={{padding:'6px 14px',borderRadius:'20px',border:'none',cursor:'pointer',fontWeight:600,fontSize:'12px',
-                    background: communityFilter===f ? '#fff' : '#1a1a1a',
-                    color: communityFilter===f ? '#000' : '#666'}}>
+                    style={{padding:'6px 14px',borderRadius:'20px',border:`1px solid ${communityFilter===f?'#1c2820':'#d8d0c4'}`,cursor:'pointer',fontWeight:communityFilter===f?600:400,fontSize:'12px',
+                    background: communityFilter===f ? '#1c2820' : '#fefcf8',
+                    color: communityFilter===f ? '#f0ece4' : '#6a6050'}}>
                     {f === 'all' ? 'All Recipes' : `Following (${follows.size})`}
                   </button>
                 ))}
@@ -1828,7 +1827,7 @@ const MealPrepApp = ({ pendingJoinCode }) => {
                       {userRatings[recipe.id] ? `★ ${userRatings[recipe.id].rating}` : '☆ Rate'}
                     </button>
                     <button onClick={e => { e.stopPropagation(); saveCommunityRecipe(recipe); }} disabled={savedRecipes.has(recipe.id)}
-                      style={{flex:'1 1 45%',padding:'7px',background:savedRecipes.has(recipe.id)?'#262626':'#1a1a1a',color:savedRecipes.has(recipe.id)?'#666':'#fff',border:'1px solid #d8d0c4',borderRadius:'6px',fontSize:'11px',fontWeight:600,cursor:savedRecipes.has(recipe.id)?'not-allowed':'pointer'}}>
+                      style={{flex:'1 1 45%',padding:'7px',background:savedRecipes.has(recipe.id)?'#f0ece4':'#1c2820',color:savedRecipes.has(recipe.id)?'#9a9080':'#f0ece4',border:'1px solid #d8d0c4',borderRadius:'6px',fontSize:'11px',fontWeight:600,cursor:savedRecipes.has(recipe.id)?'not-allowed':'pointer'}}>
                       {savedRecipes.has(recipe.id) ? '✓ Book' : '+ Book'}
                     </button>
                     <button onClick={e => { e.stopPropagation(); setShowSaveToFolderModal(recipe); }}

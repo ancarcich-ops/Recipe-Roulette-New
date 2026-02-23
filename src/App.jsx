@@ -1308,7 +1308,6 @@ const MealPrepApp = ({ pendingJoinCode }) => {
                 <div style={{flex:1,height:'1px',background:'#e8e0d4'}} />
               </div>
               <div style={{maxWidth:isMobile?'100%':'680px',margin:'0 auto'}}>
-<div style={{maxWidth:isMobile?'100%':'680px', margin:'0 auto'}}>
 
             {/* Greeting */}
             <div style={{marginBottom:'28px'}}>
@@ -1723,8 +1722,6 @@ const MealPrepApp = ({ pendingJoinCode }) => {
                   );
                 })()}
               </div>
-            )}
-          </div>
             </div>
 
             {/* ── COMMUNITY RECIPES section ── */}
@@ -1841,7 +1838,6 @@ const MealPrepApp = ({ pendingJoinCode }) => {
                   </div>
                 </div>
               ))}
-            </div>
             </div>
           </div>
         )}

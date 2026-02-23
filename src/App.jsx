@@ -396,6 +396,7 @@ const MealPrepApp = ({ pendingJoinCode }) => {
   const [searchingPeople, setSearchingPeople] = useState(false);
   const [viewingProfile, setViewingProfile] = useState(null); // public profile to view
   const [communityFilter, setCommunityFilter] = useState('all'); // 'all' | 'following'
+  const [communitySubView, setCommunitySubView] = useState('feed'); // 'feed' | 'recipes'
   const [household, setHousehold] = useState(null); // {id, owner_id, invite_code}
   const [householdMembers, setHouseholdMembers] = useState([]); // [{user_id, email}]
   const [showHouseholdModal, setShowHouseholdModal] = useState(false);
@@ -1300,13 +1301,31 @@ const MealPrepApp = ({ pendingJoinCode }) => {
         {/* COMMUNITY */}
         {currentView === 'community' && (
           <div>
+            {/* ── COMMUNITY TOGGLE ── */}
+            <div style={{display:'flex',background:'#f0ece4',borderRadius:'12px',padding:'4px',marginBottom:'28px',gap:'2px'}}>
+              <button
+                onClick={() => setCommunitySubView('feed')}
+                style={{flex:1,padding:'10px 0',borderRadius:'9px',border:'none',cursor:'pointer',fontWeight:600,fontSize:'14px',fontFamily:"'Jost',sans-serif",transition:'all 0.2s',
+                  background: communitySubView === 'feed' ? '#fefcf8' : 'transparent',
+                  color: communitySubView === 'feed' ? '#1c2820' : '#8a7a6a',
+                  boxShadow: communitySubView === 'feed' ? '0 1px 4px rgba(0,0,0,0.12)' : 'none'
+                }}>
+                My Feed
+              </button>
+              <button
+                onClick={() => setCommunitySubView('recipes')}
+                style={{flex:1,padding:'10px 0',borderRadius:'9px',border:'none',cursor:'pointer',fontWeight:600,fontSize:'14px',fontFamily:"'Jost',sans-serif",transition:'all 0.2s',
+                  background: communitySubView === 'recipes' ? '#fefcf8' : 'transparent',
+                  color: communitySubView === 'recipes' ? '#1c2820' : '#8a7a6a',
+                  boxShadow: communitySubView === 'recipes' ? '0 1px 4px rgba(0,0,0,0.12)' : 'none'
+                }}>
+                Community Recipes
+              </button>
+            </div>
+
             {/* ── MY FEED section ── */}
+            {communitySubView === 'feed' && (
             <div style={{marginBottom:'36px'}}>
-              <div style={{display:'flex',alignItems:'center',gap:'12px',marginBottom:'20px'}}>
-                <div style={{flex:1,height:'1px',background:'#e8e0d4'}} />
-                <h2 style={{fontSize:isMobile?'22px':'26px',fontWeight:600,color:'#1c2820',margin:0,fontFamily:"'Cormorant Garamond',serif",whiteSpace:'nowrap'}}>My Feed</h2>
-                <div style={{flex:1,height:'1px',background:'#e8e0d4'}} />
-              </div>
               <div style={{maxWidth:isMobile?'100%':'680px',margin:'0 auto'}}>
 
             {/* Greeting */}
@@ -1437,8 +1456,10 @@ const MealPrepApp = ({ pendingJoinCode }) => {
             })()}
               </div>
             </div>
+            )}
 
             {/* ── COMMUNITY RECIPES section ── */}
+            {communitySubView === 'recipes' && (
             <div>
               <div style={{display:'flex',alignItems:'center',gap:'12px',marginBottom:'20px'}}> 
                 <div style={{flex:1,height:'1px',background:'#e8e0d4'}} />
@@ -1553,8 +1574,9 @@ const MealPrepApp = ({ pendingJoinCode }) => {
                 </div>
               ))}
             </div>
+            )}
           </div>
-          </div>
+        </div>
         )}
 
         {/* MY MEALS */}

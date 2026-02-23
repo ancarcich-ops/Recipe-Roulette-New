@@ -1554,6 +1554,7 @@ const MealPrepApp = ({ pendingJoinCode }) => {
               ))}
             </div>
           </div>
+          </div>
         )}
 
         {/* MY MEALS */}
@@ -1840,8 +1841,7 @@ const MealPrepApp = ({ pendingJoinCode }) => {
                   );
                 })()}
               </div>
-            </div>
-     </div>
+            )}
           </div>
         )}
 

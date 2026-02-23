@@ -1435,6 +1435,124 @@ const MealPrepApp = ({ pendingJoinCode }) => {
                 </div>
               );
             })()}
+              </div>
+            </div>
+
+            {/* ── COMMUNITY RECIPES section ── */}
+            <div>
+              <div style={{display:'flex',alignItems:'center',gap:'12px',marginBottom:'20px'}}> 
+                <div style={{flex:1,height:'1px',background:'#e8e0d4'}} />
+                <h2 style={{fontSize:isMobile?'22px':'26px',fontWeight:600,color:'#1c2820',margin:0,fontFamily:"'Cormorant Garamond',serif",whiteSpace:'nowrap'}}>Community Recipes</h2>
+                <div style={{flex:1,height:'1px',background:'#e8e0d4'}} />
+              </div>
+              <div style={{marginBottom:'20px'}}>
+              <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',flexWrap:'wrap',gap:'8px',marginBottom:'8px'}}>
+                <button onClick={() => setShowFindPeople(true)} style={{padding:'9px 16px',background:'#fefcf8',border:'1px solid #d8d0c4',borderRadius:'8px',fontWeight:600,fontSize:'13px',cursor:'pointer',color:'#5a9a6a',whiteSpace:'nowrap'}}>
+                  👥 Find People
+                </button>
+              </div>
+              {/* Following filter pills */}
+              <div style={{display:'flex',gap:'8px',marginBottom:'12px'}}>
+                {['all','following'].map(f => (
+                  <button key={f} onClick={() => setCommunityFilter(f)}
+                    style={{padding:'6px 14px',borderRadius:'20px',border:`1px solid ${communityFilter===f?'#1c2820':'#d8d0c4'}`,cursor:'pointer',fontWeight:communityFilter===f?600:400,fontSize:'12px',
+                    background: communityFilter===f ? '#1c2820' : '#fefcf8',
+                    color: communityFilter===f ? '#f0ece4' : '#6a6050'}}>
+                    {f === 'all' ? 'All Recipes' : `Following (${follows.size})`}
+                  </button>
+                ))}
+              </div>
+              <p style={{color:'#6a6050',margin:0}}>{filterRecipes(communityRecipes).length} recipes</p>
+            </div>
+            {/* Community search bar */}
+            <div style={{position:'relative',marginBottom:'16px'}}>
+              <span style={{position:'absolute',left:'14px',top:'50%',transform:'translateY(-50%)',color:'#7a7060',pointerEvents:'none',fontSize:'16px'}}>🔍</span>
+              <input
+                type="text"
+                placeholder="Search community recipes..."
+                value={communitySearch}
+                onChange={e => setCommunitySearch(e.target.value)}
+                style={{width:'100%',padding:'11px 14px 11px 42px',background:'#fefcf8',border:'1px solid #e0d8cc',borderRadius:'10px',fontSize:'14px',color:'#1c2820',outline:'none',boxSizing:'border-box'}}
+              />
+              {communitySearch && (
+                <button onClick={() => setCommunitySearch('')} style={{position:'absolute',right:'12px',top:'50%',transform:'translateY(-50%)',background:'none',border:'none',cursor:'pointer',color:'#7a7060',fontSize:'18px',lineHeight:1}}>×</button>
+              )}
+            </div>
+            <FilterBar showAuthor />
+            <div style={{display:'grid',gridTemplateColumns:isMobile?'1fr':'repeat(auto-fill, minmax(260px, 1fr))',gap:'18px'}}>
+              {((() => {
+                let list = filterRecipes(communityRecipes);
+                if (communityFilter === 'following') list = list.filter(r => r.user_id && follows.has(r.user_id));
+                if (communitySearch.trim()) list = list.filter(r => r.name.toLowerCase().includes(communitySearch.toLowerCase()) || (r.tags||[]).some(t => t.toLowerCase().includes(communitySearch.toLowerCase())) || r.author.toLowerCase().includes(communitySearch.toLowerCase()));
+                return list;
+              })()).length === 0 ? (
+                <div style={{gridColumn:'1/-1',textAlign:'center',padding:'60px',background:'#fefcf8',borderRadius:'12px',border:'1px solid #e0d8cc'}}>
+                  <p style={{fontSize:'32px',margin:'0 0 10px 0'}}>{communitySearch ? '🔍' : '🍽'}</p>
+                  <p style={{color:'#9a9080'}}>{communitySearch ? `No recipes match "${communitySearch}"` : communityFilter === 'following' ? 'Follow some users to see their recipes here' : 'No recipes match your filters'}</p>
+                </div>
+              ) : ((() => {
+                let list = filterRecipes(communityRecipes);
+                if (communityFilter === 'following') list = list.filter(r => r.user_id && follows.has(r.user_id));
+                if (communitySearch.trim()) list = list.filter(r => r.name.toLowerCase().includes(communitySearch.toLowerCase()) || (r.tags||[]).some(t => t.toLowerCase().includes(communitySearch.toLowerCase())) || r.author.toLowerCase().includes(communitySearch.toLowerCase()));
+                return list;
+              })()).map(recipe => (
+                <div key={recipe.id} style={{background:'#fefcf8',borderRadius:'12px',overflow:'hidden',border:'1px solid #e0d8cc'}}>
+                  <div onClick={() => setSelectedRecipe(recipe)} style={{cursor:'pointer'}}>
+                    <div style={{height:'170px',position:'relative'}}>
+                      {recipe.image
+                        ? <div style={{height:'170px',backgroundImage:`url(${recipe.image})`,backgroundSize:'cover',backgroundPosition:'center'}} />
+                        : <div style={{height:'170px',background:'#f0ece4',display:'flex',alignItems:'center',justifyContent:'center',padding:'12px'}}><p style={{margin:0,fontSize:'16px',fontWeight:600,color:'#1c2820',fontFamily:"'Cormorant Garamond',serif",fontStyle:'italic',textAlign:'center',lineHeight:1.3}}>{recipe.name}</p></div>
+                      }
+                      {recipe.cookTime < 20 && <div style={{position:'absolute',top:'10px',left:'10px',background:'#5a9a6a',color:'#fff',padding:'3px 8px',borderRadius:'6px',fontSize:'11px',fontWeight:600,display:'flex',alignItems:'center',gap:'3px'}}><Clock size={11} /> Quick</div>}
+                    </div>
+                    <div style={{padding:'14px 14px 8px'}}>
+                      <div style={{display:'flex',alignItems:'center',gap:'8px',marginBottom:'6px'}}>
+                        <div onClick={async e => { e.stopPropagation(); if (recipe.user_id) { const {data} = await supabase.from('user_profiles_public').select('*').eq('user_id', recipe.user_id).single(); if (data) setViewingProfile(data); } }}
+                          style={{display:'flex',alignItems:'center',gap:'6px',cursor:recipe.user_id?'pointer':'default'}}>
+                          <div style={{width:'26px',height:'26px',borderRadius:'50%',background:'#fefcf8',display:'flex',alignItems:'center',justifyContent:'center',color:'#1c2820',fontSize:'10px',fontWeight:700,overflow:'hidden',flexShrink:0}}>
+                            {recipe.avatarUrl ? <img src={recipe.avatarUrl} style={{width:'100%',height:'100%',objectFit:'cover'}} /> : recipe.avatar}
+                          </div>
+                          <span style={{fontSize:'12px',color: recipe.user_id ? '#a78bfa' : '#666'}}>{recipe.author}</span>
+                        </div>
+                        {recipe.user_id && recipe.user_id !== session?.user?.id && (
+                          <button onClick={e => { e.stopPropagation(); toggleFollow(recipe.user_id); }}
+                            style={{marginLeft:'auto',padding:'3px 8px',borderRadius:'20px',border:'none',cursor:'pointer',fontWeight:600,fontSize:'10px',
+                            background: follows.has(recipe.user_id) ? '#262626' : '#a78bfa',
+                            color: follows.has(recipe.user_id) ? '#666' : '#fff'}}>
+                            {follows.has(recipe.user_id) ? 'Following' : '+ Follow'}
+                          </button>
+                        )}
+                      </div>
+                      <h3 style={{margin:'0 0 4px 0',fontSize:'15px',fontWeight:600,color:'#1c2820',fontFamily:"'Cormorant Garamond',serif"}}>{recipe.name}</h3>
+                      <RatingDisplay recipeId={recipe.id} compact />
+                      <p style={{margin:'6px 0 8px 0',fontSize:'12px',color:'#9a9080'}}>{recipe.prepTime}</p>
+                      <div style={{display:'flex',gap:'14px',fontSize:'12px',color:'#6a6050'}}>
+                        <span style={{display:'flex',alignItems:'center',gap:'3px'}}><Heart size={11} /> {recipe.likes}</span>
+                        <span>{recipe.onMenu} on menu</span>
+                        <span style={{display:'flex',alignItems:'center',gap:'3px'}}><Archive size={11} /> {recipe.saves + (savedRecipes.has(recipe.id)?1:0)}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div style={{padding:'8px 14px 14px',display:'flex',gap:'6px',flexWrap:'wrap'}}>
+                    <button onClick={e => { e.stopPropagation(); setShowRatingModal(recipe); }} style={{flex:'1 1 45%',padding:'7px',background:userRatings[recipe.id]?'#1a1a1a':'#262626',color:userRatings[recipe.id]?'#fbbf24':'#999',border:'1px solid #d8d0c4',borderRadius:'6px',fontSize:'11px',fontWeight:600,cursor:'pointer'}}>
+                      {userRatings[recipe.id] ? `★ ${userRatings[recipe.id].rating}` : '☆ Rate'}
+                    </button>
+                    <button onClick={e => { e.stopPropagation(); saveCommunityRecipe(recipe); }} disabled={savedRecipes.has(recipe.id)}
+                      style={{flex:'1 1 45%',padding:'7px',background:savedRecipes.has(recipe.id)?'#f0ece4':'#1c2820',color:savedRecipes.has(recipe.id)?'#9a9080':'#f0ece4',border:'1px solid #d8d0c4',borderRadius:'6px',fontSize:'11px',fontWeight:600,cursor:savedRecipes.has(recipe.id)?'not-allowed':'pointer'}}>
+                      {savedRecipes.has(recipe.id) ? '✓ Book' : '+ Book'}
+                    </button>
+                    <button onClick={e => { e.stopPropagation(); setShowSaveToFolderModal(recipe); }}
+                      style={{flex:'1 1 30%',padding:'7px',background:'#fefcf8',color:'#1c2820',border:'1px solid #d8d0c4',borderRadius:'6px',fontSize:'11px',fontWeight:600,cursor:'pointer'}}>
+                      🗂
+                    </button>
+                    <button onClick={e => { e.stopPropagation(); setShowAddToCalendar(recipe); }}
+                      style={{flex:'1 1 30%',padding:'7px',background:'#1c2820',color:'#f0ece4',border:'none',borderRadius:'6px',fontSize:'11px',fontWeight:600,cursor:'pointer'}}>
+                      📅
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         )}
 
@@ -1723,122 +1841,7 @@ const MealPrepApp = ({ pendingJoinCode }) => {
                 })()}
               </div>
             </div>
-
-            {/* ── COMMUNITY RECIPES section ── */}
-            <div>
-              <div style={{display:'flex',alignItems:'center',gap:'12px',marginBottom:'20px'}}> 
-                <div style={{flex:1,height:'1px',background:'#e8e0d4'}} />
-                <h2 style={{fontSize:isMobile?'22px':'26px',fontWeight:600,color:'#1c2820',margin:0,fontFamily:"'Cormorant Garamond',serif",whiteSpace:'nowrap'}}>Community Recipes</h2>
-                <div style={{flex:1,height:'1px',background:'#e8e0d4'}} />
-              </div>
-              <div style={{marginBottom:'20px'}}>
-              <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',flexWrap:'wrap',gap:'8px',marginBottom:'8px'}}>
-                <button onClick={() => setShowFindPeople(true)} style={{padding:'9px 16px',background:'#fefcf8',border:'1px solid #d8d0c4',borderRadius:'8px',fontWeight:600,fontSize:'13px',cursor:'pointer',color:'#5a9a6a',whiteSpace:'nowrap'}}>
-                  👥 Find People
-                </button>
-              </div>
-              {/* Following filter pills */}
-              <div style={{display:'flex',gap:'8px',marginBottom:'12px'}}>
-                {['all','following'].map(f => (
-                  <button key={f} onClick={() => setCommunityFilter(f)}
-                    style={{padding:'6px 14px',borderRadius:'20px',border:`1px solid ${communityFilter===f?'#1c2820':'#d8d0c4'}`,cursor:'pointer',fontWeight:communityFilter===f?600:400,fontSize:'12px',
-                    background: communityFilter===f ? '#1c2820' : '#fefcf8',
-                    color: communityFilter===f ? '#f0ece4' : '#6a6050'}}>
-                    {f === 'all' ? 'All Recipes' : `Following (${follows.size})`}
-                  </button>
-                ))}
-              </div>
-              <p style={{color:'#6a6050',margin:0}}>{filterRecipes(communityRecipes).length} recipes</p>
-            </div>
-            {/* Community search bar */}
-            <div style={{position:'relative',marginBottom:'16px'}}>
-              <span style={{position:'absolute',left:'14px',top:'50%',transform:'translateY(-50%)',color:'#7a7060',pointerEvents:'none',fontSize:'16px'}}>🔍</span>
-              <input
-                type="text"
-                placeholder="Search community recipes..."
-                value={communitySearch}
-                onChange={e => setCommunitySearch(e.target.value)}
-                style={{width:'100%',padding:'11px 14px 11px 42px',background:'#fefcf8',border:'1px solid #e0d8cc',borderRadius:'10px',fontSize:'14px',color:'#1c2820',outline:'none',boxSizing:'border-box'}}
-              />
-              {communitySearch && (
-                <button onClick={() => setCommunitySearch('')} style={{position:'absolute',right:'12px',top:'50%',transform:'translateY(-50%)',background:'none',border:'none',cursor:'pointer',color:'#7a7060',fontSize:'18px',lineHeight:1}}>×</button>
-              )}
-            </div>
-            <FilterBar showAuthor />
-            <div style={{display:'grid',gridTemplateColumns:isMobile?'1fr':'repeat(auto-fill, minmax(260px, 1fr))',gap:'18px'}}>
-              {((() => {
-                let list = filterRecipes(communityRecipes);
-                if (communityFilter === 'following') list = list.filter(r => r.user_id && follows.has(r.user_id));
-                if (communitySearch.trim()) list = list.filter(r => r.name.toLowerCase().includes(communitySearch.toLowerCase()) || (r.tags||[]).some(t => t.toLowerCase().includes(communitySearch.toLowerCase())) || r.author.toLowerCase().includes(communitySearch.toLowerCase()));
-                return list;
-              })()).length === 0 ? (
-                <div style={{gridColumn:'1/-1',textAlign:'center',padding:'60px',background:'#fefcf8',borderRadius:'12px',border:'1px solid #e0d8cc'}}>
-                  <p style={{fontSize:'32px',margin:'0 0 10px 0'}}>{communitySearch ? '🔍' : '🍽'}</p>
-                  <p style={{color:'#9a9080'}}>{communitySearch ? `No recipes match "${communitySearch}"` : communityFilter === 'following' ? 'Follow some users to see their recipes here' : 'No recipes match your filters'}</p>
-                </div>
-              ) : ((() => {
-                let list = filterRecipes(communityRecipes);
-                if (communityFilter === 'following') list = list.filter(r => r.user_id && follows.has(r.user_id));
-                if (communitySearch.trim()) list = list.filter(r => r.name.toLowerCase().includes(communitySearch.toLowerCase()) || (r.tags||[]).some(t => t.toLowerCase().includes(communitySearch.toLowerCase())) || r.author.toLowerCase().includes(communitySearch.toLowerCase()));
-                return list;
-              })()).map(recipe => (
-                <div key={recipe.id} style={{background:'#fefcf8',borderRadius:'12px',overflow:'hidden',border:'1px solid #e0d8cc'}}>
-                  <div onClick={() => setSelectedRecipe(recipe)} style={{cursor:'pointer'}}>
-                    <div style={{height:'170px',position:'relative'}}>
-                      {recipe.image
-                        ? <div style={{height:'170px',backgroundImage:`url(${recipe.image})`,backgroundSize:'cover',backgroundPosition:'center'}} />
-                        : <div style={{height:'170px',background:'#f0ece4',display:'flex',alignItems:'center',justifyContent:'center',padding:'12px'}}><p style={{margin:0,fontSize:'16px',fontWeight:600,color:'#1c2820',fontFamily:"'Cormorant Garamond',serif",fontStyle:'italic',textAlign:'center',lineHeight:1.3}}>{recipe.name}</p></div>
-                      }
-                      {recipe.cookTime < 20 && <div style={{position:'absolute',top:'10px',left:'10px',background:'#5a9a6a',color:'#fff',padding:'3px 8px',borderRadius:'6px',fontSize:'11px',fontWeight:600,display:'flex',alignItems:'center',gap:'3px'}}><Clock size={11} /> Quick</div>}
-                    </div>
-                    <div style={{padding:'14px 14px 8px'}}>
-                      <div style={{display:'flex',alignItems:'center',gap:'8px',marginBottom:'6px'}}>
-                        <div onClick={async e => { e.stopPropagation(); if (recipe.user_id) { const {data} = await supabase.from('user_profiles_public').select('*').eq('user_id', recipe.user_id).single(); if (data) setViewingProfile(data); } }}
-                          style={{display:'flex',alignItems:'center',gap:'6px',cursor:recipe.user_id?'pointer':'default'}}>
-                          <div style={{width:'26px',height:'26px',borderRadius:'50%',background:'#fefcf8',display:'flex',alignItems:'center',justifyContent:'center',color:'#1c2820',fontSize:'10px',fontWeight:700,overflow:'hidden',flexShrink:0}}>
-                            {recipe.avatarUrl ? <img src={recipe.avatarUrl} style={{width:'100%',height:'100%',objectFit:'cover'}} /> : recipe.avatar}
-                          </div>
-                          <span style={{fontSize:'12px',color: recipe.user_id ? '#a78bfa' : '#666'}}>{recipe.author}</span>
-                        </div>
-                        {recipe.user_id && recipe.user_id !== session?.user?.id && (
-                          <button onClick={e => { e.stopPropagation(); toggleFollow(recipe.user_id); }}
-                            style={{marginLeft:'auto',padding:'3px 8px',borderRadius:'20px',border:'none',cursor:'pointer',fontWeight:600,fontSize:'10px',
-                            background: follows.has(recipe.user_id) ? '#262626' : '#a78bfa',
-                            color: follows.has(recipe.user_id) ? '#666' : '#fff'}}>
-                            {follows.has(recipe.user_id) ? 'Following' : '+ Follow'}
-                          </button>
-                        )}
-                      </div>
-                      <h3 style={{margin:'0 0 4px 0',fontSize:'15px',fontWeight:600,color:'#1c2820',fontFamily:"'Cormorant Garamond',serif"}}>{recipe.name}</h3>
-                      <RatingDisplay recipeId={recipe.id} compact />
-                      <p style={{margin:'6px 0 8px 0',fontSize:'12px',color:'#9a9080'}}>{recipe.prepTime}</p>
-                      <div style={{display:'flex',gap:'14px',fontSize:'12px',color:'#6a6050'}}>
-                        <span style={{display:'flex',alignItems:'center',gap:'3px'}}><Heart size={11} /> {recipe.likes}</span>
-                        <span>{recipe.onMenu} on menu</span>
-                        <span style={{display:'flex',alignItems:'center',gap:'3px'}}><Archive size={11} /> {recipe.saves + (savedRecipes.has(recipe.id)?1:0)}</span>
-                      </div>
-                    </div>
-                  </div>
-                  <div style={{padding:'8px 14px 14px',display:'flex',gap:'6px',flexWrap:'wrap'}}>
-                    <button onClick={e => { e.stopPropagation(); setShowRatingModal(recipe); }} style={{flex:'1 1 45%',padding:'7px',background:userRatings[recipe.id]?'#1a1a1a':'#262626',color:userRatings[recipe.id]?'#fbbf24':'#999',border:'1px solid #d8d0c4',borderRadius:'6px',fontSize:'11px',fontWeight:600,cursor:'pointer'}}>
-                      {userRatings[recipe.id] ? `★ ${userRatings[recipe.id].rating}` : '☆ Rate'}
-                    </button>
-                    <button onClick={e => { e.stopPropagation(); saveCommunityRecipe(recipe); }} disabled={savedRecipes.has(recipe.id)}
-                      style={{flex:'1 1 45%',padding:'7px',background:savedRecipes.has(recipe.id)?'#f0ece4':'#1c2820',color:savedRecipes.has(recipe.id)?'#9a9080':'#f0ece4',border:'1px solid #d8d0c4',borderRadius:'6px',fontSize:'11px',fontWeight:600,cursor:savedRecipes.has(recipe.id)?'not-allowed':'pointer'}}>
-                      {savedRecipes.has(recipe.id) ? '✓ Book' : '+ Book'}
-                    </button>
-                    <button onClick={e => { e.stopPropagation(); setShowSaveToFolderModal(recipe); }}
-                      style={{flex:'1 1 30%',padding:'7px',background:'#fefcf8',color:'#1c2820',border:'1px solid #d8d0c4',borderRadius:'6px',fontSize:'11px',fontWeight:600,cursor:'pointer'}}>
-                      🗂
-                    </button>
-                    <button onClick={e => { e.stopPropagation(); setShowAddToCalendar(recipe); }}
-                      style={{flex:'1 1 30%',padding:'7px',background:'#1c2820',color:'#f0ece4',border:'none',borderRadius:'6px',fontSize:'11px',fontWeight:600,cursor:'pointer'}}>
-                      📅
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
+     </div>
           </div>
         )}
 

@@ -354,7 +354,7 @@ const MealPrepApp = ({ pendingJoinCode }) => {
   });
   const [profileSaving, setProfileSaving] = useState(false);
   const [profileSaved, setProfileSaved] = useState(false);
-  const [currentView, setCurrentView] = useState('home');
+  const [currentView, setCurrentView] = useState('calendar');
   const [likedPosts, setLikedPosts] = useState(new Set());
   const [savedPosts, setSavedPosts] = useState(new Set());
   const [activeFilter, setActiveFilter] = useState('all');
@@ -1283,7 +1283,7 @@ const MealPrepApp = ({ pendingJoinCode }) => {
           </div>
           {/* Nav row — scrollable on mobile, inline on desktop */}
           <nav style={{display:'flex',gap:'6px',overflowX:'auto',WebkitOverflowScrolling:'touch',paddingBottom:isMobile?'2px':0,paddingLeft:'2px',scrollbarWidth:'none',msOverflowStyle:'none'}}>
-            {[{id:'home',label:'Home'},{id:'calendar',label:'My Meals'},{id:'recipes',label:'Recipe Book'},{id:'community',label:'Community'},{id:'settings',label:'Settings'}].map(item => (
+            {[{id:'calendar',label:'My Meals'},{id:'recipes',label:'Recipe Book'},{id:'community',label:'Community'},{id:'settings',label:'Settings'}].map(item => (
               <button key={item.id} onClick={() => setCurrentView(item.id)}
                 style={{padding:isMobile?'8px 14px':'9px 16px',background:'transparent',color:currentView===item.id?'#5a9a6a':'#4a6a52',borderBottom:currentView===item.id?'2px solid #5a9a6a':'2px solid transparent',border:'none',borderRadius:0,cursor:'pointer',fontWeight:currentView===item.id?600:400,fontSize:isMobile?'12px':'13px',whiteSpace:'nowrap',flexShrink:0,letterSpacing:'0.5px',fontFamily:"'Jost',sans-serif"}}>
                 {item.label}
@@ -1297,8 +1297,18 @@ const MealPrepApp = ({ pendingJoinCode }) => {
 
 
         {/* HOME FEED */}
-        {currentView === 'home' && (
-          <div style={{maxWidth:isMobile?'100%':'680px', margin:'0 auto'}}>
+        {/* COMMUNITY */}
+        {currentView === 'community' && (
+          <div>
+            {/* ── MY FEED section ── */}
+            <div style={{marginBottom:'36px'}}>
+              <div style={{display:'flex',alignItems:'center',gap:'12px',marginBottom:'20px'}}>
+                <div style={{flex:1,height:'1px',background:'#e8e0d4'}} />
+                <h2 style={{fontSize:isMobile?'22px':'26px',fontWeight:600,color:'#1c2820',margin:0,fontFamily:"'Cormorant Garamond',serif",whiteSpace:'nowrap'}}>My Feed</h2>
+                <div style={{flex:1,height:'1px',background:'#e8e0d4'}} />
+              </div>
+              <div style={{maxWidth:isMobile?'100%':'680px',margin:'0 auto'}}>
+<div style={{maxWidth:isMobile?'100%':'680px', margin:'0 auto'}}>
 
             {/* Greeting */}
             <div style={{marginBottom:'28px'}}>
@@ -1715,14 +1725,18 @@ const MealPrepApp = ({ pendingJoinCode }) => {
               </div>
             )}
           </div>
-        )}
+              </div>
+            </div>
 
-        {/* COMMUNITY */}
-        {currentView === 'community' && (
-          <div>
-            <div style={{marginBottom:'20px'}}>
+            {/* ── COMMUNITY RECIPES section ── */}
+            <div>
+              <div style={{display:'flex',alignItems:'center',gap:'12px',marginBottom:'20px'}}> 
+                <div style={{flex:1,height:'1px',background:'#e8e0d4'}} />
+                <h2 style={{fontSize:isMobile?'22px':'26px',fontWeight:600,color:'#1c2820',margin:0,fontFamily:"'Cormorant Garamond',serif",whiteSpace:'nowrap'}}>Community Recipes</h2>
+                <div style={{flex:1,height:'1px',background:'#e8e0d4'}} />
+              </div>
+<div style={{marginBottom:'20px'}}>
               <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',flexWrap:'wrap',gap:'8px',marginBottom:'8px'}}>
-                <h2 style={{fontSize:isMobile?'24px':'30px',fontWeight:700,color:'#1c2820',margin:0}}>Community Recipes</h2>
                 <button onClick={() => setShowFindPeople(true)} style={{padding:'9px 16px',background:'#fefcf8',border:'1px solid #d8d0c4',borderRadius:'8px',fontWeight:600,fontSize:'13px',cursor:'pointer',color:'#a78bfa',whiteSpace:'nowrap'}}>
                   👥 Find People
                 </button>
@@ -1828,6 +1842,7 @@ const MealPrepApp = ({ pendingJoinCode }) => {
                   </div>
                 </div>
               ))}
+            </div>
             </div>
           </div>
         )}
@@ -2665,58 +2680,123 @@ const MealPrepApp = ({ pendingJoinCode }) => {
       {/* SHOPPING LIST MODAL */}
       {showShoppingList && (
         <div style={{position:'fixed',inset:0,background:'rgba(20,30,22,0.85)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:1000,padding:'20px'}}>
-          <div style={{background:'#fefcf8',borderRadius:'12px',padding:'24px',maxWidth:'520px',width:'100%',maxHeight:'80vh',overflow:'auto',border:'1px solid #e0d8cc'}}>
-            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'6px'}}>
+          <div style={{background:'#fefcf8',borderRadius:'12px',padding:'24px',maxWidth:'520px',width:'100%',maxHeight:'85vh',display:'flex',flexDirection:'column',border:'1px solid #e0d8cc'}}>
+
+            {/* Header */}
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'4px',flexShrink:0}}>
               <h2 style={{margin:0,fontSize:'22px',fontWeight:600,color:'#1c2820',fontFamily:"'Cormorant Garamond',serif"}}>Shopping List</h2>
               <div style={{display:'flex',alignItems:'center',gap:'10px'}}>
                 {checkedItems.size > 0 && (
-                  <button onClick={() => setCheckedItems(new Set())} style={{background:'none',border:'none',cursor:'pointer',fontSize:'12px',color:'#6a6050',fontWeight:600}}>
+                  <button onClick={() => setCheckedItems(new Set())} style={{background:'none',border:'none',cursor:'pointer',fontSize:'12px',color:'#9a9080',fontWeight:500}}>
                     Clear checked
                   </button>
                 )}
-                <button onClick={() => setShowShoppingList(false)} style={{background:'none',border:'none',cursor:'pointer'}}><X size={22} color="#999" /></button>
+                <button onClick={() => setShowShoppingList(false)} style={{background:'none',border:'none',cursor:'pointer'}}><X size={22} color="#9a9080" /></button>
               </div>
             </div>
             {checkedItems.size > 0 && (
-              <p style={{margin:'0 0 16px',fontSize:'12px',color:'#7a7060'}}>{checkedItems.size} item{checkedItems.size !== 1 ? 's' : ''} already have</p>
+              <p style={{margin:'0 0 12px',fontSize:'12px',color:'#9a9080',flexShrink:0}}>{checkedItems.size} item{checkedItems.size !== 1 ? 's' : ''} already have</p>
             )}
+
+            {/* Instacart Order Button */}
             {(() => {
               const list = generateShoppingList();
-              const hasItems = Object.values(list).some(a => a.length > 0);
-              if (!hasItems) return <p style={{color:'#9a9080',textAlign:'center',padding:'40px 0'}}>No meals planned yet!</p>;
-              return Object.entries(list).map(([cat, items]) => {
-                if (!items.length) return null;
-                const needed = items.filter(item => !checkedItems.has(`${cat}:${item.name}`));
-                const have = items.filter(item => checkedItems.has(`${cat}:${item.name}`));
-                const allItems = [...needed, ...have];
-                return (
-                  <div key={cat} style={{marginBottom:'18px'}}>
-                    <h3 style={{margin:'0 0 8px 0',fontSize:'13px',fontWeight:700,color:'#1c2820',textTransform:'uppercase',letterSpacing:'0.5px'}}>{cat}</h3>
-                    {allItems.map((item, i) => {
-                      const key = `${cat}:${item.name}`;
-                      const isChecked = checkedItems.has(key);
-                      return (
-                        <div key={i} onClick={() => {
-                          setCheckedItems(prev => {
-                            const next = new Set(prev);
-                            isChecked ? next.delete(key) : next.add(key);
-                            return next;
-                          });
-                        }} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'8px 10px',marginBottom:'2px',borderRadius:'7px',cursor:'pointer',background:isChecked?'transparent':'#222',border:isChecked?'1px solid #1e1e1e':'1px solid #2e2e2e',transition:'all 0.15s',opacity:isChecked?0.45:1}}>
-                          <div style={{display:'flex',alignItems:'center',gap:'10px'}}>
-                            <div style={{width:'16px',height:'16px',borderRadius:'4px',border:isChecked?'none':'1px solid #444',background:isChecked?'#333':'transparent',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
-                              {isChecked && <span style={{color:'#7a7060',fontSize:'11px',fontWeight:700}}>✓</span>}
-                            </div>
-                            <span style={{fontSize:'14px',color:isChecked?'#555':'#ccc',textDecoration:isChecked?'line-through':'none',transition:'all 0.15s'}}>{item.name}</span>
-                          </div>
-                          {item.count > 1 && <span style={{background:isChecked?'#1a1a1a':'#fff',color:isChecked?'#444':'#000',padding:'2px 8px',borderRadius:'10px',fontSize:'11px',fontWeight:700,transition:'all 0.15s'}}>x{item.count}</span>}
-                        </div>
-                      );
-                    })}
-                  </div>
-                );
-              });
+              const allIngredients = Object.values(list).flat().filter(item => !checkedItems.has(`${Object.keys(list).find(k => list[k].includes(item))}:${item.name}`));
+              const hasItems = allIngredients.length > 0;
+
+              // ── INSTACART CONFIG ──────────────────────────────
+              // Once approved, replace with your real API key and affiliate ID
+              const INSTACART_API_KEY = null; // e.g. 'ica_prod_abc123...'
+              const INSTACART_AFFILIATE_ID = null; // e.g. 'reciperoulette'
+
+              const openInstacart = () => {
+                if (INSTACART_API_KEY && INSTACART_AFFILIATE_ID) {
+                  // Full API integration: POST to Instacart shoppable recipe API
+                  // Docs: https://www.instacart.com/company/developers/
+                  const items = allIngredients.map(i => ({ name: i.name, quantity: i.count || 1 }));
+                  fetch('https://connect.instacart.com/idp/v1/products/products_link', {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${INSTACART_API_KEY}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                      title: 'Recipe Roulette — Weekly Groceries',
+                      affiliate_id: INSTACART_AFFILIATE_ID,
+                      items: items.map(i => ({ name: i.name, quantity: i.quantity }))
+                    })
+                  })
+                  .then(r => r.json())
+                  .then(data => { if (data?.url) window.open(data.url, '_blank'); })
+                  .catch(() => window.open('https://www.instacart.com', '_blank'));
+                } else {
+                  // ── FALLBACK: search Instacart for the first ingredient ──
+                  // Opens Instacart so user can manually shop — useful until API approved
+                  const query = allIngredients.slice(0, 3).map(i => i.name).join(', ');
+                  window.open(`https://www.instacart.com/store/s?k=${encodeURIComponent(query)}`, '_blank');
+                }
+              };
+
+              return hasItems ? (
+                <div style={{marginBottom:'16px',flexShrink:0}}>
+                  <button onClick={openInstacart} style={{width:'100%',padding:'12px',background:'#1c2820',border:'none',borderRadius:'6px',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:'10px',fontFamily:"'Jost',sans-serif",transition:'opacity 0.15s'}}>
+                    <img src="https://www.instacart.com/favicon.ico" style={{width:'18px',height:'18px',borderRadius:'3px'}} onError={e => e.target.style.display='none'} />
+                    <span style={{fontWeight:600,fontSize:'14px',color:'#f0ece4'}}>Order on Instacart</span>
+                    <span style={{fontSize:'11px',color:'#4a6a52',marginLeft:'2px'}}>{allIngredients.length} items</span>
+                  </button>
+                  {!INSTACART_API_KEY && (
+                    <p style={{margin:'6px 0 0',fontSize:'10px',color:'#9a9080',textAlign:'center',fontFamily:"'Jost',sans-serif"}}>
+                      Opens Instacart — full cart sync coming soon
+                    </p>
+                  )}
+                </div>
+              ) : null;
             })()}
+
+            {/* Divider */}
+            <div style={{height:'1px',background:'#e8e0d4',marginBottom:'16px',flexShrink:0}} />
+
+            {/* Items list - scrollable */}
+            <div style={{overflowY:'auto',flex:1}}>
+              {(() => {
+                const list = generateShoppingList();
+                const hasItems = Object.values(list).some(a => a.length > 0);
+                if (!hasItems) return <p style={{color:'#9a9080',textAlign:'center',padding:'40px 0',fontFamily:"'Jost',sans-serif"}}>No meals planned yet — add some to your calendar!</p>;
+                return Object.entries(list).map(([cat, items]) => {
+                  if (!items.length) return null;
+                  const needed = items.filter(item => !checkedItems.has(`${cat}:${item.name}`));
+                  const have = items.filter(item => checkedItems.has(`${cat}:${item.name}`));
+                  const allItems = [...needed, ...have];
+                  return (
+                    <div key={cat} style={{marginBottom:'20px'}}>
+                      <div style={{display:'flex',alignItems:'center',gap:'8px',marginBottom:'8px'}}>
+                        <span style={{fontSize:'9px',fontWeight:600,color:'#c46a3a',letterSpacing:'3px',textTransform:'uppercase',fontFamily:"'Jost',sans-serif"}}>{cat}</span>
+                        <div style={{flex:1,height:'1px',background:'#ece8e0'}} />
+                      </div>
+                      {allItems.map((item, i) => {
+                        const key = `${cat}:${item.name}`;
+                        const isChecked = checkedItems.has(key);
+                        return (
+                          <div key={i} onClick={() => {
+                            setCheckedItems(prev => {
+                              const next = new Set(prev);
+                              isChecked ? next.delete(key) : next.add(key);
+                              return next;
+                            });
+                          }} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'9px 12px',marginBottom:'3px',borderRadius:'5px',cursor:'pointer',background:isChecked?'transparent':'#fff',border:`1px solid ${isChecked?'#ece8e0':'#e8e4dc'}`,transition:'all 0.15s',opacity:isChecked?0.5:1}}>
+                            <div style={{display:'flex',alignItems:'center',gap:'10px'}}>
+                              <div style={{width:'16px',height:'16px',borderRadius:'3px',border:`1.5px solid ${isChecked?'#5a9a6a':'#c8c0b4'}`,background:isChecked?'#5a9a6a':'transparent',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,transition:'all 0.15s'}}>
+                                {isChecked && <span style={{color:'#fff',fontSize:'10px',fontWeight:700,lineHeight:1}}>✓</span>}
+                              </div>
+                              <span style={{fontSize:'14px',color:isChecked?'#9a9080':'#1c2820',textDecoration:isChecked?'line-through':'none',transition:'all 0.15s',fontFamily:"'Jost',sans-serif"}}>{item.name}</span>
+                            </div>
+                            {item.count > 1 && <span style={{background:'#f0ece4',color:'#6a6050',padding:'2px 8px',borderRadius:'10px',fontSize:'11px',fontWeight:600}}>×{item.count}</span>}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  );
+                });
+              })()}
+            </div>
+
           </div>
         </div>
       )}

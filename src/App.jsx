@@ -2714,54 +2714,121 @@ const MealPrepApp = ({ pendingJoinCode }) => {
               <p style={{margin:'0 0 12px',fontSize:'12px',color:'#9a9080',flexShrink:0}}>{checkedItems.size} item{checkedItems.size !== 1 ? 's' : ''} already have</p>
             )}
 
-            {/* Instacart Order Button */}
+            {/* Grocery Ordering Buttons */}
             {(() => {
               const list = generateShoppingList();
               const allIngredients = Object.values(list).flat().filter(item => !checkedItems.has(`${Object.keys(list).find(k => list[k].includes(item))}:${item.name}`));
               const hasItems = allIngredients.length > 0;
 
               // ── INSTACART CONFIG ──────────────────────────────
-              // Once approved, replace with your real API key and affiliate ID
-              const INSTACART_API_KEY = null; // e.g. 'ica_prod_abc123...'
-              const INSTACART_AFFILIATE_ID = null; // e.g. 'reciperoulette'
+              const INSTACART_API_KEY = null; // Replace with key once approved
+              const INSTACART_AFFILIATE_ID = null; // Replace with affiliate ID once approved
 
+              // ── KROGER CONFIG ──────────────────────────────────
+              const KROGER_CLIENT_ID = 'reciperoulette-bbccx931';
+              const KROGER_REDIRECT_URI = `${window.location.origin}/`;
+              const KROGER_SCOPES = 'cart.basic:write product.compact';
+
+              // ── INSTACART HANDLER ──────────────────────────────
               const openInstacart = () => {
-                if (INSTACART_API_KEY && INSTACART_AFFILIATE_ID) {
-                  // Full API integration: POST to Instacart shoppable recipe API
-                  // Docs: https://www.instacart.com/company/developers/
-                  const items = allIngredients.map(i => ({ name: i.name, quantity: i.count || 1 }));
-                  fetch('https://connect.instacart.com/idp/v1/products/products_link', {
+                if (INSTACART_API_KEY) {
+                  fetch('https://connect.instacart.com/idp/v1/products/recipe', {
                     method: 'POST',
                     headers: { 'Authorization': `Bearer ${INSTACART_API_KEY}`, 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                       title: 'Recipe Roulette — Weekly Groceries',
-                      affiliate_id: INSTACART_AFFILIATE_ID,
-                      items: items.map(i => ({ name: i.name, quantity: i.quantity }))
+                      image_url: 'https://recipe-roulette-new.vercel.app/logo.png',
+                      author: 'Recipe Roulette',
+                      landing_page_configuration: { partner_linkback_url: 'https://recipe-roulette-new.vercel.app', enable_pantry_items: true },
+                      ingredients: allIngredients.map(i => ({
+                        name: i.name,
+                        measurements: [{ quantity: i.count || 1, unit: 'each' }]
+                      }))
                     })
                   })
                   .then(r => r.json())
-                  .then(data => { if (data?.url) window.open(data.url, '_blank'); })
+                  .then(data => { if (data?.products_link_url) window.open(data.products_link_url, '_blank'); })
                   .catch(() => window.open('https://www.instacart.com', '_blank'));
                 } else {
-                  // ── FALLBACK: search Instacart for the first ingredient ──
-                  // Opens Instacart so user can manually shop — useful until API approved
+                  // Fallback until API key arrives
                   const query = allIngredients.slice(0, 3).map(i => i.name).join(', ');
                   window.open(`https://www.instacart.com/store/s?k=${encodeURIComponent(query)}`, '_blank');
                 }
               };
 
+              // ── KROGER HANDLER ─────────────────────────────────
+              const openKroger = () => {
+                // Check if we have a Kroger token from OAuth callback
+                const krogerToken = sessionStorage.getItem('kroger_access_token');
+                if (krogerToken) {
+                  // We have a token — add items to cart
+                  const addItems = async () => {
+                    try {
+                      // Search for each ingredient and add first match to cart
+                      const cartItems = [];
+                      for (const ingredient of allIngredients.slice(0, 50)) {
+                        const searchRes = await fetch(
+                          `https://api.kroger.com/v1/products?filter.term=${encodeURIComponent(ingredient.name)}&filter.limit=1`,
+                          { headers: { 'Authorization': `Bearer ${krogerToken}`, 'Accept': 'application/json' } }
+                        );
+                        const searchData = await searchRes.json();
+                        const product = searchData?.data?.[0];
+                        if (product) {
+                          cartItems.push({ upc: product.upc, quantity: ingredient.count || 1, modality: 'PICKUP' });
+                        }
+                      }
+                      if (cartItems.length > 0) {
+                        await fetch('https://api.kroger.com/v1/cart/add', {
+                          method: 'PUT',
+                          headers: { 'Authorization': `Bearer ${krogerToken}`, 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ items: cartItems })
+                        });
+                        window.open('https://www.kroger.com/cart', '_blank');
+                      }
+                    } catch (e) {
+                      // Token may be expired — re-auth
+                      sessionStorage.removeItem('kroger_access_token');
+                      openKroger();
+                    }
+                  };
+                  addItems();
+                } else {
+                  // No token — start OAuth2 flow
+                  const state = Math.random().toString(36).slice(2);
+                  sessionStorage.setItem('kroger_oauth_state', state);
+                  sessionStorage.setItem('kroger_pending_ingredients', JSON.stringify(allIngredients));
+                  const authUrl = `https://api.kroger.com/v1/connect/oauth2/authorize?` +
+                    `response_type=code` +
+                    `&client_id=${KROGER_CLIENT_ID}` +
+                    `&redirect_uri=${encodeURIComponent(KROGER_REDIRECT_URI)}` +
+                    `&scope=${encodeURIComponent(KROGER_SCOPES)}` +
+                    `&state=${state}`;
+                  window.location.href = authUrl;
+                }
+              };
+
               return hasItems ? (
                 <div style={{marginBottom:'16px',flexShrink:0}}>
-                  <button onClick={openInstacart} style={{width:'100%',padding:'12px',background:'#1c2820',border:'none',borderRadius:'6px',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:'10px',fontFamily:"'Jost',sans-serif",transition:'opacity 0.15s'}}>
-                    <img src="https://www.instacart.com/favicon.ico" style={{width:'18px',height:'18px',borderRadius:'3px'}} onError={e => e.target.style.display='none'} />
-                    <span style={{fontWeight:600,fontSize:'14px',color:'#f0ece4'}}>Order on Instacart</span>
-                    <span style={{fontSize:'11px',color:'#4a6a52',marginLeft:'2px'}}>{allIngredients.length} items</span>
-                  </button>
-                  {!INSTACART_API_KEY && (
-                    <p style={{margin:'6px 0 0',fontSize:'10px',color:'#9a9080',textAlign:'center',fontFamily:"'Jost',sans-serif"}}>
-                      Opens Instacart — full cart sync coming soon
-                    </p>
-                  )}
+                  <p style={{margin:'0 0 8px',fontSize:'11px',color:'#8a7a6a',fontWeight:600,letterSpacing:'1px',textTransform:'uppercase',fontFamily:"'Jost',sans-serif"}}>Order groceries</p>
+                  <div style={{display:'flex',gap:'8px'}}>
+                    {/* Instacart — delivery */}
+                    <button onClick={openInstacart} style={{flex:1,padding:'11px 8px',background:'#1c2820',border:'none',borderRadius:'8px',cursor:'pointer',display:'flex',flexDirection:'column',alignItems:'center',gap:'4px',fontFamily:"'Jost',sans-serif",transition:'opacity 0.15s'}}
+                      onMouseOver={e => e.currentTarget.style.opacity='0.85'} onMouseOut={e => e.currentTarget.style.opacity='1'}>
+                      <img src="https://www.instacart.com/favicon.ico" style={{width:'20px',height:'20px',borderRadius:'4px'}} onError={e => e.target.style.display='none'} />
+                      <span style={{fontWeight:600,fontSize:'12px',color:'#f0ece4'}}>Instacart</span>
+                      <span style={{fontSize:'10px',color:'#4a6a52'}}>Delivery</span>
+                    </button>
+                    {/* Kroger — pickup */}
+                    <button onClick={openKroger} style={{flex:1,padding:'11px 8px',background:'#003087',border:'none',borderRadius:'8px',cursor:'pointer',display:'flex',flexDirection:'column',alignItems:'center',gap:'4px',fontFamily:"'Jost',sans-serif",transition:'opacity 0.15s'}}
+                      onMouseOver={e => e.currentTarget.style.opacity='0.85'} onMouseOut={e => e.currentTarget.style.opacity='1'}>
+                      <img src="https://www.kroger.com/favicon.ico" style={{width:'20px',height:'20px',borderRadius:'4px'}} onError={e => e.target.style.display='none'} />
+                      <span style={{fontWeight:600,fontSize:'12px',color:'#ffffff'}}>Kroger</span>
+                      <span style={{fontSize:'10px',color:'#a0b8e0'}}>Pickup</span>
+                    </button>
+                  </div>
+                  <p style={{margin:'6px 0 0',fontSize:'10px',color:'#9a9080',textAlign:'center',fontFamily:"'Jost',sans-serif"}}>
+                    {allIngredients.length} items · {!INSTACART_API_KEY ? 'Instacart full sync coming soon · ' : ''}Kroger requires sign-in
+                  </p>
                 </div>
               ) : null;
             })()}
@@ -3794,6 +3861,41 @@ const App = () => {
   const params = new URLSearchParams(window.location.search);
   const shareId = params.get('r');
   const joinCode = params.get('join');
+  const krogerCode = params.get('code');
+  const krogerState = params.get('state');
+
+  if (krogerCode && krogerState) {
+    const savedState = sessionStorage.getItem('kroger_oauth_state');
+    if (krogerState === savedState) {
+      const KROGER_CLIENT_ID = 'reciperoulette-bbccx931';
+      const KROGER_CLIENT_SECRET = 'hr6MCoGAI5pvFWdX1NUz9ytlDFBhLJUWjCIsyIco';
+      const KROGER_REDIRECT_URI = `${window.location.origin}/`;
+      const credentials = btoa(`${KROGER_CLIENT_ID}:${KROGER_CLIENT_SECRET}`);
+      fetch('https://api.kroger.com/v1/connect/oauth2/token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Authorization': `Basic ${credentials}` },
+        body: new URLSearchParams({ grant_type: 'authorization_code', code: krogerCode, redirect_uri: KROGER_REDIRECT_URI })
+      })
+      .then(r => r.json())
+      .then(data => {
+        if (data.access_token) sessionStorage.setItem('kroger_access_token', data.access_token);
+        sessionStorage.removeItem('kroger_oauth_state');
+        window.history.replaceState({}, '', window.location.pathname);
+        window.location.reload();
+      })
+      .catch(() => { window.history.replaceState({}, '', window.location.pathname); window.location.reload(); });
+      return (
+        <div style={{display:'flex',alignItems:'center',justifyContent:'center',height:'100vh',background:'#fefcf8',fontFamily:"'Jost',sans-serif"}}>
+          <div style={{textAlign:'center'}}>
+            <div style={{fontSize:'40px',marginBottom:'16px'}}>🛒</div>
+            <p style={{fontWeight:600,fontSize:'16px',color:'#1c2820'}}>Connecting to Kroger...</p>
+            <p style={{fontSize:'13px',color:'#8a7a6a',marginTop:'8px'}}>Adding your items to cart</p>
+          </div>
+        </div>
+      );
+    }
+  }
+
   if (shareId) return <SharedRecipeView shareId={shareId} />;
   return <MealPrepApp pendingJoinCode={joinCode} />;
 };

@@ -2618,8 +2618,8 @@ const MealPrepApp = ({ pendingJoinCode }) => {
 
             {/* Panel header */}
             <div style={{padding:'20px 24px',borderBottom:'1px solid #1e1e1e',display:'flex',justifyContent:'space-between',alignItems:'center',flexShrink:0}}>
-              <h2 style={{margin:0,fontSize:'20px',fontWeight:600,color:'#1c2820',fontFamily:"'Cormorant Garamond',serif"}}>Your Profile</h2>
-              <button onClick={() => setShowProfilePanel(false)} style={{background:'#f0ece4',border:'1px solid #d8d0c4',borderRadius:'50%',cursor:'pointer',padding:'8px',display:'flex',alignItems:'center',justifyContent:'center'}}><X size={18} color="#fff" /></button>
+              <h2 style={{margin:0,fontSize:'20px',fontWeight:600,color:'#fefcf8',fontFamily:"'Cormorant Garamond',serif"}}>Your Profile</h2>
+              <button onClick={() => setShowProfilePanel(false)} style={{background:'#f0ece4',border:'1px solid #d8d0c4',borderRadius:'50%',cursor:'pointer',padding:'8px',display:'flex',alignItems:'center',justifyContent:'center'}}><X size={18} color="#1c2820" /></button>
             </div>
 
             <div style={{padding:'24px',flex:1,display:'flex',flexDirection:'column',gap:'28px'}}>
@@ -2646,7 +2646,7 @@ const MealPrepApp = ({ pendingJoinCode }) => {
 
               {/* Display name */}
               <div>
-                <label style={{display:'block',marginBottom:'8px',fontWeight:600,color:'#1c2820',fontSize:'13px',textTransform:'uppercase',letterSpacing:'0.5px'}}>Display Name</label>
+                <label style={{display:'block',marginBottom:'8px',fontWeight:600,color:'#fefcf8',fontSize:'13px',textTransform:'uppercase',letterSpacing:'0.5px'}}>Display Name</label>
                 <input
                   type="text"
                   value={profile.displayName}
@@ -2659,7 +2659,7 @@ const MealPrepApp = ({ pendingJoinCode }) => {
 
               {/* Email (read only) */}
               <div>
-                <label style={{display:'block',marginBottom:'8px',fontWeight:600,color:'#1c2820',fontSize:'13px',textTransform:'uppercase',letterSpacing:'0.5px'}}>Email</label>
+                <label style={{display:'block',marginBottom:'8px',fontWeight:600,color:'#fefcf8',fontSize:'13px',textTransform:'uppercase',letterSpacing:'0.5px'}}>Email</label>
                 <div style={{padding:'11px 14px',border:'1px solid #1e1e1e',borderRadius:'8px',fontSize:'14px',background:'#f0ece4',color:'#7a7060'}}>
                   {session?.user?.email}
                 </div>
@@ -2667,7 +2667,7 @@ const MealPrepApp = ({ pendingJoinCode }) => {
 
               {/* Phone number */}
               <div>
-                <label style={{display:'block',marginBottom:'8px',fontWeight:600,color:'#1c2820',fontSize:'13px',textTransform:'uppercase',letterSpacing:'0.5px'}}>Phone Number</label>
+                <label style={{display:'block',marginBottom:'8px',fontWeight:600,color:'#fefcf8',fontSize:'13px',textTransform:'uppercase',letterSpacing:'0.5px'}}>Phone Number</label>
                 <input
                   type="tel"
                   value={profile.phone}
@@ -2680,7 +2680,7 @@ const MealPrepApp = ({ pendingJoinCode }) => {
 
               {/* ZIP Code */}
               <div>
-                <label style={{display:'block',marginBottom:'8px',fontWeight:600,color:'#1c2820',fontSize:'13px',textTransform:'uppercase',letterSpacing:'0.5px'}}>ZIP Code</label>
+                <label style={{display:'block',marginBottom:'8px',fontWeight:600,color:'#fefcf8',fontSize:'13px',textTransform:'uppercase',letterSpacing:'0.5px'}}>ZIP Code</label>
                 <input
                   type="text"
                   value={profile.zipCode}
@@ -2694,7 +2694,7 @@ const MealPrepApp = ({ pendingJoinCode }) => {
 
               {/* Household size */}
               <div>
-                <label style={{display:'block',marginBottom:'12px',fontWeight:600,color:'#1c2820',fontSize:'13px',textTransform:'uppercase',letterSpacing:'0.5px'}}>
+                <label style={{display:'block',marginBottom:'12px',fontWeight:600,color:'#fefcf8',fontSize:'13px',textTransform:'uppercase',letterSpacing:'0.5px'}}>
                   Household Size
                 </label>
                 <div style={{display:'flex',gap:'12px',marginBottom:'10px'}}>
@@ -2704,7 +2704,7 @@ const MealPrepApp = ({ pendingJoinCode }) => {
                     <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:'8px'}}>
                       <button onClick={() => setProfile(p => ({...p, adults: Math.max(1, p.adults-1), householdSize: Math.max(1, p.adults-1) + p.children}))}
                         style={{width:'32px',height:'32px',borderRadius:'50%',background:'#f0ece4',border:'none',cursor:'pointer',color:'#1c2820',fontSize:'18px',fontWeight:700,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>−</button>
-                      <span style={{fontSize:'22px',fontWeight:700,color:'#1c2820',minWidth:'24px',textAlign:'center'}}>{profile.adults}</span>
+                      <span style={{fontSize:'22px',fontWeight:700,color:'#fefcf8',minWidth:'24px',textAlign:'center'}}>{profile.adults}</span>
                       <button onClick={() => setProfile(p => ({...p, adults: Math.min(10, p.adults+1), householdSize: Math.min(10, p.adults+1) + p.children}))}
                         style={{width:'32px',height:'32px',borderRadius:'50%',background:'#f0ece4',border:'none',cursor:'pointer',color:'#1c2820',fontSize:'18px',fontWeight:700,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>+</button>
                     </div>
@@ -2715,7 +2715,7 @@ const MealPrepApp = ({ pendingJoinCode }) => {
                     <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:'8px'}}>
                       <button onClick={() => setProfile(p => ({...p, children: Math.max(0, p.children-1), householdSize: p.adults + Math.max(0, p.children-1)}))}
                         style={{width:'32px',height:'32px',borderRadius:'50%',background:'#f0ece4',border:'none',cursor:'pointer',color:'#1c2820',fontSize:'18px',fontWeight:700,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>−</button>
-                      <span style={{fontSize:'22px',fontWeight:700,color:'#1c2820',minWidth:'24px',textAlign:'center'}}>{profile.children}</span>
+                      <span style={{fontSize:'22px',fontWeight:700,color:'#fefcf8',minWidth:'24px',textAlign:'center'}}>{profile.children}</span>
                       <button onClick={() => setProfile(p => ({...p, children: Math.min(10, p.children+1), householdSize: p.adults + Math.min(10, p.children+1)}))}
                         style={{width:'32px',height:'32px',borderRadius:'50%',background:'#f0ece4',border:'none',cursor:'pointer',color:'#1c2820',fontSize:'18px',fontWeight:700,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>+</button>
                     </div>
@@ -2739,7 +2739,7 @@ const MealPrepApp = ({ pendingJoinCode }) => {
                         <span style={{fontSize:'13px',fontWeight:600,color:'#1c2820'}}>Active household</span>
                         <span style={{fontSize:'12px',color:'#5a9a6a',fontWeight:600}}>{householdMembers.length}/4 members</span>
                       </div>
-                      <div style={{fontSize:'12px',color:'#6a6050',marginBottom:'12px'}}>Code: <span style={{color:'#1c2820',fontWeight:700,letterSpacing:'3px'}}>{household.invite_code}</span></div>
+                      <div style={{fontSize:'12px',color:'#6a6050',marginBottom:'12px'}}>Code: <span style={{color:'#fefcf8',fontWeight:700,letterSpacing:'3px'}}>{household.invite_code}</span></div>
                       <button onClick={copyInviteLink} style={{width:'100%',padding:'9px',background:'#fefcf8',border:'1px solid #d8d0c4',borderRadius:'8px',cursor:'pointer',fontWeight:600,fontSize:'13px',color:'#a78bfa'}}>
                         {householdToast === 'copied' ? '✓ Link Copied!' : '🔗 Copy Invite Link'}
                       </button>
@@ -2765,7 +2765,7 @@ const MealPrepApp = ({ pendingJoinCode }) => {
 
               {/* Dietary preferences */}
               <div>
-                <label style={{display:'block',marginBottom:'12px',fontWeight:600,color:'#1c2820',fontSize:'13px',textTransform:'uppercase',letterSpacing:'0.5px'}}>Dietary Preferences</label>
+                <label style={{display:'block',marginBottom:'12px',fontWeight:600,color:'#fefcf8',fontSize:'13px',textTransform:'uppercase',letterSpacing:'0.5px'}}>Dietary Preferences</label>
                 <div style={{display:'flex',flexWrap:'wrap',gap:'8px'}}>
                   {[
                     {id:'whole30', label:'💪 Whole30'},
@@ -3812,7 +3812,7 @@ Ingredients: ${(recipe.ingredients||[]).join(', ')}`
 
             {/* Controls */}
             <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'16px'}}>
-              <h2 style={{margin:0,fontSize:'20px',fontWeight:600,color:'#1c2820',fontFamily:"'Cormorant Garamond',serif"}}>📤 Share My Week</h2>
+              <h2 style={{margin:0,fontSize:'20px',fontWeight:600,color:'#fefcf8',fontFamily:"'Cormorant Garamond',serif"}}>📤 Share My Week</h2>
               <button onClick={() => setShowMealPlanShare(false)} style={{background:'none',border:'none',cursor:'pointer'}}><X size={22} color="#999" /></button>
             </div>
 
@@ -3823,7 +3823,7 @@ Ingredients: ${(recipe.ingredients||[]).join(', ')}`
                 <div style={{display:'flex',alignItems:'center',gap:'12px'}}>
                   <img src="/logo.png" alt="Logo" style={{width:'80px',height:'80px',objectFit:'contain'}} />
                   <div style={{display:'flex',alignItems:'baseline',gap:'10px',flexWrap:'wrap'}}>
-                    <div style={{fontSize:'24px',fontWeight:800,color:'#1c2820',letterSpacing:'-0.5px'}}>My Weekly Meals</div>
+                    <div style={{fontSize:'24px',fontWeight:800,color:'#fefcf8',letterSpacing:'-0.5px'}}>My Weekly Meals</div>
                     <div style={{fontSize:'14px',fontWeight:500,color:'#9a9080'}}>
                       {(() => { const d = getDayDate(0); const e = getDayDate(6); return `${d.getMonth()+1}/${d.getDate()} – ${e.getMonth()+1}/${e.getDate()}`; })()}
                     </div>
@@ -3855,7 +3855,7 @@ Ingredients: ${(recipe.ingredients||[]).join(', ')}`
                             </div>
                           );
                         }) : (
-                          <span style={{fontSize:'9px',color:'#3a3a3a',fontStyle:'italic',paddingTop:'2px'}}>Nothing planned</span>
+                          <span style={{fontSize:'9px',color:'#7a8a7c',fontStyle:'italic',paddingTop:'2px'}}>Nothing planned</span>
                         )}
                       </div>
                     </div>

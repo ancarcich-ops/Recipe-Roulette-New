@@ -2768,7 +2768,7 @@ const MealPrepApp = ({ pendingJoinCode }) => {
                       const cartItems = [];
                       for (const ingredient of allIngredients.slice(0, 50)) {
                         const searchRes = await fetch(
-                          `https://api.kroger.com/v1/products?filter.term=${encodeURIComponent(ingredient.name)}&filter.limit=1`,
+                          `https://api-ce.kroger.com/v1/products?filter.term=${encodeURIComponent(ingredient.name)}&filter.limit=1`,
                           { headers: { 'Authorization': `Bearer ${krogerToken}`, 'Accept': 'application/json' } }
                         );
                         const searchData = await searchRes.json();
@@ -2778,7 +2778,7 @@ const MealPrepApp = ({ pendingJoinCode }) => {
                         }
                       }
                       if (cartItems.length > 0) {
-                        await fetch('https://api.kroger.com/v1/cart/add', {
+                        await fetch('https://api-ce.kroger.com/v1/cart/add', {
                           method: 'PUT',
                           headers: { 'Authorization': `Bearer ${krogerToken}`, 'Content-Type': 'application/json' },
                           body: JSON.stringify({ items: cartItems })
@@ -2797,7 +2797,7 @@ const MealPrepApp = ({ pendingJoinCode }) => {
                   const state = Math.random().toString(36).slice(2);
                   sessionStorage.setItem('kroger_oauth_state', state);
                   sessionStorage.setItem('kroger_pending_ingredients', JSON.stringify(allIngredients));
-                  const authUrl = `https://api.kroger.com/v1/connect/oauth2/authorize?` +
+                  const authUrl = `https://api-ce.kroger.com/v1/connect/oauth2/authorize?` +
                     `response_type=code` +
                     `&client_id=${KROGER_CLIENT_ID}` +
                     `&redirect_uri=${encodeURIComponent(KROGER_REDIRECT_URI)}` +
@@ -3871,7 +3871,7 @@ const App = () => {
       const KROGER_CLIENT_SECRET = 'SW4QlXObpMKSCltG1426oAxIjhh6FwPNQ9t3oa63';
       const KROGER_REDIRECT_URI = `${window.location.origin}/`;
       const credentials = btoa(`${KROGER_CLIENT_ID}:${KROGER_CLIENT_SECRET}`);
-      fetch('https://api.kroger.com/v1/connect/oauth2/token', {
+      fetch('https://api-ce.kroger.com/v1/connect/oauth2/token', {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Authorization': `Basic ${credentials}` },
         body: new URLSearchParams({ grant_type: 'authorization_code', code: krogerCode, redirect_uri: KROGER_REDIRECT_URI })

@@ -1754,7 +1754,11 @@ const MealPrepApp = ({ pendingJoinCode }) => {
           <div>
             <div style={{marginBottom:'24px'}}>
               <h2 style={{fontSize:isMobile?'24px':'30px',fontWeight:600,color:'#1c2820',margin:'0 0 2px 0',fontFamily:"'Cormorant Garamond',serif",fontStyle:'italic'}}>Weekly Meal Plan</h2>
-              <p style={{color:'#6a6050',margin:'0 0 14px 0',fontSize:'13px'}}>Drag meals to rearrange • Click to view details</p>
+              <p style={{color:'#6a6050',margin:'0 0 10px 0',fontSize:'13px'}}>Drag meals to rearrange • Click to view details</p>
+              <div style={{background:'#f4f0ea',borderRadius:'8px',padding:'10px 14px',marginBottom:'14px',border:'1px solid #e8e0d4'}}>
+                <p style={{margin:'0 0 4px 0',fontSize:'12px',fontWeight:700,color:'#1c2820',fontFamily:"'Jost',sans-serif",letterSpacing:'0.3px'}}>💡 How to add meals</p>
+                <p style={{margin:0,fontSize:'12px',color:'#6a6050',lineHeight:1.6}}>Tap the <strong>+</strong> in any meal slot to add a recipe from your <strong>Recipe Book</strong> or saved Community recipes. Use <strong>Auto-Fill</strong> to plan your whole week at once. Can't see your recipes? Make sure they're saved in the Recipe Book tab first.</p>
+              </div>
               <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'8px'}}>
                 <button onClick={() => setShowAutoFillModal(true)} style={{padding:'11px',background:'#fefcf8',border:'1px solid #1c2820',borderRadius:'4px',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:'6px',fontWeight:500,fontSize:'13px',color:'#1c2820',fontFamily:"'Jost',sans-serif"}}>
                   <Wand2 size={15} /> Auto-Fill

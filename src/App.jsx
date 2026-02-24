@@ -1504,13 +1504,13 @@ const MealPrepApp = ({ pendingJoinCode }) => {
                               <div style={{position:'absolute',inset:0,background:isHero?'linear-gradient(to bottom, transparent 40%, rgba(0,0,0,0.85) 100%)':'linear-gradient(to bottom, transparent 30%, rgba(0,0,0,0.7) 100%)'}}>
                               </div>
                               {/* Tag badge */}
-                              <div style={{position:'absolute',top:'14px',left:'14px',background:'rgba(0,0,0,0.6)',backdropFilter:'blur(8px)',padding:'5px 12px',borderRadius:'20px',fontSize:'12px',fontWeight:600,color:'#1c2820',border:'1px solid rgba(255,255,255,0.15)'}}>
+                              <div style={{position:'absolute',top:'14px',left:'14px',background:'rgba(0,0,0,0.55)',backdropFilter:'blur(8px)',padding:'5px 12px',borderRadius:'20px',fontSize:'12px',fontWeight:600,color:'#ffffff',border:'1px solid rgba(255,255,255,0.25)'}}>
                                 {post.tag}
                               </div>
                               {/* Title on image for hero */}
                               {isHero && (
                                 <div style={{position:'absolute',bottom:0,left:0,right:0,padding:'20px'}}>
-                                  <h3 style={{margin:0,fontSize:'22px',fontWeight:700,color:'#1c2820',lineHeight:1.3}}>{post.title}</h3>
+                                  <h3 style={{margin:0,fontSize:'22px',fontWeight:700,color:'#ffffff',lineHeight:1.3,textShadow:'0 1px 4px rgba(0,0,0,0.5)'}}>{post.title}</h3>
                                 </div>
                               )}
                             </div>

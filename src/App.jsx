@@ -4099,6 +4099,7 @@ const App = () => {
 
   if (krogerCode && krogerState) {
     const savedState = sessionStorage.getItem('kroger_oauth_state');
+    alert('[Kroger CB] code=' + krogerCode.slice(0,10) + '... savedState=' + savedState + ' krogerState=' + krogerState + ' path=' + window.location.pathname);
     // Be lenient — mobile browsers sometimes lose sessionStorage across redirects
     if (krogerState === savedState || savedState === null) {
       const KROGER_CLIENT_ID = 'thereciperoulette-bbcc09pc';
@@ -4110,8 +4111,9 @@ const App = () => {
         headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Authorization': `Basic ${credentials}` },
         body: new URLSearchParams({ grant_type: 'authorization_code', code: krogerCode, redirect_uri: KROGER_REDIRECT_URI })
       })
-      .then(r => r.json())
+      .then(r => { alert('[Kroger CB] Token exchange HTTP status: ' + r.status); return r.json(); })
       .then(data => {
+        alert('[Kroger CB] Token response: ' + JSON.stringify(data).slice(0, 300));
         if (data.access_token) {
           // Use localStorage — survives cross-origin redirects on mobile unlike sessionStorage
           localStorage.setItem('kroger_access_token', data.access_token);
@@ -4120,12 +4122,14 @@ const App = () => {
           const zip = sessionStorage.getItem('kroger_zip');
           if (pending) localStorage.setItem('kroger_pending_ingredients', pending);
           if (zip) localStorage.setItem('kroger_zip', zip);
+          alert('[Kroger CB] Saved to localStorage. pending=' + !!pending + ' zip=' + zip);
         }
         sessionStorage.removeItem('kroger_oauth_state');
         window.history.replaceState({}, '', '/');
         window.location.href = '/';
       })
       .catch(err => {
+        alert('[Kroger CB] FETCH ERROR: ' + err.message);
         window.history.replaceState({}, '', '/');
         window.location.href = '/';
       });

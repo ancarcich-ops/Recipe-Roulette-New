@@ -4106,10 +4106,10 @@ const App = () => {
       const KROGER_CLIENT_SECRET = 'KIJMvRMbsD0cf19lnsiU06SCp3pzlh0-_3eofy1K';
       const KROGER_REDIRECT_URI = 'https://recipe-roulette-new.vercel.app/auth/callback';
       const credentials = btoa(`${KROGER_CLIENT_ID}:${KROGER_CLIENT_SECRET}`);
-      fetch('https://api.kroger.com/v1/connect/oauth2/token', {
+      fetch('/api/kroger-token', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Authorization': `Basic ${credentials}` },
-        body: new URLSearchParams({ grant_type: 'authorization_code', code: krogerCode, redirect_uri: KROGER_REDIRECT_URI })
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: krogerCode, redirect_uri: KROGER_REDIRECT_URI })
       })
       .then(r => { alert('[Kroger CB] Token exchange HTTP status: ' + r.status); return r.json(); })
       .then(data => {

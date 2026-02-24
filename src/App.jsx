@@ -619,57 +619,42 @@ const MealPrepApp = ({ pendingJoinCode }) => {
       sessionStorage.removeItem('kroger_pending_ingredients');
       setTimeout(async () => {
         try {
-          alert('[Kroger Debug] Step 1: Starting cart add. Token exists: ' + !!krogerToken + ', Ingredients: ' + ingredients.length);
 
           // Get locationId from saved zip
           let locationId = null;
           const zip = localStorage.getItem('kroger_zip') || sessionStorage.getItem('kroger_zip');
-          alert('[Kroger Debug] Step 2: Zip = ' + zip);
 
           if (zip) {
             const cached = sessionStorage.getItem(`kroger_location_${zip}`);
             if (cached) {
               locationId = cached;
-              alert('[Kroger Debug] Step 3: Using cached locationId = ' + locationId);
             } else {
               try {
                 const KROGER_CLIENT_ID = 'thereciperoulette-bbcc09pc';
                 const creds = btoa(`${KROGER_CLIENT_ID}:KIJMvRMbsD0cf19lnsiU06SCp3pzlh0-_3eofy1K`);
-                const tokenRes = await fetch('/api/kroger-token', {
+                const tokenRes = await fetch('https://recipe-roulette-new.vercel.app/api/kroger-token', {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify({ grant_type: 'client_credentials', scope: 'product.compact' })
                 });
                 const tokenData = await tokenRes.json();
-                const locRes = await fetch('/api/kroger-proxy', {
+                const locRes = await fetch('https://recipe-roulette-new.vercel.app/api/kroger-proxy', {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify({ path: `/v1/locations?filter.zipCode=${zip}&filter.limit=1`, method: 'GET', token: tokenData.access_token })
                 });
                 const locData = await locRes.json();
                 locationId = locData?.data?.[0]?.locationId || null;
-                alert('[Kroger Debug] Step 3: Fetched locationId = ' + locationId);
                 if (locationId) sessionStorage.setItem(`kroger_location_${zip}`, locationId);
               } catch (e) {
-                alert('[Kroger Debug] Step 3 ERROR: ' + e.message);
               }
             }
           }
 
-          // Test just first ingredient
-          const testIngredient = ingredients[0];
           const locationParam = locationId ? `&filter.locationId=${locationId}` : '';
-          const searchRes = await fetch('/api/kroger-proxy', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ path: `/v1/products?filter.term=${encodeURIComponent(testIngredient.name)}&filter.limit=1${locationParam}`, method: 'GET', token: krogerToken })
-          });
-          const searchData = await searchRes.json();
-          alert('[Kroger Debug] Step 4: Product search status=' + searchRes.status + ' result=' + JSON.stringify(searchData).slice(0,200));
-
           const cartItems = [];
           for (const ingredient of ingredients.slice(0, 50)) {
-            const sr = await fetch('/api/kroger-proxy', {
+            const sr = await fetch('https://recipe-roulette-new.vercel.app/api/kroger-proxy', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ path: `/v1/products?filter.term=${encodeURIComponent(ingredient.name)}&filter.limit=1${locationParam}`, method: 'GET', token: krogerToken })
@@ -678,22 +663,18 @@ const MealPrepApp = ({ pendingJoinCode }) => {
             const product = sd?.data?.[0];
             if (product) cartItems.push({ upc: product.upc, quantity: ingredient.count || 1, modality: 'PICKUP' });
           }
-          alert('[Kroger Debug] Step 5: cartItems count = ' + cartItems.length);
 
           if (cartItems.length > 0) {
-            const cartRes = await fetch('/api/kroger-proxy', {
+            const cartRes = await fetch('https://recipe-roulette-new.vercel.app/api/kroger-proxy', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ path: '/v1/cart/add', method: 'PUT', token: krogerToken, body: { items: cartItems } })
             });
             const cartData = await cartRes.json().catch(() => ({}));
-            alert('[Kroger Debug] Step 6: Cart add status=' + cartRes.status + ' response=' + JSON.stringify(cartData).slice(0,200));
-            window.open('https://www.kroger.com/cart', '_blank');
+            window.location.href = 'https://www.kroger.com/cart';
           } else {
-            alert('[Kroger Debug] Step 5 FAIL: No cart items found — product search returned nothing');
           }
         } catch (e) {
-          alert('[Kroger Debug] CAUGHT ERROR: ' + e.message + '\n' + e.stack);
           sessionStorage.removeItem('kroger_access_token');
           localStorage.removeItem('kroger_access_token');
         }
@@ -2952,7 +2933,7 @@ const MealPrepApp = ({ pendingJoinCode }) => {
               // ── KROGER HANDLER ─────────────────────────────────
               const getKrogerAppToken = async () => {
                 const creds = btoa(`${KROGER_CLIENT_ID}:KIJMvRMbsD0cf19lnsiU06SCp3pzlh0-_3eofy1K`);
-                const res = await fetch('/api/kroger-token', {
+                const res = await fetch('https://recipe-roulette-new.vercel.app/api/kroger-token', {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify({ grant_type: 'client_credentials', scope: 'product.compact' })
@@ -2966,7 +2947,7 @@ const MealPrepApp = ({ pendingJoinCode }) => {
                 if (cached) return cached;
                 try {
                   const appToken = await getKrogerAppToken();
-                  const res = await fetch('/api/kroger-proxy', {
+                  const res = await fetch('https://recipe-roulette-new.vercel.app/api/kroger-proxy', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ path: `/v1/locations?filter.zipCode=${zip}&filter.limit=1`, method: 'GET', token: appToken })
@@ -3006,7 +2987,7 @@ const MealPrepApp = ({ pendingJoinCode }) => {
                     const cartItems = [];
                     for (const ingredient of allIngredients.slice(0, 50)) {
                       const locationParam = locationId ? `&filter.locationId=${locationId}` : '';
-                      const searchRes = await fetch('/api/kroger-proxy', {
+                      const searchRes = await fetch('https://recipe-roulette-new.vercel.app/api/kroger-proxy', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ path: `/v1/products?filter.term=${encodeURIComponent(ingredient.name)}&filter.limit=1${locationParam}`, method: 'GET', token: krogerToken })
@@ -3016,12 +2997,12 @@ const MealPrepApp = ({ pendingJoinCode }) => {
                       if (product) cartItems.push({ upc: product.upc, quantity: ingredient.count || 1, modality: 'PICKUP' });
                     }
                     if (cartItems.length > 0) {
-                      await fetch('/api/kroger-proxy', {
+                      await fetch('https://recipe-roulette-new.vercel.app/api/kroger-proxy', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ path: '/v1/cart/add', method: 'PUT', token: krogerToken, body: { items: cartItems } })
                       });
-                      window.open('https://www.kroger.com/cart', '_blank');
+                      window.location.href = 'https://www.kroger.com/cart';
                     } else {
                       alert('No matching Kroger products found for your ingredients.');
                     }
@@ -4104,21 +4085,19 @@ const App = () => {
 
   if (krogerCode && krogerState) {
     const savedState = sessionStorage.getItem('kroger_oauth_state');
-    alert('[Kroger CB] code=' + krogerCode.slice(0,10) + '... savedState=' + savedState + ' krogerState=' + krogerState + ' path=' + window.location.pathname);
     // Be lenient — mobile browsers sometimes lose sessionStorage across redirects
     if (krogerState === savedState || savedState === null) {
       const KROGER_CLIENT_ID = 'thereciperoulette-bbcc09pc';
       const KROGER_CLIENT_SECRET = 'KIJMvRMbsD0cf19lnsiU06SCp3pzlh0-_3eofy1K';
       const KROGER_REDIRECT_URI = 'https://recipe-roulette-new.vercel.app/auth/callback';
       const credentials = btoa(`${KROGER_CLIENT_ID}:${KROGER_CLIENT_SECRET}`);
-      fetch('/api/kroger-token', {
+      fetch('https://recipe-roulette-new.vercel.app/api/kroger-token', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ code: krogerCode, redirect_uri: KROGER_REDIRECT_URI })
       })
-      .then(r => { alert('[Kroger CB] Token exchange HTTP status: ' + r.status); return r.json(); })
+      .then(r => r.json())
       .then(data => {
-        alert('[Kroger CB] Token response: ' + JSON.stringify(data).slice(0, 300));
         if (data.access_token) {
           // Use localStorage — survives cross-origin redirects on mobile unlike sessionStorage
           localStorage.setItem('kroger_access_token', data.access_token);
@@ -4127,14 +4106,12 @@ const App = () => {
           const zip = sessionStorage.getItem('kroger_zip');
           if (pending) localStorage.setItem('kroger_pending_ingredients', pending);
           if (zip) localStorage.setItem('kroger_zip', zip);
-          alert('[Kroger CB] Saved to localStorage. pending=' + !!pending + ' zip=' + zip);
         }
         sessionStorage.removeItem('kroger_oauth_state');
         window.history.replaceState({}, '', '/');
         window.location.href = '/';
       })
       .catch(err => {
-        alert('[Kroger CB] FETCH ERROR: ' + err.message);
         window.history.replaceState({}, '', '/');
         window.location.href = '/';
       });

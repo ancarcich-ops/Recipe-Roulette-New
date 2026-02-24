@@ -1255,7 +1255,7 @@ const MealPrepApp = ({ pendingJoinCode }) => {
           {/* Top row: logo + profile */}
           <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:isMobile?'8px':0}}>
             <div style={{display:'flex',alignItems:'center',gap:'10px'}}>
-              <img src="/logo.png" alt="Recipe Roulette Logo" style={{width:isMobile?'104px':'128px',height:isMobile?'104px':'128px',objectFit:'contain',flexShrink:0}} />
+              <img src="/logo.png" alt="Recipe Roulette Logo" style={{width:isMobile?'36px':'40px',height:isMobile?'36px':'40px',objectFit:'contain',flexShrink:0}} />
               <div>
                 <h1 style={{margin:0,fontSize:isMobile?'18px':'22px',lineHeight:1.1,fontFamily:"'Libre Baskerville',serif"}}>
                   <span style={{fontWeight:700,color:'#f0ece4'}}>Recipe </span><span style={{fontWeight:400,fontStyle:'italic',color:'#c46a3a'}}>Roulette</span>

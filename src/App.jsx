@@ -1323,11 +1323,9 @@ const MealPrepApp = ({ pendingJoinCode }) => {
               </button>
             </div>
 
-            {/* ── MY FEED section ── */}
+            {/* ── MY FEED ── */}
             {communitySubView === 'feed' && (
-            <div style={{marginBottom:'36px'}}>
               <div style={{maxWidth:isMobile?'100%':'680px',margin:'0 auto'}}>
-
             {/* Greeting */}
             <div style={{marginBottom:'28px'}}>
               <h2 style={{fontSize:isMobile?'26px':'32px',fontWeight:600,color:'#1c2820',margin:'0 0 4px 0',fontFamily:"'Cormorant Garamond',serif"}}>
@@ -1455,17 +1453,16 @@ const MealPrepApp = ({ pendingJoinCode }) => {
               );
             })()}
               </div>
-            </div>
             )}
 
-            {/* ── COMMUNITY RECIPES section ── */}
+            {/* ── COMMUNITY RECIPES ── */}
             {communitySubView === 'recipes' && (
-            <div>
-              <div style={{display:'flex',alignItems:'center',gap:'12px',marginBottom:'20px'}}> 
-                <div style={{flex:1,height:'1px',background:'#e8e0d4'}} />
-                <h2 style={{fontSize:isMobile?'22px':'26px',fontWeight:600,color:'#1c2820',margin:0,fontFamily:"'Cormorant Garamond',serif",whiteSpace:'nowrap'}}>Community Recipes</h2>
-                <div style={{flex:1,height:'1px',background:'#e8e0d4'}} />
-              </div>
+              <div>
+                <div style={{display:'flex',alignItems:'center',gap:'12px',marginBottom:'20px'}}>
+                  <div style={{flex:1,height:'1px',background:'#e8e0d4'}} />
+                  <h2 style={{fontSize:isMobile?'22px':'26px',fontWeight:600,color:'#1c2820',margin:0,fontFamily:"'Cormorant Garamond',serif",whiteSpace:'nowrap'}}>Community Recipes</h2>
+                  <div style={{flex:1,height:'1px',background:'#e8e0d4'}} />
+                </div>
               <div style={{marginBottom:'20px'}}>
               <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',flexWrap:'wrap',gap:'8px',marginBottom:'8px'}}>
                 <button onClick={() => setShowFindPeople(true)} style={{padding:'9px 16px',background:'#fefcf8',border:'1px solid #d8d0c4',borderRadius:'8px',fontWeight:600,fontSize:'13px',cursor:'pointer',color:'#5a9a6a',whiteSpace:'nowrap'}}>
@@ -1574,11 +1571,10 @@ const MealPrepApp = ({ pendingJoinCode }) => {
                 </div>
               ))}
             </div>
+              </div>
             )}
           </div>
-        </div>
         )}
-
         {/* MY MEALS */}
         {currentView === 'calendar' && (
           <div>

@@ -510,6 +510,43 @@ const MealPrepApp = ({ pendingJoinCode }) => {
     return () => subscription.unsubscribe();
   }, []);
 
+  // ── Auto-trigger Kroger cart add after OAuth callback ──
+  useEffect(() => {
+    const shouldAddToCart = sessionStorage.getItem('kroger_add_to_cart');
+    const krogerToken = sessionStorage.getItem('kroger_access_token');
+    const pendingIngredients = sessionStorage.getItem('kroger_pending_ingredients');
+    if (shouldAddToCart && krogerToken && pendingIngredients) {
+      sessionStorage.removeItem('kroger_add_to_cart');
+      setShowShoppingList(true);
+      const ingredients = JSON.parse(pendingIngredients);
+      sessionStorage.removeItem('kroger_pending_ingredients');
+      setTimeout(async () => {
+        try {
+          const cartItems = [];
+          for (const ingredient of ingredients.slice(0, 50)) {
+            const searchRes = await fetch(
+              `https://api-ce.kroger.com/v1/products?filter.term=${encodeURIComponent(ingredient.name)}&filter.limit=1`,
+              { headers: { 'Authorization': `Bearer ${krogerToken}`, 'Accept': 'application/json' } }
+            );
+            const searchData = await searchRes.json();
+            const product = searchData?.data?.[0];
+            if (product) cartItems.push({ upc: product.upc, quantity: ingredient.count || 1, modality: 'PICKUP' });
+          }
+          if (cartItems.length > 0) {
+            await fetch('https://api-ce.kroger.com/v1/cart/add', {
+              method: 'PUT',
+              headers: { 'Authorization': `Bearer ${krogerToken}`, 'Content-Type': 'application/json' },
+              body: JSON.stringify({ items: cartItems })
+            });
+            window.open('https://www.kroger.com/cart', '_blank');
+          }
+        } catch (e) {
+          sessionStorage.removeItem('kroger_access_token');
+        }
+      }, 500);
+    }
+  }, []);
+
   useEffect(() => {
     if (guestMode) {
       setFolders([
@@ -3878,7 +3915,10 @@ const App = () => {
       })
       .then(r => r.json())
       .then(data => {
-        if (data.access_token) sessionStorage.setItem('kroger_access_token', data.access_token);
+        if (data.access_token) {
+          sessionStorage.setItem('kroger_access_token', data.access_token);
+          sessionStorage.setItem('kroger_add_to_cart', 'true');
+        }
         sessionStorage.removeItem('kroger_oauth_state');
         window.history.replaceState({}, '', window.location.pathname);
         window.location.reload();

@@ -635,16 +635,17 @@ const MealPrepApp = ({ pendingJoinCode }) => {
               try {
                 const KROGER_CLIENT_ID = 'thereciperoulette-bbcc09pc';
                 const creds = btoa(`${KROGER_CLIENT_ID}:KIJMvRMbsD0cf19lnsiU06SCp3pzlh0-_3eofy1K`);
-                const tokenRes = await fetch('https://api.kroger.com/v1/connect/oauth2/token', {
+                const tokenRes = await fetch('/api/kroger-token', {
                   method: 'POST',
-                  headers: { 'Authorization': `Basic ${creds}`, 'Content-Type': 'application/x-www-form-urlencoded' },
-                  body: 'grant_type=client_credentials&scope=product.compact'
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ grant_type: 'client_credentials', scope: 'product.compact' })
                 });
                 const tokenData = await tokenRes.json();
-                const locRes = await fetch(
-                  `https://api.kroger.com/v1/locations?filter.zipCode=${zip}&filter.limit=1`,
-                  { headers: { 'Authorization': `Bearer ${tokenData.access_token}`, 'Accept': 'application/json' } }
-                );
+                const locRes = await fetch('/api/kroger-proxy', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ path: `/v1/locations?filter.zipCode=${zip}&filter.limit=1`, method: 'GET', token: tokenData.access_token })
+                });
                 const locData = await locRes.json();
                 locationId = locData?.data?.[0]?.locationId || null;
                 alert('[Kroger Debug] Step 3: Fetched locationId = ' + locationId);
@@ -658,19 +659,21 @@ const MealPrepApp = ({ pendingJoinCode }) => {
           // Test just first ingredient
           const testIngredient = ingredients[0];
           const locationParam = locationId ? `&filter.locationId=${locationId}` : '';
-          const searchRes = await fetch(
-            `https://api.kroger.com/v1/products?filter.term=${encodeURIComponent(testIngredient.name)}&filter.limit=1${locationParam}`,
-            { headers: { 'Authorization': `Bearer ${krogerToken}`, 'Accept': 'application/json' } }
-          );
+          const searchRes = await fetch('/api/kroger-proxy', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ path: `/v1/products?filter.term=${encodeURIComponent(testIngredient.name)}&filter.limit=1${locationParam}`, method: 'GET', token: krogerToken })
+          });
           const searchData = await searchRes.json();
           alert('[Kroger Debug] Step 4: Product search status=' + searchRes.status + ' result=' + JSON.stringify(searchData).slice(0,200));
 
           const cartItems = [];
           for (const ingredient of ingredients.slice(0, 50)) {
-            const sr = await fetch(
-              `https://api.kroger.com/v1/products?filter.term=${encodeURIComponent(ingredient.name)}&filter.limit=1${locationParam}`,
-              { headers: { 'Authorization': `Bearer ${krogerToken}`, 'Accept': 'application/json' } }
-            );
+            const sr = await fetch('/api/kroger-proxy', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ path: `/v1/products?filter.term=${encodeURIComponent(ingredient.name)}&filter.limit=1${locationParam}`, method: 'GET', token: krogerToken })
+            });
             const sd = await sr.json();
             const product = sd?.data?.[0];
             if (product) cartItems.push({ upc: product.upc, quantity: ingredient.count || 1, modality: 'PICKUP' });
@@ -678,10 +681,10 @@ const MealPrepApp = ({ pendingJoinCode }) => {
           alert('[Kroger Debug] Step 5: cartItems count = ' + cartItems.length);
 
           if (cartItems.length > 0) {
-            const cartRes = await fetch('https://api.kroger.com/v1/cart/add', {
-              method: 'PUT',
-              headers: { 'Authorization': `Bearer ${krogerToken}`, 'Content-Type': 'application/json' },
-              body: JSON.stringify({ items: cartItems })
+            const cartRes = await fetch('/api/kroger-proxy', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ path: '/v1/cart/add', method: 'PUT', token: krogerToken, body: { items: cartItems } })
             });
             const cartData = await cartRes.json().catch(() => ({}));
             alert('[Kroger Debug] Step 6: Cart add status=' + cartRes.status + ' response=' + JSON.stringify(cartData).slice(0,200));
@@ -2949,10 +2952,10 @@ const MealPrepApp = ({ pendingJoinCode }) => {
               // ── KROGER HANDLER ─────────────────────────────────
               const getKrogerAppToken = async () => {
                 const creds = btoa(`${KROGER_CLIENT_ID}:KIJMvRMbsD0cf19lnsiU06SCp3pzlh0-_3eofy1K`);
-                const res = await fetch('https://api.kroger.com/v1/connect/oauth2/token', {
+                const res = await fetch('/api/kroger-token', {
                   method: 'POST',
-                  headers: { 'Authorization': `Basic ${creds}`, 'Content-Type': 'application/x-www-form-urlencoded' },
-                  body: 'grant_type=client_credentials&scope=product.compact'
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ grant_type: 'client_credentials', scope: 'product.compact' })
                 });
                 const data = await res.json();
                 return data.access_token;
@@ -2963,10 +2966,11 @@ const MealPrepApp = ({ pendingJoinCode }) => {
                 if (cached) return cached;
                 try {
                   const appToken = await getKrogerAppToken();
-                  const res = await fetch(
-                    `https://api.kroger.com/v1/locations?filter.zipCode=${zip}&filter.limit=1`,
-                    { headers: { 'Authorization': `Bearer ${appToken}`, 'Accept': 'application/json' } }
-                  );
+                  const res = await fetch('/api/kroger-proxy', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ path: `/v1/locations?filter.zipCode=${zip}&filter.limit=1`, method: 'GET', token: appToken })
+                  });
                   const data = await res.json();
                   const locationId = data?.data?.[0]?.locationId;
                   if (locationId) sessionStorage.setItem(`kroger_location_${zip}`, locationId);
@@ -3002,19 +3006,20 @@ const MealPrepApp = ({ pendingJoinCode }) => {
                     const cartItems = [];
                     for (const ingredient of allIngredients.slice(0, 50)) {
                       const locationParam = locationId ? `&filter.locationId=${locationId}` : '';
-                      const searchRes = await fetch(
-                        `https://api.kroger.com/v1/products?filter.term=${encodeURIComponent(ingredient.name)}&filter.limit=1${locationParam}`,
-                        { headers: { 'Authorization': `Bearer ${krogerToken}`, 'Accept': 'application/json' } }
-                      );
+                      const searchRes = await fetch('/api/kroger-proxy', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ path: `/v1/products?filter.term=${encodeURIComponent(ingredient.name)}&filter.limit=1${locationParam}`, method: 'GET', token: krogerToken })
+                      });
                       const searchData = await searchRes.json();
                       const product = searchData?.data?.[0];
                       if (product) cartItems.push({ upc: product.upc, quantity: ingredient.count || 1, modality: 'PICKUP' });
                     }
                     if (cartItems.length > 0) {
-                      await fetch('https://api.kroger.com/v1/cart/add', {
-                        method: 'PUT',
-                        headers: { 'Authorization': `Bearer ${krogerToken}`, 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ items: cartItems })
+                      await fetch('/api/kroger-proxy', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ path: '/v1/cart/add', method: 'PUT', token: krogerToken, body: { items: cartItems } })
                       });
                       window.open('https://www.kroger.com/cart', '_blank');
                     } else {

@@ -3868,7 +3868,7 @@ const App = () => {
     const savedState = sessionStorage.getItem('kroger_oauth_state');
     if (krogerState === savedState) {
       const KROGER_CLIENT_ID = 'reciperoulette-bbccx931';
-      const KROGER_CLIENT_SECRET = 'hr6MCoGAI5pvFWdX1NUz9ytlDFBhLJUWjCIsyIco';
+      const KROGER_CLIENT_SECRET = 'SW4QlXObpMKSCltG1426oAxIjhh6FwPNQ9t3oa63';
       const KROGER_REDIRECT_URI = `${window.location.origin}/`;
       const credentials = btoa(`${KROGER_CLIENT_ID}:${KROGER_CLIENT_SECRET}`);
       fetch('https://api.kroger.com/v1/connect/oauth2/token', {

@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Privacy Policy — Recipe Roulette</title>
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #fefcf8; color: #2a2018; font-family: 'Jost', sans-serif; font-size: 16px; line-height: 1.7; }
+    header { background: #1c2820; padding: 14px 24px; display: flex; align-items: center; gap: 12px; }
+    header a { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+    header img { width: 36px; height: 36px; object-fit: contain; }
+    header h1 { font-family: 'Libre Baskerville', serif; font-size: 20px; line-height: 1.1; }
+    header .recipe { font-weight: 700; color: #f0ece4; }
+    header .roulette { font-weight: 400; font-style: italic; color: #c46a3a; }
+    .container { max-width: 780px; margin: 0 auto; padding: 60px 24px 80px; }
+    .page-title { font-family: 'Libre Baskerville', serif; font-size: 32px; font-weight: 700; color: #1c2820; margin-bottom: 8px; }
+    .effective { font-size: 13px; color: #8a7a6a; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 48px; padding-bottom: 24px; border-bottom: 1px solid #e8e0d4; }
+    h2 { font-family: 'Libre Baskerville', serif; font-size: 18px; font-weight: 700; color: #1c2820; margin: 40px 0 12px; }
+    p { margin-bottom: 14px; color: #3a2a1a; }
+    ul { margin: 10px 0 14px 20px; color: #3a2a1a; }
+    ul li { margin-bottom: 6px; }
+    a { color: #c46a3a; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .highlight-box { background: #f0ece4; border-left: 4px solid #5a9a6a; border-radius: 0 8px 8px 0; padding: 20px 24px; margin: 24px 0; }
+    .highlight-box p { margin: 0; font-weight: 500; }
+    .contact-box { background: #f0ece4; border-left: 4px solid #c46a3a; border-radius: 0 8px 8px 0; padding: 20px 24px; margin-top: 48px; }
+    .contact-box p { margin: 0; }
+    footer { text-align: center; padding: 24px; font-size: 12px; color: #9a8a7a; border-top: 1px solid #e8e0d4; }
+    footer a { color: #c46a3a; }
+  </style>
+</head>
+<body>
+<header>
+  <a href="/">
+    <img src="/logo.png" alt="Recipe Roulette Logo" />
+    <h1><span class="recipe">Recipe </span><span class="roulette">Roulette</span></h1>
+  </a>
+</header>
+<div class="container">
+  <h1 class="page-title">Privacy Policy</h1>
+  <p class="effective">Effective Date: February 24, 2026</p>
+  <div class="highlight-box">
+    <p>We built Recipe Roulette to help households plan meals together — not to sell your data. We collect only what's necessary to run the app and never sell your personal information to third parties.</p>
+  </div>
+  <h2>1. Information We Collect</h2>
+  <p><strong>Account Information:</strong> When you create an account, we collect your email address, display name, and optional profile photo. If you add a phone number for household sync features, we store that as well.</p>
+  <p><strong>Meal Plan & Recipe Data:</strong> We store the meal plans, recipes, and shopping lists you create in the App in order to provide the service.</p>
+  <p><strong>Household Data:</strong> If you use household sync, we store the relationship between household members and share relevant meal plan data among them.</p>
+  <p><strong>Location Data:</strong> We collect your ZIP code to provide local grocery pricing estimates and to help match you with nearby stores when using Instacart or Kroger integrations. We do not collect precise GPS location.</p>
+  <p><strong>Usage Data:</strong> We may collect anonymized data about how you use the App (e.g., features used, session duration) to improve the product. This data cannot be used to identify you personally.</p>
+  <p><strong>Device Information:</strong> We may collect basic device information (e.g., browser type, operating system) for debugging and performance purposes.</p>
+  <h2>2. How We Use Your Information</h2>
+  <p>We use the information we collect to:</p>
+  <ul>
+    <li>Provide, maintain, and improve the App</li>
+    <li>Sync meal plans and shopping lists across household members</li>
+    <li>Estimate grocery costs based on your ZIP code</li>
+    <li>Send transactional emails (e.g., email verification, account security)</li>
+    <li>Respond to support requests</li>
+    <li>Comply with legal obligations</li>
+  </ul>
+  <p>We do <strong>not</strong> use your data for targeted advertising, and we do not sell your personal information to any third party.</p>
+  <h2>3. Third-Party Services</h2>
+  <p><strong>Supabase:</strong> We use Supabase for authentication and database storage. Your data is stored on Supabase's infrastructure. See <a href="https://supabase.com/privacy" target="_blank">Supabase's Privacy Policy</a>.</p>
+  <p><strong>Instacart:</strong> If you choose to send your shopping list to Instacart, your ingredient data will be transmitted to Instacart. We do not store your Instacart credentials or order history. See <a href="https://www.instacart.com/privacy" target="_blank">Instacart's Privacy Policy</a>.</p>
+  <p><strong>Kroger:</strong> If you choose to add items to your Kroger cart, your ingredient data and an OAuth token will be used to interact with the Kroger API. We do not store your Kroger password. See <a href="https://www.kroger.com/i/privacy-policy" target="_blank">Kroger's Privacy Policy</a>.</p>
+  <p><strong>Vercel:</strong> Our App is hosted on Vercel. Vercel may collect standard web server logs. See <a href="https://vercel.com/legal/privacy-policy" target="_blank">Vercel's Privacy Policy</a>.</p>
+  <h2>4. Data Sharing</h2>
+  <p>We do not sell, rent, or share your personal information with third parties except:</p>
+  <ul>
+    <li>With your household members, as necessary to provide the shared meal planning features you've opted into</li>
+    <li>With service providers (Supabase, Vercel) who process data on our behalf under confidentiality agreements</li>
+    <li>When required by law or to protect the rights and safety of our users</li>
+  </ul>
+  <h2>5. Data Retention</h2>
+  <p>We retain your data for as long as your account is active. If you delete your account, we will delete your personal data within 30 days, except where we are required to retain it for legal purposes.</p>
+  <p>You can delete your account at any time from the Settings page in the App.</p>
+  <h2>6. Security</h2>
+  <p>We take reasonable measures to protect your information, including encrypted data transmission (HTTPS) and secure password hashing via Supabase Auth. However, no method of transmission over the internet is 100% secure, and we cannot guarantee absolute security.</p>
+  <h2>7. Children's Privacy</h2>
+  <p>Recipe Roulette is not directed at children under the age of 13. We do not knowingly collect personal information from children under 13. If you believe we have inadvertently collected such information, please contact us and we will delete it promptly.</p>
+  <h2>8. Your Rights</h2>
+  <p>Depending on your location, you may have the right to:</p>
+  <ul>
+    <li>Access the personal data we hold about you</li>
+    <li>Request correction of inaccurate data</li>
+    <li>Request deletion of your data</li>
+    <li>Object to or restrict certain processing of your data</li>
+    <li>Data portability</li>
+  </ul>
+  <p>To exercise any of these rights, please contact us at <a href="mailto:support@reciperoulette.app">support@reciperoulette.app</a>. California residents may also have additional rights under the CCPA.</p>
+  <h2>9. Cookies</h2>
+  <p>We use only essential cookies and browser local storage necessary to keep you logged in and maintain your session. We do not use advertising or tracking cookies.</p>
+  <h2>10. Changes to This Policy</h2>
+  <p>We may update this Privacy Policy from time to time. We will notify you of significant changes via email or in-app notification. The effective date at the top of this page will always reflect the most recent update.</p>
+  <div class="contact-box">
+    <p>Questions about this Privacy Policy? Contact us at <a href="mailto:support@reciperoulette.app">support@reciperoulette.app</a></p>
+  </div>
+</div>
+<footer>
+  <p>&copy; 2026 Recipe Roulette &nbsp;·&nbsp; <a href="/terms">Terms of Service</a> &nbsp;·&nbsp; <a href="/">Back to App</a></p>
+</footer>
+</body>
+</html>

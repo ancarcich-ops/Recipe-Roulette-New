@@ -50,89 +50,181 @@ const communityRecipes = [
 ];
 
 
-const feedPosts = [
-  {
-    id: 'f1', type: 'hero', category: 'seasonal',
-    tag: '🌸 Spring Picks',
-    title: 'Fresh Spring Recipes to Brighten Your Week',
-    body: 'As the weather warms up, it\'s time to swap heavy stews for vibrant salads, light pasta dishes, and fresh herb-forward cooking. Here are our top picks for the season.',
-    image: 'https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=800&h=450&fit=crop',
-    recipe: { id: 201, name: 'Spring Pea and Mint Risotto', prepTime: '35 min', cookTime: 30, servings: 4, image: 'https://images.unsplash.com/photo-1476124369491-e7addf5db371?w=400&h=300&fit=crop', ingredients: ['2 cups arborio rice','4 cups vegetable broth','1 cup fresh peas','3 tbsp fresh mint','1/2 cup parmesan','1 onion, diced','2 tbsp butter','1/2 cup white wine','Salt and pepper'], instructions: ['Heat broth in a separate pot.','Saute onion in butter until soft.','Add rice, toast 2 minutes.','Add wine and stir until absorbed.','Add broth ladle by ladle, stirring.','Stir in peas in the last 5 minutes.','Finish with parmesan and mint.'], tags: ['Vegetarian','Italian','Dinner'], timesMade: 0, author: 'Recipe Roulette', isEasy: false }
-  },
-  {
-    id: 'f2', type: 'tip', category: 'tip',
-    tag: '💡 Pro Tip',
-    title: 'Salt Your Pasta Water Like the Sea',
-    body: 'The most common pasta mistake? Under-salted water. Your pasta water should taste genuinely salty — about 1 tablespoon of salt per 4 cups of water. The pasta absorbs it as it cooks, building flavor from the inside out. No amount of sauce can fix bland pasta.',
-    image: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=800&h=450&fit=crop',
-    recipe: null
-  },
-  {
-    id: 'f3', type: 'small', category: 'quick',
-    tag: '⚡ 15-Min Meal',
-    title: 'Garlic Butter Shrimp Tacos',
-    body: 'Weeknight hero right here. Juicy shrimp tossed in garlic butter, hit with lime, stuffed into warm tortillas with a quick slaw. Done in 15 minutes flat.',
-    image: 'https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=800&h=450&fit=crop',
-    recipe: { id: 202, name: 'Garlic Butter Shrimp Tacos', prepTime: '15 min', cookTime: 10, servings: 2, image: 'https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=400&h=300&fit=crop', ingredients: ['1 lb shrimp, peeled','8 small tortillas','3 tbsp butter','4 cloves garlic','1 lime','1/2 cup shredded cabbage','2 tbsp sour cream','Fresh cilantro','Salt and pepper'], instructions: ['Melt butter in pan over high heat.','Add garlic, cook 30 seconds.','Add shrimp, cook 2 min per side.','Squeeze lime over shrimp.','Warm tortillas.','Fill with shrimp, cabbage and sour cream.','Top with cilantro and serve.'], tags: ['Quick','Seafood','Dinner'], timesMade: 0, author: 'Recipe Roulette', isEasy: true }
-  },
-  {
-    id: 'f4', type: 'small', category: 'nutrition',
-    tag: '🥗 Nutrition',
-    title: 'Why You Should Eat the Rainbow',
-    body: 'Different colored fruits and vegetables contain different phytonutrients. Red for lycopene, orange for beta-carotene, green for folate, purple for anthocyanins. Aim for at least 3 colors on your plate every meal.',
-    image: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=800&h=450&fit=crop',
-    recipe: null
-  },
-  {
-    id: 'f5', type: 'hero', category: 'community',
-    tag: '⭐ Community Favourite',
-    title: 'The Recipe Everyone is Adding to Their Plan',
-    body: 'Korean Beef Tacos have taken over the community this week — 42 likes and counting. James Kim\'s recipe is bold, fast, and endlessly satisfying. If you haven\'t tried it yet, now\'s the time.',
-    image: 'https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=800&h=450&fit=crop',
-    recipe: { id: 104, name: 'Korean Beef Tacos', prepTime: '35 min', cookTime: 30, servings: 4, image: 'https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=400&h=300&fit=crop', ingredients: ['1 lb ground beef','2 tbsp gochujang','8 small tortillas','1 cup kimchi','4 green onions','2 tbsp soy sauce','1 tbsp sesame oil','1 tbsp sugar'], instructions: ['Brown beef in pan.','Add gochujang, soy sauce, sesame oil and sugar.','Simmer 5 minutes.','Warm tortillas.','Fill with beef mixture.','Top with kimchi and green onions.'], tags: ['Korean','Dinner'], timesMade: 0, author: 'James Kim', isEasy: false }
-  },
-  {
-    id: 'f6', type: 'tip', category: 'tip',
-    tag: '🔪 Knife Skills',
-    title: 'The Claw Grip Saves Fingers',
-    body: 'Curl your fingertips inward when chopping so your knuckles guide the blade. It feels awkward at first but becomes second nature fast — and it\'s the single most effective way to avoid cutting yourself. Professional chefs never chop any other way.',
-    image: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=800&h=450&fit=crop',
-    recipe: null
-  },
-  {
-    id: 'f7', type: 'small', category: 'quick',
-    tag: '🍳 5-Min Breakfast',
-    title: 'High-Protein Scrambled Eggs',
-    body: 'Low heat, constant motion, pull off early. The secret to restaurant-quality scrambled eggs is patience and removing from heat while still slightly underdone. Finish with butter and chives.',
-    image: 'https://images.unsplash.com/photo-1588137378633-dea1336ce1e2?w=800&h=450&fit=crop',
-    recipe: { id: 203, name: 'Perfect Scrambled Eggs', prepTime: '5 min', cookTime: 5, servings: 1, image: 'https://images.unsplash.com/photo-1588137378633-dea1336ce1e2?w=400&h=300&fit=crop', ingredients: ['3 large eggs','1 tbsp butter','2 tbsp milk or cream','Salt and pepper','Fresh chives'], instructions: ['Whisk eggs with milk, salt and pepper.','Melt butter in pan over low heat.','Add eggs and stir constantly with spatula.','Remove from heat when just slightly underdone.','Finish with extra butter and chives.'], tags: ['Breakfast','Quick','Protein'], timesMade: 0, author: 'Recipe Roulette', isEasy: true }
-  },
-  {
-    id: 'f8', type: 'small', category: 'nutrition',
-    tag: '💪 Meal Prep',
-    title: 'Batch Cook These 3 Things Every Sunday',
-    body: 'Cook a big batch of grains (quinoa or rice), roast a sheet pan of vegetables, and prep a versatile protein (chicken or chickpeas). Mix and match all week into bowls, wraps and salads without cooking from scratch every night.',
-    image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800&h=450&fit=crop',
-    recipe: null
-  },
-  {
-    id: 'f9', type: 'hero', category: 'seasonal',
-    tag: '🌿 Farm to Table',
-    title: 'Cooking with What\'s in Season Right Now',
-    body: 'February is peak season for citrus, root vegetables, and hearty greens. Blood oranges, turnips, kale, and leeks are at their best and cheapest. Building meals around seasonal produce means better flavor and less waste.',
-    image: 'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?w=800&h=450&fit=crop',
-    recipe: { id: 204, name: 'Roasted Root Vegetable Bowl', prepTime: '15 min', cookTime: 40, servings: 4, image: 'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?w=400&h=300&fit=crop', ingredients: ['2 large turnips, cubed','3 carrots, chopped','1 large beet, cubed','2 tbsp olive oil','1 tsp cumin','1 tsp smoked paprika','Salt and pepper','Fresh parsley','Tahini dressing'], instructions: ['Preheat oven to 425F.','Toss vegetables with olive oil and spices.','Spread on a baking sheet.','Roast 35-40 minutes, turning halfway.','Serve over grains with tahini dressing.','Garnish with fresh parsley.'], tags: ['Vegetarian','Healthy','Dinner'], timesMade: 0, author: 'Recipe Roulette', isEasy: false }
-  },
-  {
-    id: 'f10', type: 'tip', category: 'tip',
-    tag: '🧄 Flavour Basics',
-    title: 'Build Flavour in Layers, Not All at Once',
-    body: 'Add aromatics (garlic, onion, ginger) first in fat. Then add dry spices and toast briefly. Then add your protein. Then liquid. Each layer builds on the last. Adding everything at once is the most common reason home cooking tastes flat.',
-    image: 'https://images.unsplash.com/photo-1603133872878-684f208fb84b?w=800&h=450&fit=crop',
-    recipe: null
-  }
+// ── FEED POST POOL ────────────────────────────────────────────────────────────
+// Posts are grouped into 26 weekly "slots". Each week of the year, a different
+// set of ~8 posts is shown — automatically rotating forever, no maintenance needed.
+// To add new content: just append to feedPostPool. The rotation handles itself.
+const feedPostPool = [
+  // ── SEASONAL ──────────────────────────────────────────────────────────────
+  { id:'s1', type:'hero', category:'seasonal', tag:'🌸 Spring Picks',
+    title:'Fresh Spring Recipes to Brighten Your Week',
+    body:"As the weather warms up, it's time to swap heavy stews for vibrant salads, light pasta dishes, and fresh herb-forward cooking. Here are our top picks for the season.",
+    image:'https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=800&h=450&fit=crop',
+    recipe:{id:201,name:'Spring Pea and Mint Risotto',prepTime:'35 min',cookTime:30,servings:4,image:'https://images.unsplash.com/photo-1476124369491-e7addf5db371?w=400&h=300&fit=crop',ingredients:['2 cups arborio rice','4 cups vegetable broth','1 cup fresh peas','3 tbsp fresh mint','1/2 cup parmesan','1 onion, diced','2 tbsp butter','1/2 cup white wine','Salt and pepper'],instructions:['Heat broth in a separate pot.','Saute onion in butter until soft.','Add rice, toast 2 minutes.','Add wine and stir until absorbed.','Add broth ladle by ladle, stirring.','Stir in peas in the last 5 minutes.','Finish with parmesan and mint.'],tags:['Vegetarian','Italian','Dinner'],timesMade:0,author:'Recipe Roulette',isEasy:false}},
+  { id:'s2', type:'hero', category:'seasonal', tag:'☀️ Summer Grilling',
+    title:'Fire Up the Grill — Best Summer Recipes Right Now',
+    body:"Long evenings call for smoky flavours, char-grilled vegetables, and anything you can eat outside. These are the recipes worth firing up the grill for this week.",
+    image:'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=800&h=450&fit=crop',
+    recipe:{id:205,name:'Honey Sriracha Grilled Chicken',prepTime:'20 min',cookTime:25,servings:4,image:'https://images.unsplash.com/photo-1598103442097-8b74394b95c3?w=400&h=300&fit=crop',ingredients:['4 chicken thighs','3 tbsp honey','2 tbsp sriracha','2 tbsp soy sauce','3 cloves garlic','1 lime','Salt and pepper'],instructions:['Mix honey, sriracha, soy sauce and garlic.','Marinate chicken 30 min or overnight.','Grill on medium-high 6-7 min per side.','Rest 5 minutes before serving.','Squeeze lime over top.'],tags:['Grilling','Chicken','Summer'],timesMade:0,author:'Recipe Roulette',isEasy:true}},
+  { id:'s3', type:'hero', category:'seasonal', tag:'🍂 Autumn Comfort',
+    title:"The Cosy Recipes You'll Make All Autumn Long",
+    body:"Shorter days, crispier air, and every reason to spend Sunday afternoon cooking something that fills the house with warmth. These are the dishes that define the season.",
+    image:'https://images.unsplash.com/photo-1506084868230-bb9d95c24759?w=800&h=450&fit=crop',
+    recipe:{id:206,name:'Butternut Squash Soup',prepTime:'15 min',cookTime:35,servings:4,image:'https://images.unsplash.com/photo-1547592180-85f173990554?w=400&h=300&fit=crop',ingredients:['1 large butternut squash, cubed','1 onion, diced','3 cloves garlic','4 cups vegetable broth','1 cup coconut milk','2 tbsp olive oil','1 tsp cumin','1 tsp ginger','Salt and pepper'],instructions:['Saute onion and garlic in oil until soft.','Add squash and spices, stir 2 min.','Add broth and simmer 25 minutes.','Blend until smooth.','Stir in coconut milk.','Season and serve with crusty bread.'],tags:['Vegetarian','Soup','Autumn'],timesMade:0,author:'Recipe Roulette',isEasy:true}},
+  { id:'s4', type:'hero', category:'seasonal', tag:'❄️ Winter Warmers',
+    title:'Slow-Cooked, Hearty, and Built for Cold Nights',
+    body:"January calls for the kind of meals that simmer for hours, warm you from the inside, and taste better the next day. Here are our favourite cold-weather recipes of the moment.",
+    image:'https://images.unsplash.com/photo-1547592166-23ac45744acd?w=800&h=450&fit=crop',
+    recipe:{id:207,name:'Slow-Cooked Beef Stew',prepTime:'20 min',cookTime:180,servings:6,image:'https://images.unsplash.com/photo-1574484284002-952d92456975?w=400&h=300&fit=crop',ingredients:['2 lbs beef chuck, cubed','4 carrots, chopped','4 potatoes, cubed','2 cups red wine','2 cups beef broth','1 onion','4 cloves garlic','2 tbsp tomato paste','Fresh thyme and rosemary'],instructions:['Brown beef in batches in a heavy pot.','Saute onion and garlic.','Add tomato paste, cook 2 minutes.','Add wine, broth, vegetables and herbs.','Simmer low for 2.5 to 3 hours.','Season and serve with crusty bread.'],tags:['Beef','Winter','Slow Cook'],timesMade:0,author:'Recipe Roulette',isEasy:false}},
+  { id:'s5', type:'hero', category:'seasonal', tag:'🌿 Farm to Table',
+    title:"Cooking with What's in Season Right Now",
+    body:"February is peak season for citrus, root vegetables, and hearty greens. Blood oranges, turnips, kale, and leeks are at their best and cheapest. Building meals around seasonal produce means better flavor and less waste.",
+    image:'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?w=800&h=450&fit=crop',
+    recipe:{id:204,name:'Roasted Root Vegetable Bowl',prepTime:'15 min',cookTime:40,servings:4,image:'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?w=400&h=300&fit=crop',ingredients:['2 large turnips, cubed','3 carrots, chopped','1 large beet, cubed','2 tbsp olive oil','1 tsp cumin','1 tsp smoked paprika','Salt and pepper','Fresh parsley','Tahini dressing'],instructions:['Preheat oven to 425F.','Toss vegetables with olive oil and spices.','Spread on a baking sheet.','Roast 35-40 minutes, turning halfway.','Serve over grains with tahini dressing.','Garnish with fresh parsley.'],tags:['Vegetarian','Healthy','Dinner'],timesMade:0,author:'Recipe Roulette',isEasy:false}},
+  { id:'s6', type:'hero', category:'seasonal', tag:'🌊 Summer Freshness',
+    title:'Light, Cold, and Ready in Minutes — Summer Salads',
+    body:"When it's too hot to cook, these no-heat recipes are your best friends. Big on flavour, cool to eat, and on the table in under 20 minutes.",
+    image:'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=800&h=450&fit=crop',
+    recipe:{id:208,name:'Watermelon Feta Mint Salad',prepTime:'10 min',cookTime:0,servings:4,image:'https://images.unsplash.com/photo-1563699697aca-5e6b88cd0ba8?w=400&h=300&fit=crop',ingredients:['4 cups watermelon, cubed','1/2 cup feta cheese, crumbled','1/4 cup fresh mint leaves','2 tbsp olive oil','1 lime, juiced','Pinch of chilli flakes'],instructions:['Cube watermelon and place in a bowl.','Crumble feta over the top.','Scatter mint leaves.','Drizzle with olive oil and lime juice.','Add chilli flakes if desired.','Serve immediately.'],tags:['Salad','Vegetarian','Summer'],timesMade:0,author:'Recipe Roulette',isEasy:true}},
+
+  // ── QUICK MEALS ───────────────────────────────────────────────────────────
+  { id:'q1', type:'small', category:'quick', tag:'⚡ 15-Min Meal',
+    title:'Garlic Butter Shrimp Tacos',
+    body:"Weeknight hero right here. Juicy shrimp tossed in garlic butter, hit with lime, stuffed into warm tortillas with a quick slaw. Done in 15 minutes flat.",
+    image:'https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=800&h=450&fit=crop',
+    recipe:{id:202,name:'Garlic Butter Shrimp Tacos',prepTime:'15 min',cookTime:10,servings:2,image:'https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=400&h=300&fit=crop',ingredients:['1 lb shrimp, peeled','8 small tortillas','3 tbsp butter','4 cloves garlic','1 lime','1/2 cup shredded cabbage','2 tbsp sour cream','Fresh cilantro','Salt and pepper'],instructions:['Melt butter in pan over high heat.','Add garlic, cook 30 seconds.','Add shrimp, cook 2 min per side.','Squeeze lime over shrimp.','Warm tortillas.','Fill with shrimp, cabbage and sour cream.','Top with cilantro and serve.'],tags:['Quick','Seafood','Dinner'],timesMade:0,author:'Recipe Roulette',isEasy:true}},
+  { id:'q2', type:'small', category:'quick', tag:'🍳 5-Min Breakfast',
+    title:'High-Protein Scrambled Eggs',
+    body:"Low heat, constant motion, pull off early. The secret to restaurant-quality scrambled eggs is patience and removing from heat while still slightly underdone. Finish with butter and chives.",
+    image:'https://images.unsplash.com/photo-1588137378633-dea1336ce1e2?w=800&h=450&fit=crop',
+    recipe:{id:203,name:'Perfect Scrambled Eggs',prepTime:'5 min',cookTime:5,servings:1,image:'https://images.unsplash.com/photo-1588137378633-dea1336ce1e2?w=400&h=300&fit=crop',ingredients:['3 large eggs','1 tbsp butter','2 tbsp milk or cream','Salt and pepper','Fresh chives'],instructions:['Whisk eggs with milk, salt and pepper.','Melt butter in pan over low heat.','Add eggs and stir constantly with spatula.','Remove from heat when just slightly underdone.','Finish with extra butter and chives.'],tags:['Breakfast','Quick','Protein'],timesMade:0,author:'Recipe Roulette',isEasy:true}},
+  { id:'q3', type:'small', category:'quick', tag:'⚡ 20-Min Dinner',
+    title:'One-Pan Lemon Herb Salmon',
+    body:"Pan-seared salmon with a butter, lemon and herb sauce that comes together in the same pan. Elegant enough for guests, fast enough for a Tuesday.",
+    image:'https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=800&h=450&fit=crop',
+    recipe:{id:209,name:'Lemon Herb Pan Salmon',prepTime:'5 min',cookTime:12,servings:2,image:'https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=400&h=300&fit=crop',ingredients:['2 salmon fillets','3 tbsp butter','3 cloves garlic','1 lemon','Fresh dill and parsley','Salt and pepper','Olive oil'],instructions:['Pat salmon dry, season well.','Heat oil in pan on medium-high.','Cook salmon 4-5 min per side.','Remove salmon and reduce heat.','Add butter and garlic, cook 1 min.','Squeeze in lemon, add herbs.','Pour sauce over salmon and serve.'],tags:['Seafood','Quick','Healthy'],timesMade:0,author:'Recipe Roulette',isEasy:true}},
+  { id:'q4', type:'small', category:'quick', tag:'⚡ Weeknight Win',
+    title:'Creamy Tomato Pasta in 25 Minutes',
+    body:"No cream needed — just a can of tomatoes, garlic, pasta water, and parmesan doing the heavy lifting. One of those recipes that tastes like it took far longer than it did.",
+    image:'https://images.unsplash.com/photo-1621996346565-e3dbc646d9a9?w=800&h=450&fit=crop',
+    recipe:{id:210,name:'Quick Creamy Tomato Pasta',prepTime:'5 min',cookTime:20,servings:3,image:'https://images.unsplash.com/photo-1621996346565-e3dbc646d9a9?w=400&h=300&fit=crop',ingredients:['300g pasta','1 can crushed tomatoes','4 cloves garlic','1/2 cup parmesan','2 tbsp olive oil','1 tsp chilli flakes','Fresh basil','Salt and pepper'],instructions:['Cook pasta, reserve 1 cup pasta water.','Saute garlic in oil until golden.','Add tomatoes and chilli, simmer 10 min.','Add pasta and splash of pasta water.','Stir in parmesan until creamy.','Top with basil and serve.'],tags:['Pasta','Quick','Vegetarian'],timesMade:0,author:'Recipe Roulette',isEasy:true}},
+  { id:'q5', type:'small', category:'quick', tag:'🌯 Easy Lunch',
+    title:'5-Ingredient Chicken Caesar Wrap',
+    body:"Rotisserie chicken, romaine, caesar dressing, parmesan, and a wrap. That's it. Assemble in 5 minutes. This is the lunch you make when you have nothing planned and everything in the fridge.",
+    image:'https://images.unsplash.com/photo-1626700051175-6818013e1d4f?w=800&h=450&fit=crop',
+    recipe:{id:211,name:'Chicken Caesar Wrap',prepTime:'5 min',cookTime:0,servings:1,image:'https://images.unsplash.com/photo-1626700051175-6818013e1d4f?w=400&h=300&fit=crop',ingredients:['1 large wrap/tortilla','1 cup rotisserie chicken, shredded','1 cup romaine lettuce','3 tbsp caesar dressing','2 tbsp parmesan, grated','Cracked black pepper'],instructions:['Lay wrap flat.','Layer lettuce and chicken.','Drizzle caesar dressing.','Add parmesan and black pepper.','Roll tightly and slice in half.'],tags:['Lunch','Quick','Chicken'],timesMade:0,author:'Recipe Roulette',isEasy:true}},
+
+  // ── TIPS ──────────────────────────────────────────────────────────────────
+  { id:'t1', type:'tip', category:'tip', tag:'💡 Pro Tip',
+    title:'Salt Your Pasta Water Like the Sea',
+    body:"The most common pasta mistake? Under-salted water. Your pasta water should taste genuinely salty — about 1 tablespoon of salt per 4 cups of water. The pasta absorbs it as it cooks, building flavor from the inside out. No amount of sauce can fix bland pasta.",
+    image:'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=800&h=450&fit=crop', recipe:null},
+  { id:'t2', type:'tip', category:'tip', tag:'🔪 Knife Skills',
+    title:'The Claw Grip Saves Fingers',
+    body:"Curl your fingertips inward when chopping so your knuckles guide the blade. It feels awkward at first but becomes second nature fast — and it's the single most effective way to avoid cutting yourself. Professional chefs never chop any other way.",
+    image:'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=800&h=450&fit=crop', recipe:null},
+  { id:'t3', type:'tip', category:'tip', tag:'🧄 Flavour Basics',
+    title:'Build Flavour in Layers, Not All at Once',
+    body:"Add aromatics (garlic, onion, ginger) first in fat. Then add dry spices and toast briefly. Then add your protein. Then liquid. Each layer builds on the last. Adding everything at once is the most common reason home cooking tastes flat.",
+    image:'https://images.unsplash.com/photo-1603133872878-684f208fb84b?w=800&h=450&fit=crop', recipe:null},
+  { id:'t4', type:'tip', category:'tip', tag:'🧊 Freezer Hack',
+    title:'Freeze Your Herbs in Olive Oil',
+    body:"Instead of watching fresh herbs go limp in the fridge, chop them and pack them into ice cube trays topped with olive oil. Freeze solid, then transfer to a bag. Drop a cube directly into any pan — instant fresh herb flavour all year, zero waste.",
+    image:'https://images.unsplash.com/photo-1466637574441-749b8f19452f?w=800&h=450&fit=crop', recipe:null},
+  { id:'t5', type:'tip', category:'tip', tag:'🥩 Meat Tip',
+    title:'Always Rest Your Meat Before Cutting',
+    body:"The biggest mistake people make with steak, chicken, or pork: cutting it immediately off the heat. Resting allows the juices to redistribute back through the meat. 5 minutes for chicken, 10 minutes for steak. Skip this and all the juice ends up on your cutting board instead of in your mouth.",
+    image:'https://images.unsplash.com/photo-1558030137-a56c1b781cd8?w=800&h=450&fit=crop', recipe:null},
+  { id:'t6', type:'tip', category:'tip', tag:'🍳 Pan Temp',
+    title:'Your Pan is Probably Not Hot Enough',
+    body:"If your food is sticking, steaming instead of searing, or going grey instead of brown — your pan isn't hot enough. Heat your pan until a drop of water immediately evaporates and dances. Then add oil. Then add food. The Maillard reaction only happens above 300°F/150°C.",
+    image:'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=800&h=450&fit=crop', recipe:null},
+  { id:'t7', type:'tip', category:'tip', tag:'🧂 Season Right',
+    title:'Season at Every Stage, Not Just at the End',
+    body:"Salt brings out flavour — but only when it has time to work. Season your onions as they cook, your meat before it goes in the pan, your sauce as it simmers. A pinch at each stage builds depth that a heavy hand at the end can never replicate.",
+    image:'https://images.unsplash.com/photo-1473093295043-cdd812d0e601?w=800&h=450&fit=crop', recipe:null},
+  { id:'t8', type:'tip', category:'tip', tag:'🫙 Pantry Power',
+    title:'The 5 Pantry Items That Improve Everything',
+    body:"Stock these and you'll never have a boring meal: fish sauce (umami depth), miso paste (salty richness), smoked paprika (instant warmth), apple cider vinegar (brightens any dish), and a good hot sauce. A teaspoon of any of these elevates even the simplest weeknight meal.",
+    image:'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=800&h=450&fit=crop', recipe:null},
+
+  // ── NUTRITION ─────────────────────────────────────────────────────────────
+  { id:'n1', type:'small', category:'nutrition', tag:'🥗 Nutrition',
+    title:'Why You Should Eat the Rainbow',
+    body:"Different colored fruits and vegetables contain different phytonutrients. Red for lycopene, orange for beta-carotene, green for folate, purple for anthocyanins. Aim for at least 3 colors on your plate every meal.",
+    image:'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=800&h=450&fit=crop', recipe:null},
+  { id:'n2', type:'small', category:'nutrition', tag:'💪 Meal Prep',
+    title:'Batch Cook These 3 Things Every Sunday',
+    body:"Cook a big batch of grains (quinoa or rice), roast a sheet pan of vegetables, and prep a versatile protein (chicken or chickpeas). Mix and match all week into bowls, wraps and salads without cooking from scratch every night.",
+    image:'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800&h=450&fit=crop', recipe:null},
+  { id:'n3', type:'small', category:'nutrition', tag:'🫀 Heart Health',
+    title:'The Mediterranean Diet Actually Works',
+    body:"Decades of research consistently show the Mediterranean diet reduces heart disease risk by up to 30%. The core isn't complicated: olive oil over butter, fish twice a week, legumes often, lots of vegetables, moderate red wine, and very little processed food.",
+    image:'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?w=800&h=450&fit=crop', recipe:null},
+  { id:'n4', type:'small', category:'nutrition', tag:'⚡ Energy Foods',
+    title:'What to Eat for Sustained Energy (Not a Sugar Crash)',
+    body:"Skip the mid-afternoon slump by pairing complex carbs with protein and fat. Oats with nut butter, apple with cheese, hummus with vegetables. The fat and protein slow the absorption of carbohydrates, giving you steady energy instead of a spike and crash.",
+    image:'https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=800&h=450&fit=crop', recipe:null},
+  { id:'n5', type:'small', category:'nutrition', tag:'🌱 Protein',
+    title:'Getting Enough Protein Without Eating Meat All Day',
+    body:"Legumes, lentils, Greek yogurt, eggs, tofu, edamame, and cottage cheese are all protein powerhouses. A cup of lentils has 18g of protein. Pair them strategically throughout the day and you'll hit your targets without relying on meat for every meal.",
+    image:'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=800&h=450&fit=crop', recipe:null},
+
+  // ── COMMUNITY ─────────────────────────────────────────────────────────────
+  { id:'c1', type:'hero', category:'community', tag:'⭐ Community Favourite',
+    title:"The Recipe Everyone is Adding to Their Plan",
+    body:"Korean Beef Tacos have taken over the community this week — 42 households and counting. Bold, fast, and endlessly satisfying. If you haven't tried it yet, now's the time.",
+    image:'https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=800&h=450&fit=crop',
+    recipe:{id:104,name:'Korean Beef Tacos',prepTime:'35 min',cookTime:30,servings:4,image:'https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=400&h=300&fit=crop',ingredients:['1 lb ground beef','2 tbsp gochujang','8 small tortillas','1 cup kimchi','4 green onions','2 tbsp soy sauce','1 tbsp sesame oil','1 tbsp sugar'],instructions:['Brown beef in pan.','Add gochujang, soy sauce, sesame oil and sugar.','Simmer 5 minutes.','Warm tortillas.','Fill with beef mixture.','Top with kimchi and green onions.'],tags:['Korean','Dinner'],timesMade:0,author:'James Kim',isEasy:false}},
+  { id:'c2', type:'hero', category:'community', tag:'🏆 Most Made This Month',
+    title:"The Community's Most-Cooked Recipe Right Now",
+    body:"Classic Chicken Tikka Masala is on meal plans in 38 households this week. Rich, fragrant, and deeply satisfying — this is the recipe that keeps coming back to the top of the rotation.",
+    image:'https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?w=800&h=450&fit=crop',
+    recipe:{id:101,name:'Chicken Tikka Masala',prepTime:'45 min',cookTime:40,servings:4,image:'https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?w=400&h=300&fit=crop',ingredients:['1.5 lbs chicken breast','1 cup yogurt','2 tbsp garam masala','1 can crushed tomatoes','1 cup heavy cream','1 onion','4 cloves garlic','1 tbsp ginger','2 tbsp butter'],instructions:['Marinate chicken in yogurt and spices 1 hour.','Grill or broil chicken until charred.','Saute onion, garlic and ginger in butter.','Add tomatoes and simmer 15 minutes.','Stir in cream and chicken.','Simmer 10 more minutes.'],tags:['Indian','Chicken','Dinner'],timesMade:0,author:'Priya Sharma',isEasy:false}},
+  { id:'c3', type:'hero', category:'community', tag:'🌟 Rising Recipe',
+    title:"This Week's Breakout Hit in the Community",
+    body:"Miso Glazed Salmon appeared in 29 meal plans this week and climbed to 4.9 stars. Three ingredients, fifteen minutes, and somehow it tastes like a restaurant dish. We're not surprised it went viral.",
+    image:'https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=800&h=450&fit=crop',
+    recipe:{id:102,name:'Miso Glazed Salmon',prepTime:'25 min',cookTime:15,servings:2,image:'https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=400&h=300&fit=crop',ingredients:['2 salmon fillets','3 tbsp white miso','2 tbsp mirin','1 tbsp soy sauce','1 tbsp sugar','Sesame seeds','Green onions'],instructions:['Mix miso, mirin, soy and sugar.','Coat salmon and marinate 30 min.','Broil 10-12 minutes until caramelized.','Garnish with sesame seeds and green onions.'],tags:['Japanese','Seafood','Quick'],timesMade:0,author:'Yuki Tanaka',isEasy:true}},
+  { id:'c4', type:'hero', category:'community', tag:'👨‍👩‍👧 Family Favourite',
+    title:"The Recipe Families Keep Coming Back To",
+    body:"Beef Enchiladas have held steady in the top 5 for three weeks running. Kid-approved, freezer-friendly, and the leftovers might be better than the original. A true household staple.",
+    image:'https://images.unsplash.com/photo-1534352956036-cd81e27dd615?w=800&h=450&fit=crop',
+    recipe:{id:103,name:'Beef Enchiladas',prepTime:'30 min',cookTime:35,servings:6,image:'https://images.unsplash.com/photo-1534352956036-cd81e27dd615?w=400&h=300&fit=crop',ingredients:['1 lb ground beef','8 flour tortillas','2 cups enchilada sauce','1.5 cups shredded cheese','1 onion, diced','2 tsp cumin','1 tsp chilli powder','Sour cream and cilantro to serve'],instructions:['Brown beef with onion and spices.','Fill tortillas with beef and roll.','Place seam-down in baking dish.','Pour sauce over top.','Cover with cheese.','Bake 350F for 25 minutes.'],tags:['Mexican','Beef','Family'],timesMade:0,author:'Maria Gonzalez',isEasy:false}},
 ];
 
+// ── WEEKLY ROTATING FEED ──────────────────────────────────────────────────
+// Uses current week number to deterministically pick 8 posts from the pool.
+// Changes every Monday, same for all users, zero maintenance required.
+const getWeeklyFeedPosts = () => {
+  const now = new Date();
+  const startOfYear = new Date(now.getFullYear(), 0, 1);
+  const weekNum = Math.floor((now - startOfYear) / (7 * 24 * 60 * 60 * 1000));
+
+  // Always include one from each category for variety
+  const byCategory = {
+    seasonal: feedPostPool.filter(p => p.category === 'seasonal'),
+    quick:    feedPostPool.filter(p => p.category === 'quick'),
+    tip:      feedPostPool.filter(p => p.category === 'tip'),
+    nutrition:feedPostPool.filter(p => p.category === 'nutrition'),
+    community:feedPostPool.filter(p => p.category === 'community'),
+  };
+
+  const pick = (arr, offset) => arr[(weekNum + offset) % arr.length];
+
+  return [
+    pick(byCategory.seasonal,  0),  // hero — seasonal
+    pick(byCategory.tip,       0),  // tip
+    pick(byCategory.quick,     0),  // quick meal
+    pick(byCategory.community, 0),  // community hero
+    pick(byCategory.nutrition, 0),  // nutrition
+    pick(byCategory.tip,       1),  // second tip (different one)
+    pick(byCategory.quick,     1),  // second quick meal
+    pick(byCategory.seasonal,  1),  // second seasonal
+  ];
+};
+
+const feedPosts = getWeeklyFeedPosts();
 const emptyMealPlan = {
   0:{breakfast:null,lunch:null,dinner:null},
   1:{breakfast:null,lunch:null,dinner:null},
@@ -1368,7 +1460,9 @@ const MealPrepApp = ({ pendingJoinCode }) => {
               <h2 style={{fontSize:isMobile?'26px':'32px',fontWeight:600,color:'#1c2820',margin:'0 0 4px 0',fontFamily:"'Cormorant Garamond',serif"}}>
                 {(() => { const h = new Date().getHours(); const name = loadingProfile ? '' : (profile.displayName || session?.user?.email?.split('@')[0]); return `Good ${h < 12 ? 'morning' : h < 17 ? 'afternoon' : 'evening'}${name ? `, ${name}` : ''} 👋`; })()}
               </h2>
-              <p style={{color:'#6a6050',margin:0,fontSize:'14px'}}>Here is what is cooking today</p>
+              <p style={{color:'#6a6050',margin:0,fontSize:'14px'}}>
+                {(() => { const d = new Date(); const opts = {month:'long', day:'numeric'}; const start = new Date(d); start.setDate(d.getDate() - d.getDay()); const end = new Date(start); end.setDate(start.getDate() + 6); return `Week of ${start.toLocaleDateString('en-US', opts)} — ${end.toLocaleDateString('en-US', opts)}`; })()}
+              </p>
             </div>
 
             {/* Category filter pills */}

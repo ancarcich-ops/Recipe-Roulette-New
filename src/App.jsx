@@ -619,13 +619,18 @@ const MealPrepApp = ({ pendingJoinCode }) => {
       sessionStorage.removeItem('kroger_pending_ingredients');
       setTimeout(async () => {
         try {
+          alert('[Kroger Debug] Step 1: Starting cart add. Token exists: ' + !!krogerToken + ', Ingredients: ' + ingredients.length);
+
           // Get locationId from saved zip
           let locationId = null;
           const zip = localStorage.getItem('kroger_zip') || sessionStorage.getItem('kroger_zip');
+          alert('[Kroger Debug] Step 2: Zip = ' + zip);
+
           if (zip) {
             const cached = sessionStorage.getItem(`kroger_location_${zip}`);
             if (cached) {
               locationId = cached;
+              alert('[Kroger Debug] Step 3: Using cached locationId = ' + locationId);
             } else {
               try {
                 const KROGER_CLIENT_ID = 'thereciperoulette-bbcc09pc';
@@ -642,31 +647,52 @@ const MealPrepApp = ({ pendingJoinCode }) => {
                 );
                 const locData = await locRes.json();
                 locationId = locData?.data?.[0]?.locationId || null;
+                alert('[Kroger Debug] Step 3: Fetched locationId = ' + locationId);
                 if (locationId) sessionStorage.setItem(`kroger_location_${zip}`, locationId);
-              } catch (e) { /* proceed without locationId */ }
+              } catch (e) {
+                alert('[Kroger Debug] Step 3 ERROR: ' + e.message);
+              }
             }
           }
+
+          // Test just first ingredient
+          const testIngredient = ingredients[0];
+          const locationParam = locationId ? `&filter.locationId=${locationId}` : '';
+          const searchRes = await fetch(
+            `https://api.kroger.com/v1/products?filter.term=${encodeURIComponent(testIngredient.name)}&filter.limit=1${locationParam}`,
+            { headers: { 'Authorization': `Bearer ${krogerToken}`, 'Accept': 'application/json' } }
+          );
+          const searchData = await searchRes.json();
+          alert('[Kroger Debug] Step 4: Product search status=' + searchRes.status + ' result=' + JSON.stringify(searchData).slice(0,200));
+
           const cartItems = [];
           for (const ingredient of ingredients.slice(0, 50)) {
-            const locationParam = locationId ? `&filter.locationId=${locationId}` : '';
-            const searchRes = await fetch(
+            const sr = await fetch(
               `https://api.kroger.com/v1/products?filter.term=${encodeURIComponent(ingredient.name)}&filter.limit=1${locationParam}`,
               { headers: { 'Authorization': `Bearer ${krogerToken}`, 'Accept': 'application/json' } }
             );
-            const searchData = await searchRes.json();
-            const product = searchData?.data?.[0];
+            const sd = await sr.json();
+            const product = sd?.data?.[0];
             if (product) cartItems.push({ upc: product.upc, quantity: ingredient.count || 1, modality: 'PICKUP' });
           }
+          alert('[Kroger Debug] Step 5: cartItems count = ' + cartItems.length);
+
           if (cartItems.length > 0) {
-            await fetch('https://api.kroger.com/v1/cart/add', {
+            const cartRes = await fetch('https://api.kroger.com/v1/cart/add', {
               method: 'PUT',
               headers: { 'Authorization': `Bearer ${krogerToken}`, 'Content-Type': 'application/json' },
               body: JSON.stringify({ items: cartItems })
             });
+            const cartData = await cartRes.json().catch(() => ({}));
+            alert('[Kroger Debug] Step 6: Cart add status=' + cartRes.status + ' response=' + JSON.stringify(cartData).slice(0,200));
             window.open('https://www.kroger.com/cart', '_blank');
+          } else {
+            alert('[Kroger Debug] Step 5 FAIL: No cart items found — product search returned nothing');
           }
         } catch (e) {
+          alert('[Kroger Debug] CAUGHT ERROR: ' + e.message + '\n' + e.stack);
           sessionStorage.removeItem('kroger_access_token');
+          localStorage.removeItem('kroger_access_token');
         }
       }, 500);
     }

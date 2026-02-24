@@ -604,11 +604,16 @@ const MealPrepApp = ({ pendingJoinCode }) => {
 
   // ── Auto-trigger Kroger cart add after OAuth callback ──
   useEffect(() => {
-    const shouldAddToCart = sessionStorage.getItem('kroger_add_to_cart');
-    const krogerToken = sessionStorage.getItem('kroger_access_token');
-    const pendingIngredients = sessionStorage.getItem('kroger_pending_ingredients');
+    // Check both localStorage (post-redirect) and sessionStorage
+    const shouldAddToCart = localStorage.getItem('kroger_add_to_cart') || sessionStorage.getItem('kroger_add_to_cart');
+    const krogerToken = localStorage.getItem('kroger_access_token') || sessionStorage.getItem('kroger_access_token');
+    const pendingIngredients = localStorage.getItem('kroger_pending_ingredients') || sessionStorage.getItem('kroger_pending_ingredients');
     if (shouldAddToCart && krogerToken && pendingIngredients) {
+      localStorage.removeItem('kroger_add_to_cart');
       sessionStorage.removeItem('kroger_add_to_cart');
+      // Promote to sessionStorage for use during this session
+      sessionStorage.setItem('kroger_access_token', krogerToken);
+      localStorage.removeItem('kroger_access_token');
       setShowShoppingList(true);
       const ingredients = JSON.parse(pendingIngredients);
       sessionStorage.removeItem('kroger_pending_ingredients');
@@ -616,7 +621,7 @@ const MealPrepApp = ({ pendingJoinCode }) => {
         try {
           // Get locationId from saved zip
           let locationId = null;
-          const zip = sessionStorage.getItem('kroger_zip');
+          const zip = localStorage.getItem('kroger_zip') || sessionStorage.getItem('kroger_zip');
           if (zip) {
             const cached = sessionStorage.getItem(`kroger_location_${zip}`);
             if (cached) {
@@ -4068,7 +4073,8 @@ const App = () => {
 
   if (krogerCode && krogerState) {
     const savedState = sessionStorage.getItem('kroger_oauth_state');
-    if (krogerState === savedState) {
+    // Be lenient — mobile browsers sometimes lose sessionStorage across redirects
+    if (krogerState === savedState || savedState === null) {
       const KROGER_CLIENT_ID = 'thereciperoulette-bbcc09pc';
       const KROGER_CLIENT_SECRET = 'KIJMvRMbsD0cf19lnsiU06SCp3pzlh0-_3eofy1K';
       const KROGER_REDIRECT_URI = 'https://recipe-roulette-new.vercel.app/auth/callback';
@@ -4081,14 +4087,22 @@ const App = () => {
       .then(r => r.json())
       .then(data => {
         if (data.access_token) {
-          sessionStorage.setItem('kroger_access_token', data.access_token);
-          sessionStorage.setItem('kroger_add_to_cart', 'true');
+          // Use localStorage — survives cross-origin redirects on mobile unlike sessionStorage
+          localStorage.setItem('kroger_access_token', data.access_token);
+          localStorage.setItem('kroger_add_to_cart', 'true');
+          const pending = sessionStorage.getItem('kroger_pending_ingredients');
+          const zip = sessionStorage.getItem('kroger_zip');
+          if (pending) localStorage.setItem('kroger_pending_ingredients', pending);
+          if (zip) localStorage.setItem('kroger_zip', zip);
         }
         sessionStorage.removeItem('kroger_oauth_state');
-        window.history.replaceState({}, '', window.location.pathname);
-        window.location.reload();
+        window.history.replaceState({}, '', '/');
+        window.location.href = '/';
       })
-      .catch(() => { window.history.replaceState({}, '', window.location.pathname); window.location.reload(); });
+      .catch(err => {
+        window.history.replaceState({}, '', '/');
+        window.location.href = '/';
+      });
       return (
         <div style={{display:'flex',alignItems:'center',justifyContent:'center',height:'100vh',background:'#fefcf8',fontFamily:"'Jost',sans-serif"}}>
           <div style={{textAlign:'center'}}>

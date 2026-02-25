@@ -3549,7 +3549,24 @@ Ingredients: ${(recipe.ingredients||[]).join(', ')}`
                       setImportStep('loading');
                       try {
                         const { data, error } = await supabase.functions.invoke('fetch-recipe', { body: { url: importUrl.trim() } });
-                        if (error || !data?.name) { setImportStep('url'); setImportError(data?.error || "Couldn't parse a recipe from that URL. Try a different link."); return; }
+                        if (error || !data?.name) {
+                          setImportStep('url');
+                          const rawErr = data?.error || '';
+                          let friendlyErr;
+                          if (rawErr.includes('403') || rawErr.includes('401')) {
+                            friendlyErr = "That site blocked our request. Try copying the recipe text manually or use a different recipe site.";
+                          } else if (rawErr.includes('404')) {
+                            friendlyErr = "That page wasn't found. Double-check the URL and try again.";
+                          } else if (rawErr.includes('timeout') || rawErr.includes('ECONNREFUSED') || rawErr.includes('fetch')) {
+                            friendlyErr = "Couldn't reach that site. Check your connection or try a different URL.";
+                          } else if (!rawErr && !data?.name) {
+                            friendlyErr = "No recipe found at that URL. Make sure it links directly to a recipe page, not a homepage or search result.";
+                          } else {
+                            friendlyErr = "Couldn't import from that URL. Try BudgetBytes, Food Network, NYT Cooking, or Serious Eats.";
+                          }
+                          setImportError(friendlyErr);
+                          return;
+                        }
                         setImportedRecipe({ ...data, id: Date.now(), author: session.user.email.split('@')[0], timesMade: 0, isEasy: (data.cookTime || 30) < 20,
                           image: data.image || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&h=300&fit=crop',
                           tags: data.tags || [], ingredients: Array.isArray(data.ingredients) ? data.ingredients : [],

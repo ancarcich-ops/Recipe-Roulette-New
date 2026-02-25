@@ -1227,6 +1227,83 @@ const MealPrepApp = ({ pendingJoinCode }) => {
     ctx.strokeStyle = 'rgba(255,255,255,0.08)'; ctx.lineWidth = 1.5; ctx.stroke();
   }, []);
 
+
+  // ── Auto-fill helpers ────────────────────────────────────────────────────
+  const isBreakfastAppropriate = (recipe) => {
+    const name = (recipe.name || '').toLowerCase();
+    const tags = (recipe.tags || []).map(t => t.toLowerCase());
+    const ingredients = (recipe.ingredients || []).map(i => (typeof i === 'string' ? i : i.name || '').toLowerCase());
+
+    // Explicit breakfast tags = always OK
+    if (tags.some(t => ['breakfast','brunch','morning'].includes(t))) return true;
+
+    // Explicitly dinner/lunch tagged with no breakfast tag = not OK
+    if (tags.some(t => ['dinner','lunch'].includes(t)) && !tags.some(t => t === 'breakfast')) return false;
+
+    // Heavy dinner proteins/dishes = not OK for breakfast
+    const dinnerKeywords = ['steak','ribeye','brisket','pot roast','ribs','pork chop','lamb',
+      'chili','tacos','tikka','masala','curry','pasta','lasagna','pizza','stir fry','fried rice',
+      'salmon','shrimp','scallop','lobster','crab','burger','meatball','meatloaf',
+      'beef','taco','burrito','enchilada','soup','chowder','ramen','pho','risotto'];
+    if (dinnerKeywords.some(k => name.includes(k) || ingredients.some(i => i.includes(k)))) return false;
+
+    // Light/neutral dishes OK for breakfast
+    const breakfastKeywords = ['egg','oat','pancake','waffle','toast','smoothie','yogurt',
+      'granola','muffin','bagel','cereal','fruit','avocado','acai','overnight oats','frittata',
+      'scramble','hash','quiche','crepe','porridge'];
+    if (breakfastKeywords.some(k => name.includes(k) || ingredients.some(i => i.includes(k)))) return true;
+
+    // Default: bowl/salad/grain dishes = fine, otherwise skip for breakfast
+    const neutralKeywords = ['bowl','salad','quinoa','wrap','sandwich'];
+    return neutralKeywords.some(k => name.includes(k));
+  };
+
+  const matchesDietaryPrefs = (recipe, prefs) => {
+    if (!prefs || prefs.length === 0) return true;
+    const name = (recipe.name || '').toLowerCase();
+    const tags = (recipe.tags || []).map(t => t.toLowerCase());
+    const ingredients = (recipe.ingredients || []).map(i => (typeof i === 'string' ? i : i.name || '').toLowerCase());
+    const allText = [...tags, name, ...ingredients];
+
+    if (prefs.includes('vegetarian') || prefs.includes('vegan')) {
+      const meatKeywords = ['chicken','beef','pork','lamb','turkey','bacon','ham','sausage',
+        'steak','shrimp','salmon','tuna','scallop','lobster','crab','anchovy','prosciutto',
+        'pepperoni','salami','ground meat','ground turkey','ground beef'];
+      if (meatKeywords.some(k => allText.some(t => t.includes(k)))) return false;
+    }
+    if (prefs.includes('vegan')) {
+      const dairyEggKeywords = ['cheese','milk','cream','butter','egg','yogurt','honey',
+        'parmesan','mozzarella','cheddar','feta','gruyere','whey','ghee'];
+      if (dairyEggKeywords.some(k => allText.some(t => t.includes(k)))) return false;
+    }
+    if (prefs.includes('gluten-free')) {
+      const glutenKeywords = ['pasta','bread','flour','breadcrumb','soy sauce','tortilla',
+        'pita','naan','couscous','barley','rye','wheat','panko','crouton','beer'];
+      if (glutenKeywords.some(k => allText.some(t => t.includes(k)))) return false;
+    }
+    if (prefs.includes('dairy-free')) {
+      const dairyKeywords = ['cheese','milk','cream','butter','yogurt','parmesan','mozzarella',
+        'cheddar','feta','gruyere','ghee','half and half','heavy cream','sour cream'];
+      if (dairyKeywords.some(k => allText.some(t => t.includes(k)))) return false;
+    }
+    if (prefs.includes('nut-free')) {
+      const nutKeywords = ['almond','walnut','pecan','cashew','peanut','pistachio','hazelnut',
+        'pine nut','macadamia','tahini','almond butter','peanut butter'];
+      if (nutKeywords.some(k => allText.some(t => t.includes(k)))) return false;
+    }
+    return true;
+  };
+
+  const filterForSlot = (recipes, mealType, prefs) => {
+    const dietFiltered = recipes.filter(r => matchesDietaryPrefs(r, prefs));
+    if (mealType === 'breakfast') return dietFiltered.filter(isBreakfastAppropriate);
+    // lunch/dinner: exclude explicit breakfast-only items
+    return dietFiltered.filter(r => {
+      const tags = (r.tags || []).map(t => t.toLowerCase());
+      return !tags.includes('breakfast');
+    });
+  };
+
   const wheelEaseOut = t => 1 - Math.pow(1 - t, 4);
 
   const animateWheel = React.useCallback((ts) => {
@@ -1262,23 +1339,30 @@ const MealPrepApp = ({ pendingJoinCode }) => {
         const newPlan = JSON.parse(JSON.stringify(mealPlan));
         const myRecipes = guestMode ? [...sampleRecipes, ...userRecipes] : [...userRecipes];
         const all = [...myRecipes, ...communityRecipes];
+        const userPrefs = profile.dietaryPrefs || [];
         const empty = [];
         for (let d = 0; d < 7; d++) for (const mt of mealTypes)
           if (mealTypeSettings[d][mt] && !newPlan[d][mt] && !isSlotDisabled(d, mt)) empty.push({d, mt});
         const slots = empty.sort(() => Math.random() - 0.5);
         let i = 0;
+        // Helper: pick best recipe for a slot from a filtered pool
+        const pickForSlot = (pool, slot) => {
+          const suitable = filterForSlot(pool, slot.mt, userPrefs);
+          if (suitable.length === 0) return filterForSlot(all, slot.mt, userPrefs)[0] || pool[0];
+          return suitable[Math.floor(Math.random() * suitable.length)];
+        };
         const easy = all.filter(r => (r.cookTime + (parseInt(r.prepTime) || 0)) <= 30 || r.cookTime <= 30).sort(() => Math.random() - 0.5);
-        for (let j = 0; j < autoFillSettings.easyMeals && i < slots.length; j++, i++) newPlan[slots[i].d][slots[i].mt] = easy[j % easy.length];
+        for (let j = 0; j < autoFillSettings.easyMeals && i < slots.length; j++, i++) newPlan[slots[i].d][slots[i].mt] = pickForSlot(easy, slots[i]);
         const popular = [...communityRecipes].sort((a,b) => b.likes - a.likes);
-        for (let j = 0; j < autoFillSettings.communityMeals && i < slots.length; j++, i++) newPlan[slots[i].d][slots[i].mt] = popular[j % popular.length];
+        for (let j = 0; j < autoFillSettings.communityMeals && i < slots.length; j++, i++) newPlan[slots[i].d][slots[i].mt] = pickForSlot(popular, slots[i]);
         const untried = myRecipes.filter(r => r.timesMade === 0).sort(() => Math.random() - 0.5);
-        for (let j = 0; j < autoFillSettings.untriedRecipes && i < slots.length; j++, i++) newPlan[slots[i].d][slots[i].mt] = untried[j % untried.length];
+        for (let j = 0; j < autoFillSettings.untriedRecipes && i < slots.length; j++, i++) newPlan[slots[i].d][slots[i].mt] = pickForSlot(untried, slots[i]);
         const budget = all.filter(r => recipeCostCache[r.id] !== undefined && recipeCostCache[r.id] <= 5).sort(() => Math.random() - 0.5);
-        for (let j = 0; j < autoFillSettings.budgetMeals && i < slots.length; j++, i++) newPlan[slots[i].d][slots[i].mt] = budget[j % (budget.length || 1)];
+        for (let j = 0; j < autoFillSettings.budgetMeals && i < slots.length; j++, i++) newPlan[slots[i].d][slots[i].mt] = pickForSlot(budget.length ? budget : all, slots[i]);
         setMealPlan(newPlan); saveMealPlan(newPlan);
       }, 1200);
     }
-  }, [mealPlan, autoFillSettings, mealTypeSettings, drawWheelCanvas]);
+  }, [mealPlan, autoFillSettings, mealTypeSettings, drawWheelCanvas, profile]);
 
   useEffect(() => {
     if (showSpinningWheel && wheelCanvasRef.current) {

@@ -407,7 +407,7 @@ const SharedRecipeView = ({ shareId }) => {
           </div>
         )}
         <div style={{background:'#fefcf8',borderRadius:'12px',padding:'20px',textAlign:'center',border:'1px solid #e0d8cc',marginBottom:'32px'}}>
-          <p style={{margin:'0 0 4px 0',fontSize:'17px',fontWeight:600,color:'#1c2820',fontFamily:"'Cormorant Garamond',serif"}}>🎲 Recipe Roulette</p>
+          <div style={{display:'flex',alignItems:'center',gap:'8px'}}><img src="/logo.png" alt="Recipe Roulette" style={{width:'28px',height:'28px',objectFit:'contain'}} /><p style={{margin:0,fontSize:'17px',fontWeight:600,color:'#1c2820',fontFamily:"'Cormorant Garamond',serif"}}>Recipe Roulette</p></div>
           <p style={{margin:'0 0 14px 0',fontSize:'13px',color:'#6a6050'}}>Plan your meals, import recipes, and more</p>
           <a href="/" style={{display:'inline-block',padding:'11px 28px',background:'#1c2820',color:'#f0ece4',borderRadius:'8px',textDecoration:'none',fontWeight:700,fontSize:'14px'}}>Try it free →</a>
         </div>
@@ -2565,7 +2565,7 @@ const MealPrepApp = ({ pendingJoinCode }) => {
                     }
                     setShowOnboarding(false);
                   }} style={{width:'100%',padding:'14px',background:'#fefcf8',border:'none',borderRadius:'10px',fontWeight:700,fontSize:'16px',color:'#1c2820',cursor:'pointer'}}>
-                    Let's Cook! 🎲
+                    Let's Cook!
                   </button>
                 </div>
               )}
@@ -3887,7 +3887,7 @@ Ingredients: ${(recipe.ingredients||[]).join(', ')}`
                         canvas.toBlob(async (blob) => {
                           try {
                             const file = new File([blob], 'my-week.png', { type: 'image/png' });
-                            await navigator.share({ files: [file], title: 'My Meal Plan', text: 'Check out my meals this week! 🎲' });
+                            await navigator.share({ files: [file], title: 'My Meal Plan', text: 'Check out my meals this week! Made with Recipe Roulette 🍽️' });
                           } catch {
                             // Fallback to download
                             const a = document.createElement('a'); a.download = 'my-week.png'; a.href = canvas.toDataURL(); a.click();

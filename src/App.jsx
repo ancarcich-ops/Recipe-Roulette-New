@@ -747,49 +747,43 @@ const MealPrepApp = ({ pendingJoinCode }) => {
 
     if (meals && meals.length > 0) {
       const plan = JSON.parse(JSON.stringify(emptyMealPlan));
-      const today = new Date(); today.setHours(0,0,0,0);
-      const pastMealRecipeIds = new Set();
-      const futureMeals = [];
+
+      // Current week boundaries — keep ALL meals within the current week visible
+      const now = new Date(); now.setHours(0,0,0,0);
+      const dayOfWeek = now.getDay(); // 0=Sun
+      const currentWeekStart = new Date(now);
+      currentWeekStart.setDate(now.getDate() - dayOfWeek);
+      currentWeekStart.setHours(0,0,0,0);
+      const currentWeekStartStr = currentWeekStart.toISOString().split('T')[0];
+
+      const prevWeekMealRecipeIds = new Set();
+      const prevWeekIds = [];
 
       meals.forEach(m => {
-        // Figure out the actual date of this meal slot
         const wsd = m.week_start_date;
-        if (wsd) {
-          const slotDate = new Date(wsd);
-          slotDate.setDate(slotDate.getDate() + m.day_index);
-          slotDate.setHours(0,0,0,0);
-          if (slotDate < today) {
-            // This meal day has passed — mark recipe as made
-            if (m.recipe?.id) pastMealRecipeIds.add(m.recipe.id);
-            return; // don't add to active plan
-          }
+        if (wsd && wsd < currentWeekStartStr) {
+          // Meal is from a PREVIOUS week — archive it
+          if (m.recipe?.id) prevWeekMealRecipeIds.add(m.recipe.id);
+          prevWeekIds.push(m.id);
+          return;
         }
-        futureMeals.push(m);
+        // Meal is from current week — always show it regardless of day
         if (plan[m.day_index]) plan[m.day_index][m.meal_type] = m.recipe;
       });
 
-      // Auto-increment timesMade for past meals
-      if (pastMealRecipeIds.size > 0) {
+      // Auto-increment timesMade for previous week's meals
+      if (prevWeekMealRecipeIds.size > 0) {
         loadedRecipes = loadedRecipes.map(r => {
-          if (pastMealRecipeIds.has(r.id)) {
+          if (prevWeekMealRecipeIds.has(r.id)) {
             const updated = {...r, timesMade: (r.timesMade || 0) + 1};
-            // Save to Supabase in background
             supabase.from('user_recipes').update({recipe: updated}).eq('user_id', userId).eq('recipe->>id', r.id);
             return updated;
           }
           return r;
         });
-        // Remove past meals from DB
-        const pastIds = meals.filter(m => {
-          const wsd = m.week_start_date;
-          if (!wsd) return false;
-          const slotDate = new Date(wsd);
-          slotDate.setDate(slotDate.getDate() + m.day_index);
-          slotDate.setHours(0,0,0,0);
-          return slotDate < today;
-        }).map(m => m.id);
-        if (pastIds.length > 0) {
-          await supabase.from('meal_plans').delete().in('id', pastIds);
+        // Remove previous week's meals from DB
+        if (prevWeekIds.length > 0) {
+          await supabase.from('meal_plans').delete().in('id', prevWeekIds);
         }
       }
 

@@ -537,6 +537,19 @@ const MealPrepApp = ({ pendingJoinCode }) => {
   const [draggedMeal, setDraggedMeal] = useState(null);
   const [recipeFilters, setRecipeFilters] = useState({cookTime:'all',mealType:'all',tried:'all',author:'all'});
   const [autoFillSettings, setAutoFillSettings] = useState({easyMeals:3,communityMeals:2,untriedRecipes:2,budgetMeals:0});
+  const [dynamicCommunityRecipes, setDynamicCommunityRecipes] = useState([]);
+  // Merge hardcoded sample community recipes with user-shared recipes from DB
+  // De-duplicate by recipe id so sharing an existing sample recipe doesn't double it
+  const allCommunityRecipes = React.useMemo(() => {
+    const seen = new Set();
+    const merged = [...dynamicCommunityRecipes, ...communityRecipes];
+    return merged.filter(r => {
+      const key = r._sharedId || r.id;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  }, [dynamicCommunityRecipes]);
   const [recipeCostCache, setRecipeCostCache] = useState({}); // { recipeId: costPerServing }
   const [mealTypeSettings, setMealTypeSettings] = useState({
     0:{breakfast:true,lunch:false,dinner:true},
@@ -840,6 +853,21 @@ const MealPrepApp = ({ pendingJoinCode }) => {
       ratings.forEach(r => { ratingsMap[r.recipe_id] = {rating: r.rating, ratedAt: r.created_at}; });
       setUserRatings(ratingsMap);
     }
+    // Load shared recipes from community
+    const { data: sharedRecipes } = await supabase.from('shared_recipes').select('*').order('created_at', { ascending: false });
+    if (sharedRecipes) {
+      const formatted = sharedRecipes.map(row => ({
+        ...row.recipe,
+        id: row.recipe?.id || row.id,
+        _sharedId: row.id,
+        author: row.recipe?.author || 'Community Member',
+        user_id: row.created_by,
+        likes: row.recipe?.likes || 0,
+        isShared: true,
+      }));
+      setDynamicCommunityRecipes(formatted);
+    }
+
     // Load community ratings (average + count per recipe)
     const { data: communityRatings } = await supabase.from('recipe_ratings').select('recipe_id, rating');
     if (communityRatings) {
@@ -1053,6 +1081,16 @@ const MealPrepApp = ({ pendingJoinCode }) => {
       await navigator.clipboard.writeText(url);
       setShareToast('copied');
       setTimeout(() => setShareToast(''), 2500);
+      // Refresh community recipes so shared recipe appears immediately
+      const { data: sharedRecipes } = await supabase.from('shared_recipes').select('*').order('created_at', { ascending: false });
+      if (sharedRecipes) {
+        const formatted = sharedRecipes.map(row => ({
+          ...row.recipe, id: row.recipe?.id || row.id, _sharedId: row.id,
+          author: row.recipe?.author || 'Community Member', user_id: row.created_by,
+          likes: row.recipe?.likes || 0, isShared: true,
+        }));
+        setDynamicCommunityRecipes(formatted);
+      }
     } catch (err) {
       console.error('Share error:', err);
       setShareToast('');
@@ -1338,7 +1376,7 @@ const MealPrepApp = ({ pendingJoinCode }) => {
         setShowSpinningWheel(false); setWheelDone(false);
         const newPlan = JSON.parse(JSON.stringify(mealPlan));
         const myRecipes = guestMode ? [...sampleRecipes, ...userRecipes] : [...userRecipes];
-        const all = [...myRecipes, ...communityRecipes];
+        const all = [...myRecipes, ...allCommunityRecipes];
         const userPrefs = profile.dietaryPrefs || [];
         const empty = [];
         for (let d = 0; d < 7; d++) for (const mt of mealTypes)
@@ -1353,7 +1391,7 @@ const MealPrepApp = ({ pendingJoinCode }) => {
         };
         const easy = all.filter(r => (r.cookTime + (parseInt(r.prepTime) || 0)) <= 30 || r.cookTime <= 30).sort(() => Math.random() - 0.5);
         for (let j = 0; j < autoFillSettings.easyMeals && i < slots.length; j++, i++) newPlan[slots[i].d][slots[i].mt] = pickForSlot(easy, slots[i]);
-        const popular = [...communityRecipes].sort((a,b) => b.likes - a.likes);
+        const popular = [...allCommunityRecipes].sort((a,b) => b.likes - a.likes);
         for (let j = 0; j < autoFillSettings.communityMeals && i < slots.length; j++, i++) newPlan[slots[i].d][slots[i].mt] = pickForSlot(popular, slots[i]);
         const untried = myRecipes.filter(r => r.timesMade === 0).sort(() => Math.random() - 0.5);
         for (let j = 0; j < autoFillSettings.untriedRecipes && i < slots.length; j++, i++) newPlan[slots[i].d][slots[i].mt] = pickForSlot(untried, slots[i]);
@@ -1459,7 +1497,7 @@ const MealPrepApp = ({ pendingJoinCode }) => {
           {label:'Cook Time',key:'cookTime',opts:[['all','All Times'],['quick','Quick < 20min'],['medium','20-40min'],['long','40+min']]},
           {label:'Meal Type',key:'mealType',opts:[['all','All Meals'],['breakfast','Breakfast'],['lunch','Lunch'],['dinner','Dinner']]},
           ...(showTried?[{label:'Status',key:'tried',opts:[['all','All'],['tried','Tried'],['untried','Not Tried']]}]:[]),
-          ...(showAuthor?[{label:'Author',key:'author',opts:[['all','All Authors'],...[...new Set(communityRecipes.map(r=>r.author))].sort().map(a=>[a,a])]}]:[])
+          ...(showAuthor?[{label:'Author',key:'author',opts:[['all','All Authors'],...[...new Set(allCommunityRecipes.map(r=>r.author))].sort().map(a=>[a,a])]}]:[])
         ].map(({label,key,opts}) => (
           <div key={key}>
             <label style={{display:'block',marginBottom:'4px',fontSize:'11px',fontWeight:600,color:'#9a9080',textTransform:'uppercase'}}>{label}</label>
@@ -1733,7 +1771,7 @@ const MealPrepApp = ({ pendingJoinCode }) => {
                   </button>
                 ))}
               </div>
-              <p style={{color:'#6a6050',margin:0}}>{filterRecipes(communityRecipes).length} recipes</p>
+              <p style={{color:'#6a6050',margin:0}}>{filterRecipes(allCommunityRecipes).length} recipes</p>
             </div>
             {/* Community search bar */}
             <div style={{position:'relative',marginBottom:'16px'}}>
@@ -1752,7 +1790,7 @@ const MealPrepApp = ({ pendingJoinCode }) => {
             <FilterBar showAuthor />
             <div style={{display:'grid',gridTemplateColumns:isMobile?'1fr':'repeat(auto-fill, minmax(260px, 1fr))',gap:'18px'}}>
               {((() => {
-                let list = filterRecipes(communityRecipes);
+                let list = filterRecipes(allCommunityRecipes);
                 if (communityFilter === 'following') list = list.filter(r => r.user_id && follows.has(r.user_id));
                 if (communitySearch.trim()) list = list.filter(r => r.name.toLowerCase().includes(communitySearch.toLowerCase()) || (r.tags||[]).some(t => t.toLowerCase().includes(communitySearch.toLowerCase())) || r.author.toLowerCase().includes(communitySearch.toLowerCase()));
                 return list;
@@ -1762,7 +1800,7 @@ const MealPrepApp = ({ pendingJoinCode }) => {
                   <p style={{color:'#9a9080'}}>{communitySearch ? `No recipes match "${communitySearch}"` : communityFilter === 'following' ? 'Follow some users to see their recipes here' : 'No recipes match your filters'}</p>
                 </div>
               ) : ((() => {
-                let list = filterRecipes(communityRecipes);
+                let list = filterRecipes(allCommunityRecipes);
                 if (communityFilter === 'following') list = list.filter(r => r.user_id && follows.has(r.user_id));
                 if (communitySearch.trim()) list = list.filter(r => r.name.toLowerCase().includes(communitySearch.toLowerCase()) || (r.tags||[]).some(t => t.toLowerCase().includes(communitySearch.toLowerCase())) || r.author.toLowerCase().includes(communitySearch.toLowerCase()));
                 return list;
@@ -3303,7 +3341,7 @@ const MealPrepApp = ({ pendingJoinCode }) => {
               {autoFillSettings.budgetMeals > 0 && (
                 <div style={{marginTop:'10px'}}>
                   {(() => {
-                    const allR = [...(guestMode ? [...sampleRecipes,...userRecipes] : userRecipes),...communityRecipes];
+                    const allR = [...(guestMode ? [...sampleRecipes,...userRecipes] : userRecipes),...allCommunityRecipes];
                     const unpriced = allR.filter(r => recipeCostCache[r.id] === undefined);
                     const budgetCount = allR.filter(r => recipeCostCache[r.id] !== undefined && recipeCostCache[r.id] <= 5).length;
                     if (unpriced.length > 0) return (

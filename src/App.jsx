@@ -836,6 +836,10 @@ const MealPrepApp = ({ pendingJoinCode }) => {
         dietaryPrefs: prof.dietary_prefs || [],
         householdSize: (prof.adults || 2) + (prof.children || 0), adults: prof.adults ?? 2, children: prof.children ?? 0
       });
+      // Load saved folders
+      if (prof.folders && Array.isArray(prof.folders) && prof.folders.length > 0) {
+        setFolders(prof.folders);
+      }
       if (!prof.onboarding_complete) {
         setShowOnboarding(true);
         setOnboardingStep(1);
@@ -1128,6 +1132,19 @@ const MealPrepApp = ({ pendingJoinCode }) => {
     setMealPlan(emptyMealPlan);
     setUserRecipes([]);
     setSavedRecipes(new Set());
+  };
+
+  const saveFolders = async (newFolders) => {
+    if (!session?.user) return;
+    await supabase.from('profiles').upsert({ id: session.user.id, folders: newFolders }, { onConflict: 'id' });
+  };
+
+  const updateFolders = (updater) => {
+    setFolders(prev => {
+      const next = typeof updater === 'function' ? updater(prev) : updater;
+      saveFolders(next);
+      return next;
+    });
   };
 
   const removeMealFromPlan = (dayIndex, mealType) => {
@@ -2411,7 +2428,7 @@ const MealPrepApp = ({ pendingJoinCode }) => {
             <div style={{display:'flex',gap:'10px'}}>
               <button onClick={() => setShowEditFolderModal(null)} style={{flex:1,padding:'11px',background:'#f0ece4',border:'none',borderRadius:'8px',cursor:'pointer',fontWeight:600,color:'#1c2820'}}>Cancel</button>
               <button disabled={!editFolderName.trim()} onClick={() => {
-                setFolders(prev => prev.map(f => f.id === showEditFolderModal.id ? {...f, name: editFolderName.trim(), emoji: editFolderEmoji} : f));
+                updateFolders(prev => prev.map(f => f.id === showEditFolderModal.id ? {...f, name: editFolderName.trim(), emoji: editFolderEmoji} : f));
                 setShowEditFolderModal(null);
               }} style={{flex:2,padding:'11px',background:editFolderName.trim()?'#fff':'#333',border:'none',borderRadius:'8px',cursor:editFolderName.trim()?'pointer':'not-allowed',fontWeight:700,color:editFolderName.trim()?'#000':'#666'}}>
                 Save Changes
@@ -2431,7 +2448,7 @@ const MealPrepApp = ({ pendingJoinCode }) => {
             <div style={{display:'flex',gap:'10px'}}>
               <button onClick={() => setShowDeleteFolderConfirm(null)} style={{flex:1,padding:'12px',background:'#f0ece4',border:'none',borderRadius:'8px',cursor:'pointer',fontWeight:600,color:'#1c2820'}}>Cancel</button>
               <button onClick={() => {
-                setFolders(prev => prev.filter(f => f.id !== showDeleteFolderConfirm.id));
+                updateFolders(prev => prev.filter(f => f.id !== showDeleteFolderConfirm.id));
                 if (activeFolder === showDeleteFolderConfirm.id) setActiveFolder(null);
                 setShowDeleteFolderConfirm(null);
               }} style={{flex:1,padding:'12px',background:'#c0392b',border:'none',borderRadius:'8px',cursor:'pointer',fontWeight:700,color:'#1c2820'}}>
@@ -2843,38 +2860,64 @@ const MealPrepApp = ({ pendingJoinCode }) => {
               </div>
 
               {/* Household Sync */}
-              <div style={{borderTop:'1px solid #e8e0d4',paddingTop:'20px'}}>
-                <label style={{display:'block',marginBottom:'12px',fontWeight:600,color:'#1c2820',fontSize:'13px',textTransform:'uppercase',letterSpacing:'0.5px'}}>
-                  👨‍👩‍👧 Household Sync
+              <div style={{borderTop:'1px solid rgba(255,255,255,0.08)',paddingTop:'20px'}}>
+                <label style={{display:'block',marginBottom:'14px',fontWeight:600,color:'#fefcf8',fontSize:'13px',textTransform:'uppercase',letterSpacing:'0.5px'}}>
+                  Family Sharing
                 </label>
-                <p style={{margin:'0 0 14px 0',fontSize:'12px',color:'#6a6050'}}>Share your meal plan and recipes with up to 4 people</p>
                 {household ? (
-                  <div>
-                    <div style={{background:'#1c2820',border:'1px solid #e0d8cc',borderRadius:'10px',padding:'14px',marginBottom:'12px'}}>
-                      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:'8px'}}>
-                        <span style={{fontSize:'13px',fontWeight:600,color:'#1c2820'}}>Active household</span>
-                        <span style={{fontSize:'12px',color:'#5a9a6a',fontWeight:600}}>{householdMembers.length}/4 members</span>
+                  <div style={{background:'rgba(90,154,106,0.12)',border:'1px solid rgba(90,154,106,0.3)',borderRadius:'14px',padding:'16px'}}>
+                    {/* Active header */}
+                    <div style={{display:'flex',alignItems:'center',gap:'12px',marginBottom:'14px'}}>
+                      <div style={{width:'42px',height:'42px',borderRadius:'12px',background:'rgba(90,154,106,0.2)',border:'1px solid rgba(90,154,106,0.4)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'22px',flexShrink:0}}>
+                        🏠
                       </div>
-                      <div style={{fontSize:'12px',color:'#6a6050',marginBottom:'12px'}}>Code: <span style={{color:'#fefcf8',fontWeight:700,letterSpacing:'3px'}}>{household.invite_code}</span></div>
-                      <button onClick={copyInviteLink} style={{width:'100%',padding:'9px',background:'#fefcf8',border:'1px solid #d8d0c4',borderRadius:'8px',cursor:'pointer',fontWeight:600,fontSize:'13px',color:'#a78bfa'}}>
-                        {householdToast === 'copied' ? '✓ Link Copied!' : '🔗 Copy Invite Link'}
+                      <div>
+                        <div style={{fontSize:'14px',fontWeight:700,color:'#fefcf8',lineHeight:1.2}}>Active Household</div>
+                        <div style={{fontSize:'12px',color:'#5a9a6a',marginTop:'2px'}}>{householdMembers.length} of 4 members joined</div>
+                      </div>
+                      <div style={{marginLeft:'auto',display:'flex',gap:'4px'}}>
+                        {Array.from({length:4}).map((_,i) => (
+                          <div key={i} style={{width:'10px',height:'10px',borderRadius:'50%',background: i < householdMembers.length ? '#5a9a6a' : 'rgba(255,255,255,0.15)'}} />
+                        ))}
+                      </div>
+                    </div>
+                    {/* Invite code */}
+                    <div style={{background:'rgba(0,0,0,0.2)',borderRadius:'8px',padding:'10px 12px',marginBottom:'12px',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+                      <div>
+                        <div style={{fontSize:'10px',color:'#9a9080',textTransform:'uppercase',letterSpacing:'1px',marginBottom:'3px'}}>Invite Code</div>
+                        <div style={{fontSize:'16px',fontWeight:700,color:'#fefcf8',letterSpacing:'4px'}}>{household.invite_code}</div>
+                      </div>
+                      <button onClick={copyInviteLink} style={{padding:'8px 12px',background: householdToast === 'copied' ? 'rgba(90,154,106,0.3)' : 'rgba(255,255,255,0.1)',border:'1px solid rgba(255,255,255,0.15)',borderRadius:'8px',cursor:'pointer',fontWeight:600,fontSize:'12px',color: householdToast === 'copied' ? '#5a9a6a' : '#fefcf8',transition:'all 0.2s',whiteSpace:'nowrap'}}>
+                        {householdToast === 'copied' ? '✓ Copied!' : '🔗 Copy Link'}
                       </button>
                     </div>
                     <button onClick={async () => { if (window.confirm('Leave this household?')) await leaveHousehold(); }}
-                      style={{width:'100%',padding:'9px',background:'transparent',border:'1px solid #d8d0c4',borderRadius:'8px',cursor:'pointer',fontWeight:600,fontSize:'13px',color:'#c46a3a'}}>
+                      style={{width:'100%',padding:'9px',background:'transparent',border:'1px solid rgba(196,106,58,0.4)',borderRadius:'8px',cursor:'pointer',fontWeight:600,fontSize:'13px',color:'#c46a3a'}}>
                       Leave Household
                     </button>
                   </div>
                 ) : (
-                  <div style={{display:'flex',gap:'10px'}}>
-                    <button onClick={async () => { await createHousehold(); setShowHouseholdModal(true); }}
-                      style={{flex:1,padding:'10px',background:'#fefcf8',border:'none',borderRadius:'8px',cursor:'pointer',fontWeight:700,fontSize:'13px',color:'#1c2820'}}>
-                      + Create
-                    </button>
-                    <button onClick={() => setShowHouseholdModal(true)}
-                      style={{flex:1,padding:'10px',background:'#fefcf8',border:'1px solid #d8d0c4',borderRadius:'8px',cursor:'pointer',fontWeight:600,fontSize:'13px',color:'#1c2820'}}>
-                      Join with Code
-                    </button>
+                  <div>
+                    {/* Promo card */}
+                    <div style={{background:'rgba(255,255,255,0.04)',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'14px',padding:'16px',marginBottom:'12px',display:'flex',alignItems:'center',gap:'14px'}}>
+                      <div style={{width:'48px',height:'48px',borderRadius:'12px',background:'rgba(196,106,58,0.15)',border:'1px solid rgba(196,106,58,0.25)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'24px',flexShrink:0}}>
+                        👨‍👩‍👧
+                      </div>
+                      <div>
+                        <div style={{fontSize:'14px',fontWeight:600,color:'#fefcf8',marginBottom:'3px'}}>Plan meals together</div>
+                        <div style={{fontSize:'12px',color:'#9a9080',lineHeight:1.4}}>Share your meal plan and recipes with up to 4 people in your home.</div>
+                      </div>
+                    </div>
+                    <div style={{display:'flex',gap:'10px'}}>
+                      <button onClick={async () => { await createHousehold(); setShowHouseholdModal(true); }}
+                        style={{flex:1,padding:'11px',background:'#5a9a6a',border:'none',borderRadius:'10px',cursor:'pointer',fontWeight:700,fontSize:'13px',color:'#fff'}}>
+                        + Create
+                      </button>
+                      <button onClick={() => setShowHouseholdModal(true)}
+                        style={{flex:1,padding:'11px',background:'rgba(255,255,255,0.06)',border:'1px solid rgba(255,255,255,0.15)',borderRadius:'10px',cursor:'pointer',fontWeight:600,fontSize:'13px',color:'#fefcf8'}}>
+                        Join with Code
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>
@@ -3700,7 +3743,7 @@ Ingredients: ${(recipe.ingredients||[]).join(', ')}`
                     setUserRecipes(prev => [...prev, finalRecipe]);
                     await supabase.from('user_recipes').insert({ user_id: session.user.id, recipe: finalRecipe });
                     if (importFolderIds.length > 0) {
-                      setFolders(prev => prev.map(f => importFolderIds.includes(f.id) ? {...f, recipes: [...f.recipes, finalRecipe.id]} : f));
+                      updateFolders(prev => prev.map(f => importFolderIds.includes(f.id) ? {...f, recipes: [...f.recipes, finalRecipe.id]} : f));
                     }
                     setShowImportModal(false);
                     setCurrentView('recipes');
@@ -3805,7 +3848,7 @@ Ingredients: ${(recipe.ingredients||[]).join(', ')}`
               <button onClick={async () => {
                 const id = showDeleteConfirm.id;
                 setUserRecipes(prev => prev.filter(r => r.id !== id));
-                setFolders(prev => prev.map(f => ({...f, recipes: f.recipes.filter(rid => rid !== id)})));
+                updateFolders(prev => prev.map(f => ({...f, recipes: f.recipes.filter(rid => rid !== id)})));
                 if (selectedRecipe?.id === id) setSelectedRecipe(null);
                 await supabase.from('user_recipes').delete().eq('user_id', session.user.id).eq('recipe->>id', id);
                 setShowDeleteConfirm(null);
@@ -3832,7 +3875,7 @@ Ingredients: ${(recipe.ingredients||[]).join(', ')}`
                 return (
                   <button key={folder.id} onClick={() => {
                     if (!alreadyIn) {
-                      setFolders(prev => prev.map(f => f.id === folder.id ? {...f, recipes:[...f.recipes, showSaveToFolderModal.id]} : f));
+                      updateFolders(prev => prev.map(f => f.id === folder.id ? {...f, recipes:[...f.recipes, showSaveToFolderModal.id]} : f));
                     }
                     setShowSaveToFolderModal(null);
                   }}
@@ -3924,7 +3967,7 @@ Ingredients: ${(recipe.ingredients||[]).join(', ')}`
                 onClick={() => {
                   if (!newFolderName.trim()) return;
                   const newFolder = { id: `f${Date.now()}`, name: newFolderName.trim(), emoji: newFolderEmoji, recipes: [] };
-                  setFolders(prev => [...prev, newFolder]);
+                  updateFolders(prev => [...prev, newFolder]);
                   setShowFolderModal(false);
                   setNewFolderName('');
                   setNewFolderEmoji('📁');
@@ -4079,7 +4122,7 @@ Ingredients: ${(recipe.ingredients||[]).join(', ')}`
               <button onClick={async () => {
                 const ids = [...selectedRecipeIds];
                 setUserRecipes(prev => prev.filter(r => !ids.includes(r.id)));
-                setFolders(prev => prev.map(f => ({...f, recipes: f.recipes.filter(rid => !ids.includes(rid))})));
+                updateFolders(prev => prev.map(f => ({...f, recipes: f.recipes.filter(rid => !ids.includes(rid))})));
                 for (const id of ids) {
                   await supabase.from('user_recipes').delete().eq('user_id', session.user.id).eq('recipe->>id', id);
                 }

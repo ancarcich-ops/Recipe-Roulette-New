@@ -497,6 +497,9 @@ const MealPrepApp = ({ pendingJoinCode }) => {
   const [joiningHousehold, setJoiningHousehold] = useState(false);
   const [checkedItems, setCheckedItems] = useState(new Set());
   const [recipeSearch, setRecipeSearch] = useState('');
+  const [recipeBookTab, setRecipeBookTab] = useState('mybook'); // 'mybook' | 'discover'
+  const [discoverCollection, setDiscoverCollection] = useState(null); // selected collection
+  const [discoverRecipe, setDiscoverRecipe] = useState(null); // viewing a discover recipe
   const [communitySearch, setCommunitySearch] = useState('');
   const [showAddRecipeModal, setShowAddRecipeModal] = useState(false);
   const [showEditRecipeModal, setShowEditRecipeModal] = useState(null);
@@ -1976,6 +1979,140 @@ const MealPrepApp = ({ pendingJoinCode }) => {
         {/* RECIPE BOOK */}
         {currentView === 'recipes' && (
           <div>
+            {/* Sub-tabs */}
+            <div style={{display:'flex',gap:'4px',marginBottom:'24px',background:'#f0ebe3',borderRadius:'12px',padding:'4px'}}>
+              {[{id:'mybook',label:'📖 My Book'},{id:'discover',label:'✨ Discover'}].map(t => (
+                <button key={t.id} onClick={() => { setRecipeBookTab(t.id); setDiscoverCollection(null); setDiscoverRecipe(null); }} style={{flex:1,padding:'10px 16px',borderRadius:'9px',border:'none',cursor:'pointer',fontWeight:600,fontSize:'14px',background:recipeBookTab===t.id?'#fefcf8':'transparent',color:recipeBookTab===t.id?'#1c2820':'#7a7060',boxShadow:recipeBookTab===t.id?'0 1px 3px rgba(0,0,0,0.1)':'none',transition:'all 0.15s'}}>{t.label}</button>
+              ))}
+            </div>
+            {recipeBookTab === 'discover' && (() => {
+              const discoverCollections = [
+                {id:'budget-bytes',name:'Budget Bytes',emoji:'💵',tagline:'Delicious meals built around cost per serving',color:'#e8a838',website:'https://www.budgetbytes.com'},
+                {id:'spend-with-pennies',name:'Spend With Pennies',emoji:'🪙',tagline:'Comfort food classics that stretch your grocery budget',color:'#c46a3a',website:'https://www.spendwithpennies.com'},
+                {id:'brocc-your-body',name:'Brocc Your Body',emoji:'🥦',tagline:'Clean eating with a fitness-forward lens',color:'#5a9a6a',website:'https://www.brockyourbody.com'},
+                {id:'fit-foodie-finds',name:'Fit Foodie Finds',emoji:'💪',tagline:"Balanced meals that don't feel like diet food",color:'#e85d4a',website:'https://fitfoodiefinds.com'},
+                {id:'downshiftology',name:'Downshiftology',emoji:'🌿',tagline:'Whole foods, gluten-free friendly, beautifully simple',color:'#7aaa6a',website:'https://downshiftology.com'},
+                {id:'skinnytaste',name:'Skinnytaste',emoji:'⚖️',tagline:'Lighter versions of the comfort food you love',color:'#e87ab0',website:'https://www.skinnytaste.com'},
+                {id:'damn-delicious',name:'Damn Delicious',emoji:'⚡',tagline:'Fast, foolproof recipes for busy weeknights',color:'#e8a838',website:'https://damndelicious.net'},
+                {id:'pinch-of-yum',name:'Pinch of Yum',emoji:'🌼',tagline:'Approachable, healthy, and genuinely craveable',color:'#f4a636',website:'https://pinchofyum.com'},
+                {id:'half-baked-harvest',name:'Half Baked Harvest',emoji:'🍂',tagline:'Seasonal, indulgent, and deeply satisfying',color:'#c47a4a',website:'https://www.halfbakedharvest.com'},
+                {id:'the-modern-proper',name:'The Modern Proper',emoji:'🕯️',tagline:'Elevated weeknight dinners worth coming home to',color:'#5a7a9a',website:'https://themodernproper.com'},
+                {id:'meal-prep-on-fleek',name:'Meal Prep on Fleek',emoji:'🥗',tagline:'Macro-friendly batch cooking made easy',color:'#6aaa8a',website:'https://mealpreponfl.com'},
+                {id:'workweek-lunch',name:'Workweek Lunch',emoji:'🧺',tagline:'Simple, satisfying lunches built for real schedules',color:'#e8785a',website:'https://workweeklunch.com'},
+                {id:'sweet-peas-saffron',name:'Sweet Peas & Saffron',emoji:'❄️',tagline:'Freezer meals and make-ahead magic',color:'#8a7ac4',website:'https://sweetpeasandsaffron.com'},
+                {id:'minimalist-baker',name:'Minimalist Baker',emoji:'🌱',tagline:'10 ingredients, 1 bowl, 30 minutes — vegan & GF',color:'#c4a43a',website:'https://minimalistbaker.com'},
+                {id:'ambitious-kitchen',name:'Ambitious Kitchen',emoji:'🏋️',tagline:'Healthyish recipes that bridge clean eating and comfort',color:'#e86a5a',website:'https://www.ambitiouskitchen.com'},
+              ];
+              const allDiscoverRecipes = [
+                {id:2001,collection:'budget-bytes',name:'Vegetable Stir Fry',prepTime:'15 min',cookTime:15,servings:4,costPerServing:1.85,tags:['Vegetarian','Dinner','Easy'],image:'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=400&h=300&fit=crop',ingredients:['2 cups broccoli florets','1 bell pepper, sliced','1 cup snap peas','2 carrots, julienned','3 cloves garlic, minced','2 tbsp soy sauce','1 tbsp sesame oil','1 tbsp cornstarch','1/2 cup vegetable broth','2 tbsp oil for cooking'],instructions:['Mix soy sauce, sesame oil, cornstarch and broth for sauce.','Heat oil in wok over high heat.','Add garlic and cook 30 seconds.','Add harder vegetables first, cook 3 min.','Add remaining veg, cook 2 more min.','Pour in sauce, toss to coat.','Serve over rice.'],timesMade:0,isEasy:true},
+                {id:2002,collection:'budget-bytes',name:'Black Bean Tacos',prepTime:'10 min',cookTime:10,servings:4,costPerServing:1.50,tags:['Vegetarian','Dinner','Easy'],image:'https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=400&h=300&fit=crop',ingredients:['2 cans black beans, drained','1 tsp cumin','1 tsp chili powder','1/2 tsp garlic powder','8 small corn tortillas','1 cup shredded cabbage','1/2 cup salsa','1/4 cup sour cream','1 lime'],instructions:['Heat beans with spices in a pan for 5 min.','Warm tortillas in a dry skillet.','Mash beans slightly.','Assemble tacos with beans, cabbage, salsa.','Finish with sour cream and lime.'],timesMade:0,isEasy:true},
+                {id:2003,collection:'budget-bytes',name:'Lentil Soup',prepTime:'10 min',cookTime:35,servings:6,costPerServing:1.20,tags:['Vegan','Lunch','Healthy'],image:'https://images.unsplash.com/photo-1547592180-85f173990554?w=400&h=300&fit=crop',ingredients:['2 cups green lentils','1 onion, diced','3 cloves garlic','2 carrots, diced','2 stalks celery','1 can diced tomatoes','6 cups vegetable broth','1 tsp cumin','1 tsp smoked paprika','2 tbsp olive oil','Salt and pepper'],instructions:['Sauté onion, carrot and celery in oil until soft.','Add garlic and spices, cook 1 min.','Add lentils, tomatoes and broth.','Bring to boil then simmer 30 min until lentils are tender.','Season and serve with crusty bread.'],timesMade:0,isEasy:false},
+                {id:2004,collection:'budget-bytes',name:'Fried Rice',prepTime:'10 min',cookTime:15,servings:4,costPerServing:1.40,tags:['Dinner','Easy'],image:'https://images.unsplash.com/photo-1603133872878-684f208fb84b?w=400&h=300&fit=crop',ingredients:['3 cups cooked cold rice','3 eggs','1 cup frozen peas and carrots','3 cloves garlic','3 tbsp soy sauce','1 tbsp sesame oil','2 green onions','2 tbsp oil'],instructions:['Heat oil in large pan over high heat.','Add garlic, cook 30 sec.','Add vegetables, cook 2 min.','Push to side, scramble eggs.','Add rice, break up clumps.','Add soy sauce and sesame oil, toss well.','Top with green onions.'],timesMade:0,isEasy:true},
+                {id:2005,collection:'budget-bytes',name:'White Bean Chicken Chili',prepTime:'10 min',cookTime:30,servings:6,costPerServing:2.10,tags:['Dinner','Healthy'],image:'https://images.unsplash.com/photo-1547592166-23ac45744acd?w=400&h=300&fit=crop',ingredients:['1 lb chicken breast','2 cans white beans','1 can green chiles','1 onion','4 cups chicken broth','1 tsp cumin','1/2 tsp oregano','1/2 tsp garlic powder','Salt and pepper','Sour cream to serve'],instructions:['Cook onion in a pot until soft.','Add chicken and spices.','Add beans, chiles, and broth.','Simmer 20 min.','Shred chicken with forks.','Serve with sour cream.'],timesMade:0,isEasy:false},
+                {id:2006,collection:'budget-bytes',name:'Pasta e Fagioli',prepTime:'10 min',cookTime:25,servings:5,costPerServing:1.60,tags:['Dinner','Vegetarian'],image:'https://images.unsplash.com/photo-1621996346565-e3dbc646d9a9?w=400&h=300&fit=crop',ingredients:['1 can cannellini beans','1 can diced tomatoes','1 cup small pasta','1 onion','3 cloves garlic','4 cups vegetable broth','2 tbsp olive oil','1 tsp Italian seasoning','Parmesan to serve'],instructions:['Sauté onion and garlic in oil.','Add tomatoes and cook 2 min.','Add broth and bring to boil.','Add pasta and cook per package.','Stir in beans, heat through.','Serve with parmesan.'],timesMade:0,isEasy:true},
+                {id:2007,collection:'budget-bytes',name:'Sheet Pan Chicken Thighs',prepTime:'10 min',cookTime:40,servings:4,costPerServing:2.50,tags:['Dinner','Easy'],image:'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=400&h=300&fit=crop',ingredients:['4 bone-in chicken thighs','2 cups broccoli','2 cups baby potatoes, halved','3 tbsp olive oil','1 tsp garlic powder','1 tsp smoked paprika','1/2 tsp onion powder','Salt and pepper'],instructions:['Preheat oven to 425F.','Toss everything with oil and spices.','Arrange on sheet pan, chicken skin-up.','Roast 35-40 min until chicken is golden and cooked through.'],timesMade:0,isEasy:true},
+                {id:2008,collection:'budget-bytes',name:'Red Beans and Rice',prepTime:'10 min',cookTime:30,servings:6,costPerServing:1.30,tags:['Dinner','Vegan'],image:'https://images.unsplash.com/photo-1512058564366-18510be2db19?w=400&h=300&fit=crop',ingredients:['2 cans red kidney beans','1 cup long grain white rice','1 onion','1 bell pepper','3 stalks celery','3 cloves garlic','1 tsp Cajun seasoning','2 cups chicken broth','2 tbsp oil'],instructions:['Sauté onion, pepper and celery until soft.','Add garlic and seasoning.','Add beans and broth, simmer 15 min.','Cook rice separately.','Serve beans over rice.'],timesMade:0,isEasy:true},
+                {id:2009,collection:'budget-bytes',name:'Egg Roll in a Bowl',prepTime:'10 min',cookTime:15,servings:4,costPerServing:2.20,tags:['Dinner','Low-Carb','Easy'],image:'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=400&h=300&fit=crop',ingredients:['1 lb ground pork','4 cups shredded cabbage','1 cup shredded carrots','3 cloves garlic','1 tbsp fresh ginger','3 tbsp soy sauce','1 tbsp sesame oil','2 green onions'],instructions:['Brown pork in large pan.','Add garlic and ginger.','Add cabbage and carrots, stir fry 3-4 min.','Add soy sauce and sesame oil.','Top with green onions.'],timesMade:0,isEasy:true},
+                {id:2010,collection:'budget-bytes',name:'Creamy Tomato Tortellini',prepTime:'5 min',cookTime:20,servings:4,costPerServing:2.80,tags:['Dinner','Easy'],image:'https://images.unsplash.com/photo-1621996346565-e3dbc646d9a9?w=400&h=300&fit=crop',ingredients:['1 package cheese tortellini','1 can crushed tomatoes','1/2 cup heavy cream','3 cloves garlic','1 tsp Italian seasoning','1/2 tsp red pepper flakes','2 tbsp butter','Parmesan to serve'],instructions:['Cook tortellini per package, reserve 1/2 cup pasta water.','Melt butter and sauté garlic.','Add tomatoes and spices, simmer 5 min.','Stir in cream.','Add tortellini, thin with pasta water if needed.','Serve with parmesan.'],timesMade:0,isEasy:true},
+                {id:2061,collection:'damn-delicious',name:'15-Minute Shrimp Tacos',prepTime:'5 min',cookTime:10,servings:4,costPerServing:4.50,tags:['Dinner','Easy'],image:'https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=400&h=300&fit=crop',ingredients:['1 lb shrimp, peeled','8 small tortillas','1 cup shredded cabbage','1/2 cup sour cream','1 tbsp sriracha','1 lime','1 tsp chili powder','1 tsp garlic powder','1 tbsp oil'],instructions:['Season shrimp with chili powder and garlic powder.','Cook in oil 2 min per side.','Mix sour cream and sriracha.','Warm tortillas.','Assemble with shrimp, cabbage and spicy crema.','Squeeze lime over top.'],timesMade:0,isEasy:true},
+                {id:2062,collection:'damn-delicious',name:'One Pot Chicken and Rice',prepTime:'5 min',cookTime:30,servings:4,costPerServing:3.20,tags:['Dinner','Easy'],image:'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=400&h=300&fit=crop',ingredients:['4 chicken thighs','1.5 cups long-grain rice','3 cups chicken broth','1 onion, diced','3 cloves garlic','1 tsp cumin','1 tsp paprika','Salt and pepper','Fresh parsley'],instructions:['Brown chicken thighs in a pot.','Set aside, sauté onion and garlic.','Add spices, rice and broth.','Return chicken on top.','Cover and simmer 20 min.','Rest 5 min before serving.'],timesMade:0,isEasy:true},
+                {id:2063,collection:'damn-delicious',name:'Garlic Butter Steak Bites',prepTime:'10 min',cookTime:10,servings:4,costPerServing:6.00,tags:['Dinner','Easy'],image:'https://images.unsplash.com/photo-1529042355636-0e9b4f67aaed?w=400&h=300&fit=crop',ingredients:['1.5 lb sirloin, cubed','4 cloves garlic','4 tbsp butter','1 tbsp oil','Fresh thyme','Salt and pepper','Lemon to serve'],instructions:['Season steak cubes with salt and pepper.','Heat oil in cast iron over high heat.','Sear steak in batches, 2 min each side.','Add butter, garlic and thyme.','Baste steak with butter.','Squeeze lemon over top.'],timesMade:0,isEasy:true},
+                {id:2064,collection:'damn-delicious',name:'Honey Garlic Salmon',prepTime:'5 min',cookTime:15,servings:4,costPerServing:6.50,tags:['Dinner','Easy','Healthy'],image:'https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=400&h=300&fit=crop',ingredients:['4 salmon fillets','4 cloves garlic','3 tbsp honey','2 tbsp soy sauce','1 tbsp butter','Salt and pepper'],instructions:['Season salmon with salt and pepper.','Cook in oven-safe pan at medium-high heat, 3 min per side.','Make sauce: butter, garlic, honey, soy sauce.','Pour over salmon.','Transfer to oven and broil 2 min.'],timesMade:0,isEasy:true},
+                {id:2065,collection:'damn-delicious',name:'Easy Chicken Tortilla Soup',prepTime:'5 min',cookTime:25,servings:6,costPerServing:2.80,tags:['Dinner','Easy'],image:'https://images.unsplash.com/photo-1547592166-23ac45744acd?w=400&h=300&fit=crop',ingredients:['2 chicken breasts','1 can black beans','1 can corn','1 can diced tomatoes with chiles','4 cups chicken broth','1 cup salsa','1 tsp cumin','Tortilla strips, sour cream, cheese to serve'],instructions:['Add everything except toppings to a pot.','Simmer 20 min.','Shred chicken with two forks.','Serve with tortilla strips, sour cream and cheese.'],timesMade:0,isEasy:true},
+                {id:2071,collection:'pinch-of-yum',name:'Tuscan White Bean Skillet',prepTime:'10 min',cookTime:20,servings:4,costPerServing:2.20,tags:['Dinner','Vegetarian','Easy'],image:'https://images.unsplash.com/photo-1512058564366-18510be2db19?w=400&h=300&fit=crop',ingredients:['2 cans white beans','1 bag baby spinach','1 cup cherry tomatoes','5 cloves garlic','1/4 cup chicken broth','3 tbsp olive oil','1/4 tsp red pepper flakes','Parmesan and crusty bread'],instructions:['Sauté garlic in olive oil until fragrant.','Add beans and broth, cook 5 min.','Add tomatoes, cook until softened.','Stir in spinach.','Top with parmesan, serve with bread.'],timesMade:0,isEasy:true},
+                {id:2072,collection:'pinch-of-yum',name:'Thai Peanut Noodles',prepTime:'10 min',cookTime:10,servings:4,costPerServing:2.50,tags:['Dinner','Vegan','Easy'],image:'https://images.unsplash.com/photo-1612929633738-8fe44f7ec841?w=400&h=300&fit=crop',ingredients:['8 oz rice noodles','1/4 cup peanut butter','3 tbsp soy sauce','2 tbsp lime juice','1 tbsp honey','1 tsp sesame oil','1 tsp sriracha','1 clove garlic','Carrots, cucumber, peanuts, cilantro to top'],instructions:['Cook noodles per package, rinse cold.','Blend sauce ingredients until smooth.','Toss noodles with sauce.','Top with vegetables, peanuts and cilantro.'],timesMade:0,isEasy:true},
+                {id:2131,collection:'minimalist-baker',name:'1-Bowl Banana Oat Pancakes',prepTime:'5 min',cookTime:15,servings:2,costPerServing:1.20,tags:['Breakfast','Vegan','Gluten-Free','Easy'],image:'https://images.unsplash.com/photo-1528207776546-365bb710ee93?w=400&h=300&fit=crop',ingredients:['2 ripe bananas','1 cup rolled oats','1/2 tsp baking powder','1/4 tsp cinnamon','Pinch of salt','Plant milk as needed','Oil for cooking'],instructions:['Blend all ingredients until smooth.','Let batter rest 2 min.','Cook on greased skillet over medium heat.','Flip when bubbles form, about 2-3 min per side.','Serve with maple syrup and fruit.'],timesMade:0,isEasy:true},
+                {id:2132,collection:'minimalist-baker',name:'Simple Red Lentil Dal',prepTime:'5 min',cookTime:25,servings:4,costPerServing:1.50,tags:['Dinner','Vegan','Gluten-Free'],image:'https://images.unsplash.com/photo-1547592180-85f173990554?w=400&h=300&fit=crop',ingredients:['1 cup red lentils','1 can coconut milk','1 can diced tomatoes','1 onion','3 cloves garlic','1 tsp fresh ginger','1 tsp garam masala','1 tsp turmeric','1 tbsp coconut oil','Salt to taste'],instructions:['Sauté onion in coconut oil until soft.','Add garlic, ginger, and spices.','Add lentils, tomatoes and coconut milk.','Simmer 20 min, stirring occasionally.','Season and serve over rice.'],timesMade:0,isEasy:false},
+                {id:2141,collection:'ambitious-kitchen',name:'Healthy Turkey Meatballs',prepTime:'15 min',cookTime:25,servings:4,costPerServing:3.20,tags:['Dinner','Healthy'],image:'https://images.unsplash.com/photo-1529042355636-0e9b4f67aaed?w=400&h=300&fit=crop',ingredients:['1 lb ground turkey','1/2 cup breadcrumbs','1 egg','3 cloves garlic','1/4 cup parmesan','1/4 cup fresh parsley','1 tsp Italian seasoning','Salt and pepper','Marinara to serve'],instructions:['Mix turkey, breadcrumbs, egg, garlic, parmesan and herbs.','Roll into balls.','Bake at 400F for 20-25 min.','Serve with marinara over pasta or zoodles.'],timesMade:0,isEasy:false},
+                {id:2142,collection:'ambitious-kitchen',name:'One Pan Salmon and Asparagus',prepTime:'10 min',cookTime:15,servings:2,costPerServing:7.50,tags:['Dinner','Healthy','Easy'],image:'https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=400&h=300&fit=crop',ingredients:['2 salmon fillets','1 bunch asparagus','3 cloves garlic','2 tbsp butter','1 lemon','1 tsp smoked paprika','Salt and pepper'],instructions:['Preheat oven to 400F.','Season salmon with paprika, salt and pepper.','Place salmon and asparagus on sheet pan.','Add garlic and butter.','Roast 12-15 min.','Squeeze lemon over everything.'],timesMade:0,isEasy:true},
+              ];
+
+              if (discoverRecipe) {
+                const col = discoverCollections.find(c => c.id === discoverRecipe.collection);
+                const isAdded = [...userRecipes, ...sampleRecipes].some(r => r.name === discoverRecipe.name);
+                return (
+                  <div>
+                    <button onClick={() => setDiscoverRecipe(null)} style={{display:'flex',alignItems:'center',gap:'8px',background:'none',border:'none',cursor:'pointer',color:'#6a6050',fontSize:'14px',marginBottom:'16px',padding:0}}>← Back to {col?.name}</button>
+                    <div style={{borderRadius:'16px',overflow:'hidden',border:'1px solid #e0d8cc',background:'#fefcf8'}}>
+                      <div style={{height:'240px',backgroundImage:`url(${discoverRecipe.image})`,backgroundSize:'cover',backgroundPosition:'center',position:'relative'}}>
+                        <div style={{position:'absolute',bottom:'12px',left:'12px',background:`${col?.color}cc`,color:'white',padding:'4px 10px',borderRadius:'20px',fontSize:'12px',fontWeight:600}}>{col?.emoji} {col?.name}</div>
+                      </div>
+                      <div style={{padding:'20px'}}>
+                        <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:'12px',flexWrap:'wrap',gap:'12px'}}>
+                          <h2 style={{margin:0,fontSize:'24px',fontWeight:700,color:'#1c2820',fontFamily:"'Cormorant Garamond',serif"}}>{discoverRecipe.name}</h2>
+                          <button onClick={() => { if (!isAdded) { const newR={...discoverRecipe,id:Date.now(),source:'discover'}; if(guestMode){setSampleRecipes(p=>[...p,newR]);}else{setUserRecipes(p=>[...p,newR]);} } }} style={{padding:'10px 18px',background:isAdded?'#e8f5e9':'#2d5a3d',color:isAdded?'#2d5a3d':'white',border:isAdded?'1px solid #c8e6c9':'none',borderRadius:'10px',cursor:isAdded?'default':'pointer',fontWeight:600,fontSize:'14px',whiteSpace:'nowrap'}}>{isAdded?'✓ In My Book':'+ Add to My Book'}</button>
+                        </div>
+                        <div style={{display:'flex',gap:'16px',marginBottom:'16px',flexWrap:'wrap'}}>
+                          <span style={{fontSize:'13px',color:'#6a6050'}}>⏱ Prep: {discoverRecipe.prepTime}</span>
+                          <span style={{fontSize:'13px',color:'#6a6050'}}>🔥 Cook: {discoverRecipe.cookTime} min</span>
+                          <span style={{fontSize:'13px',color:'#6a6050'}}>👥 Serves: {discoverRecipe.servings}</span>
+                          {discoverRecipe.costPerServing && <span style={{fontSize:'13px',color:'#6a6050'}}>💰 ~${discoverRecipe.costPerServing.toFixed(2)}/serving</span>}
+                        </div>
+                        <div style={{display:'flex',gap:'6px',flexWrap:'wrap',marginBottom:'20px'}}>{discoverRecipe.tags.map(t=><span key={t} style={{background:'#f0ebe3',color:'#6a6050',padding:'3px 10px',borderRadius:'20px',fontSize:'12px'}}>{t}</span>)}</div>
+                        <div style={{display:'grid',gridTemplateColumns:isMobile?'1fr':'1fr 1fr',gap:'24px'}}>
+                          <div><h4 style={{margin:'0 0 10px 0',fontSize:'16px',fontWeight:600,color:'#1c2820'}}>Ingredients</h4><ul style={{margin:0,padding:'0 0 0 18px',color:'#4a4035',fontSize:'14px',lineHeight:1.8}}>{discoverRecipe.ingredients.map((ing,i)=><li key={i}>{ing}</li>)}</ul></div>
+                          <div><h4 style={{margin:'0 0 10px 0',fontSize:'16px',fontWeight:600,color:'#1c2820'}}>Instructions</h4><ol style={{margin:0,padding:'0 0 0 18px',color:'#4a4035',fontSize:'14px',lineHeight:1.8}}>{discoverRecipe.instructions.map((step,i)=><li key={i} style={{marginBottom:'6px'}}>{step}</li>)}</ol></div>
+                        </div>
+                        <div style={{marginTop:'20px',paddingTop:'16px',borderTop:'1px solid #e0d8cc'}}><p style={{margin:0,fontSize:'13px',color:'#9a9080'}}>Inspired by <a href={col?.website} target="_blank" rel="noopener noreferrer" style={{color:'#2d5a3d',textDecoration:'none',fontWeight:600}}>{col?.name} ↗</a> — visit their site for the original recipe.</p></div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              }
+              if (discoverCollection) {
+                const col = discoverCollections.find(c => c.id === discoverCollection);
+                const colRecipes = allDiscoverRecipes.filter(r => r.collection === discoverCollection);
+                return (
+                  <div>
+                    <button onClick={() => setDiscoverCollection(null)} style={{display:'flex',alignItems:'center',gap:'8px',background:'none',border:'none',cursor:'pointer',color:'#6a6050',fontSize:'14px',marginBottom:'16px',padding:0}}>← All Collections</button>
+                    <div style={{display:'flex',alignItems:'center',gap:'12px',marginBottom:'20px'}}>
+                      <div style={{width:'44px',height:'44px',borderRadius:'12px',background:col?.color,display:'flex',alignItems:'center',justifyContent:'center',fontSize:'22px'}}>{col?.emoji}</div>
+                      <div><h2 style={{margin:'0 0 2px 0',fontSize:'22px',fontWeight:700,color:'#1c2820',fontFamily:"'Cormorant Garamond',serif"}}>{col?.name}</h2><p style={{margin:0,fontSize:'13px',color:'#6a6050'}}>{col?.tagline}</p></div>
+                    </div>
+                    <div style={{display:'grid',gridTemplateColumns:isMobile?'1fr':'repeat(auto-fill,minmax(280px,1fr))',gap:'16px'}}>
+                      {colRecipes.map(r => {
+                        const isAdded = [...userRecipes,...sampleRecipes].some(x=>x.name===r.name);
+                        return (
+                          <div key={r.id} onClick={() => setDiscoverRecipe(r)} style={{background:'#fefcf8',borderRadius:'14px',overflow:'hidden',border:'1px solid #e0d8cc',cursor:'pointer',transition:'box-shadow 0.15s'}} onMouseEnter={e=>e.currentTarget.style.boxShadow='0 4px 16px rgba(0,0,0,0.08)'} onMouseLeave={e=>e.currentTarget.style.boxShadow='none'}>
+                            <div style={{height:'160px',backgroundImage:`url(${r.image})`,backgroundSize:'cover',backgroundPosition:'center',position:'relative'}}>
+                              {isAdded && <div style={{position:'absolute',top:'8px',right:'8px',background:'#2d5a3d',color:'white',padding:'3px 8px',borderRadius:'12px',fontSize:'11px',fontWeight:600}}>✓ In Book</div>}
+                            </div>
+                            <div style={{padding:'14px'}}>
+                              <h3 style={{margin:'0 0 6px 0',fontSize:'15px',fontWeight:600,color:'#1c2820'}}>{r.name}</h3>
+                              <div style={{display:'flex',gap:'12px',marginBottom:'8px'}}><span style={{fontSize:'12px',color:'#9a9080'}}>⏱ {r.cookTime<=30?'Quick':r.cookTime+' min'}</span><span style={{fontSize:'12px',color:'#9a9080'}}>👥 {r.servings}</span>{r.costPerServing&&<span style={{fontSize:'12px',color:'#9a9080'}}>💰 ${r.costPerServing.toFixed(2)}</span>}</div>
+                              <div style={{display:'flex',gap:'4px',flexWrap:'wrap'}}>{r.tags.slice(0,3).map(t=><span key={t} style={{background:'#f0ebe3',color:'#6a6050',padding:'2px 8px',borderRadius:'20px',fontSize:'11px'}}>{t}</span>)}</div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    {colRecipes.length === 0 && <div style={{textAlign:'center',padding:'40px',color:'#9a9080'}}>No recipes in this collection yet.</div>}
+                    <div style={{marginTop:'20px',padding:'14px',background:'#f5f0e8',borderRadius:'10px',textAlign:'center'}}><p style={{margin:0,fontSize:'13px',color:'#6a6050'}}>Want more? Visit <a href={col?.website} target="_blank" rel="noopener noreferrer" style={{color:'#2d5a3d',textDecoration:'none',fontWeight:600}}>{col?.website?.replace('https://','').replace('www.','')} ↗</a></p></div>
+                  </div>
+                );
+              }
+              return (
+                <div>
+                  <h2 style={{fontSize:isMobile?'24px':'28px',fontWeight:600,color:'#1c2820',margin:'0 0 4px 0',fontFamily:"'Cormorant Garamond',serif"}}>Discover Recipes</h2>
+                  <p style={{color:'#6a6050',margin:'0 0 24px 0',fontSize:'14px'}}>Recipes inspired by the creators we love — add them straight to your book.</p>
+                  <div style={{display:'grid',gridTemplateColumns:isMobile?'1fr 1fr':'repeat(auto-fill,minmax(200px,1fr))',gap:'12px'}}>
+                    {discoverCollections.map(col => {
+                      const count = allDiscoverRecipes.filter(r=>r.collection===col.id).length;
+                      return (
+                        <div key={col.id} onClick={() => setDiscoverCollection(col.id)} style={{background:'#fefcf8',borderRadius:'14px',border:'1px solid #e0d8cc',padding:'16px',cursor:'pointer',transition:'all 0.15s'}} onMouseEnter={e=>{e.currentTarget.style.boxShadow='0 4px 16px rgba(0,0,0,0.08)';e.currentTarget.style.borderColor=col.color;}} onMouseLeave={e=>{e.currentTarget.style.boxShadow='none';e.currentTarget.style.borderColor='#e0d8cc';}}>
+                          <div style={{width:'40px',height:'40px',borderRadius:'10px',background:col.color+'22',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'20px',marginBottom:'10px'}}>{col.emoji}</div>
+                          <div style={{fontWeight:600,fontSize:'14px',color:'#1c2820',marginBottom:'4px'}}>{col.name}</div>
+                          <div style={{fontSize:'12px',color:'#9a9080',marginBottom:'8px',lineHeight:1.4}}>{col.tagline}</div>
+                          <div style={{fontSize:'11px',color:col.color,fontWeight:600}}>{count} recipes →</div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })()}
+            {recipeBookTab === 'mybook' && (
+            <div>
             {activeFolder === null ? (
               /* ── FOLDER GRID VIEW ── */
               <div>
@@ -2177,9 +2314,12 @@ const MealPrepApp = ({ pendingJoinCode }) => {
               </div>
             )}
           </div>
+            )}
+          </div>
         )}
 
         {/* SETTINGS */}
+
         {currentView === 'settings' && (
           <div>
             <h2 style={{fontSize:isMobile?'24px':'30px',fontWeight:700,color:'#1c2820',margin:'0 0 6px 0'}}>Settings</h2>

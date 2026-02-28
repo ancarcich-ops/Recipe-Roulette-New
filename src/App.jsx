@@ -440,6 +440,7 @@ const MealPrepApp = ({ pendingJoinCode }) => {
     avatarUrl: '',
     avatarPreview: '',
     dietaryPrefs: [],
+    groceryPrefs: [],
     householdSize: 2,
     adults: 2,
     children: 0
@@ -671,10 +672,12 @@ const MealPrepApp = ({ pendingJoinCode }) => {
           const locationParam = locationId ? `&filter.locationId=${locationId}` : '';
           const cartItems = [];
           for (const ingredient of ingredients.slice(0, 50)) {
+            const groceryPrefStr = (profile.groceryPrefs || []).join(' ');
+            const searchTerm = groceryPrefStr ? `${groceryPrefStr} ${ingredient.name}` : ingredient.name;
             const sr = await fetch('https://recipe-roulette-new.vercel.app/api/kroger-proxy', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ path: `/v1/products?filter.term=${encodeURIComponent(ingredient.name)}&filter.limit=1${locationParam}`, method: 'GET', token: krogerToken })
+              body: JSON.stringify({ path: `/v1/products?filter.term=${encodeURIComponent(searchTerm)}&filter.limit=1${locationParam}`, method: 'GET', token: krogerToken })
             });
             const sd = await sr.json();
             const product = sd?.data?.[0];
@@ -837,6 +840,7 @@ const MealPrepApp = ({ pendingJoinCode }) => {
         avatarUrl: prof.avatar_url || '',
         avatarPreview: prof.avatar_url || '',
         dietaryPrefs: prof.dietary_prefs || [],
+        groceryPrefs: prof.grocery_prefs || [],
         householdSize: (prof.adults || 2) + (prof.children || 0), adults: prof.adults ?? 2, children: prof.children ?? 0
       });
       // Load saved folders
@@ -937,6 +941,7 @@ const MealPrepApp = ({ pendingJoinCode }) => {
       zip_code: profile.zipCode,
       avatar_url: profile.avatarPreview,
       dietary_prefs: profile.dietaryPrefs,
+      grocery_prefs: profile.groceryPrefs,
       household_size: profile.householdSize,
       adults: profile.adults,
       children: profile.children,
@@ -954,6 +959,7 @@ const MealPrepApp = ({ pendingJoinCode }) => {
         avatarUrl: prof.avatar_url || '',
         avatarPreview: prof.avatar_url || '',
         dietaryPrefs: prof.dietary_prefs || [],
+        groceryPrefs: prof.grocery_prefs || [],
         householdSize: (prof.adults || 2) + (prof.children || 0), adults: prof.adults ?? 2, children: prof.children ?? 0
       });
     }
@@ -3228,6 +3234,34 @@ const MealPrepApp = ({ pendingJoinCode }) => {
                 <p style={{margin:'10px 0 0 0',fontSize:'11px',color:'#7a7060'}}>Used to personalise your experience</p>
               </div>
 
+              {/* Grocery preferences */}
+              <div>
+                <label style={{display:'block',marginBottom:'4px',fontWeight:600,color:'#fefcf8',fontSize:'13px',textTransform:'uppercase',letterSpacing:'0.5px'}}>Grocery Preferences</label>
+                <p style={{margin:'0 0 12px 0',fontSize:'11px',color:'#7a7060',lineHeight:'1.5'}}>When ordering via Kroger or Instacart, we'll search for these versions of your ingredients automatically.</p>
+                <div style={{display:'flex',flexWrap:'wrap',gap:'8px'}}>
+                  {[
+                    {id:'organic', label:'🌿 Organic'},
+                    {id:'sugar-free', label:'🚫🍬 Sugar-Free'},
+                    {id:'dairy-free', label:'🥛 Dairy-Free'},
+                    {id:'low-sodium', label:'🧂 Low-Sodium'},
+                    {id:'fat-free', label:'⚡ Fat-Free'},
+                    {id:'non-gmo', label:'🌱 Non-GMO'},
+                    {id:'whole-grain', label:'🌾 Whole Grain'},
+                    {id:'gluten-free', label:'✳️ Gluten-Free'},
+                    {id:'free-range', label:'🐓 Free-Range'},
+                    {id:'no-added-sugar', label:'🍯 No Added Sugar'},
+                  ].map(pref => {
+                    const active = (profile.groceryPrefs || []).includes(pref.id);
+                    return (
+                      <button key={pref.id} onClick={() => setProfile(p => ({...p, groceryPrefs: active ? (p.groceryPrefs||[]).filter(x => x !== pref.id) : [...(p.groceryPrefs||[]), pref.id]}))}
+                        style={{padding:'7px 14px',background:active?'#ffffff':'#1a1a1a',color:active?'#000':'#888',border:`1px solid ${active?'#fff':'#2a2a2a'}`,borderRadius:'20px',cursor:'pointer',fontSize:'13px',fontWeight:600,transition:'all 0.15s'}}>
+                        {pref.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
             </div>
 
             {/* Sticky footer with save + sign out */}
@@ -3330,9 +3364,9 @@ const MealPrepApp = ({ pendingJoinCode }) => {
                 <button onClick={() => setShowShoppingList(false)} style={{background:'none',border:'none',cursor:'pointer'}}><X size={22} color="#9a9080" /></button>
               </div>
             </div>
-            {checkedItems.size > 0 && (
-              <p style={{margin:'0 0 12px',fontSize:'12px',color:'#9a9080',flexShrink:0}}>{checkedItems.size} item{checkedItems.size !== 1 ? 's' : ''} already have</p>
-            )}
+            <p style={{margin:'4px 0 14px',fontSize:'12px',color:'#9a9080',flexShrink:0,fontFamily:"'Jost',sans-serif",lineHeight:'1.5'}}>
+              Tap any item to mark it off — use this for things you already have or don't need to buy.
+            </p>
 
             {/* Grocery Ordering Buttons */}
             {(() => {
@@ -3433,10 +3467,12 @@ const MealPrepApp = ({ pendingJoinCode }) => {
                     const cartItems = [];
                     for (const ingredient of allIngredients.slice(0, 50)) {
                       const locationParam = locationId ? `&filter.locationId=${locationId}` : '';
+                      const groceryPrefStr = (profile.groceryPrefs || []).join(' ');
+                      const searchTerm = groceryPrefStr ? `${groceryPrefStr} ${ingredient.name}` : ingredient.name;
                       const searchRes = await fetch('https://recipe-roulette-new.vercel.app/api/kroger-proxy', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ path: `/v1/products?filter.term=${encodeURIComponent(ingredient.name)}&filter.limit=1${locationParam}`, method: 'GET', token: krogerToken })
+                        body: JSON.stringify({ path: `/v1/products?filter.term=${encodeURIComponent(searchTerm)}&filter.limit=1${locationParam}`, method: 'GET', token: krogerToken })
                       });
                       const searchData = await searchRes.json();
                       const product = searchData?.data?.[0];
@@ -3530,8 +3566,8 @@ const MealPrepApp = ({ pendingJoinCode }) => {
                             });
                           }} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'9px 12px',marginBottom:'3px',borderRadius:'5px',cursor:'pointer',background:isChecked?'transparent':'#fff',border:`1px solid ${isChecked?'#ece8e0':'#e8e4dc'}`,transition:'all 0.15s',opacity:isChecked?0.5:1}}>
                             <div style={{display:'flex',alignItems:'center',gap:'10px'}}>
-                              <div style={{width:'16px',height:'16px',borderRadius:'3px',border:`1.5px solid ${isChecked?'#5a9a6a':'#c8c0b4'}`,background:isChecked?'#5a9a6a':'transparent',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,transition:'all 0.15s'}}>
-                                {isChecked && <span style={{color:'#fff',fontSize:'10px',fontWeight:700,lineHeight:1}}>✓</span>}
+                              <div style={{width:'16px',height:'16px',borderRadius:'3px',border:`1.5px solid ${isChecked?'#c0392b':'#c8c0b4'}`,background:isChecked?'#c0392b':'transparent',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,transition:'all 0.15s'}}>
+                                {isChecked && <span style={{color:'#fff',fontSize:'10px',fontWeight:700,lineHeight:1}}>✕</span>}
                               </div>
                               <span style={{fontSize:'14px',color:isChecked?'#9a9080':'#1c2820',textDecoration:isChecked?'line-through':'none',transition:'all 0.15s',fontFamily:"'Jost',sans-serif"}}>{item.name}</span>
                             </div>

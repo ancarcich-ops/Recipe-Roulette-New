@@ -225,6 +225,32 @@ const getWeeklyFeedPosts = () => {
 };
 
 const feedPosts = getWeeklyFeedPosts();
+
+// ── TRENDING RECIPES ──────────────────────────────────────────────────────
+// Seeded for now — swap for a Supabase query when real user volume exists.
+const trendingRecipes = [
+  { id:104, name:'Korean Beef Tacos', addedCount:42, weeklyAdds:12, image:'https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=400&h=300&fit=crop', tags:['Korean','Dinner'], prepTime:'35 min', servings:4 },
+  { id:2044, name:'Healthy Chicken Tikka Masala', addedCount:38, weeklyAdds:9, image:'https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?w=400&h=300&fit=crop', tags:['Indian','Healthy'], prepTime:'45 min', servings:4 },
+  { id:2062, name:'High-Protein Chicken Burrito Bowl', addedCount:31, weeklyAdds:8, image:'https://images.unsplash.com/photo-1626700051175-6818013e1d4f?w=400&h=300&fit=crop', tags:['Meal Prep','Protein'], prepTime:'30 min', servings:4 },
+  { id:102, name:'Honey Garlic Salmon', addedCount:29, weeklyAdds:7, image:'https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?w=400&h=300&fit=crop', tags:['Seafood','Quick'], prepTime:'20 min', servings:4 },
+  { id:2031, name:'One-Bowl Banana Oat Pancakes', addedCount:26, weeklyAdds:6, image:'https://images.unsplash.com/photo-1506084868230-bb9d95c24759?w=400&h=300&fit=crop', tags:['Breakfast','Vegan'], prepTime:'10 min', servings:2 },
+  { id:2112, name:'Tikka Masala Soup', addedCount:24, weeklyAdds:5, image:'https://images.themodernproper.com/production/posts/2019/Tikka-Masala-Soup-8_191019_231153.jpg?w=400&q=82&auto=format&fit=crop&dm=1771345301&s=4f62523a6ec10ce50e4bc7844fd9370d', tags:['Soup','Healthy'], prepTime:'40 min', servings:6 },
+];
+
+// ── HOW-TO VIDEOS ─────────────────────────────────────────────────────────
+// Add YouTube video IDs here to grow the video library.
+// Categories: 'technique' | 'recipe' | 'tips' | 'mealprep'
+const howToVideos = [
+  { id:'v1', youtubeId:'ZJy1ajvMU1k', title:"Gordon Ramsay's Perfect Scrambled Eggs", channel:'Gordon Ramsay', duration:'3:14', category:'technique' },
+  { id:'v2', youtubeId:'t-WHGOPWRFE', title:'How to Properly Season a Cast Iron Pan', channel:'Ethan Chlebowski', duration:'8:22', category:'technique' },
+  { id:'v3', youtubeId:'0OHhoPz16NE', title:'Knife Skills for Beginners', channel:'Jamie Oliver', duration:'7:45', category:'technique' },
+  { id:'v4', youtubeId:'ogroTh_CNbg', title:'Meal Prep for the Week in 1 Hour', channel:'Joshua Weissman', duration:'12:40', category:'mealprep' },
+  { id:'v5', youtubeId:'0MeX2p2G_oA', title:'How to Make the Perfect Pasta Every Time', channel:'Italia Squisita', duration:'6:18', category:'recipe' },
+  { id:'v6', youtubeId:'U4KDxTVXoxI', title:'5 Sauces Every Cook Should Know', channel:'Ethan Chlebowski', duration:'14:02', category:'tips' },
+  { id:'v7', youtubeId:'ylQLnqIFqzI', title:'Meal Prep Like a Pro — Full Week Plan', channel:'Workweek Lunch', duration:'18:33', category:'mealprep' },
+  { id:'v8', youtubeId:'M_4SQBiMLbg', title:'The Science of Searing — Why It Matters', channel:'Kenji López-Alt', duration:'10:15', category:'technique' },
+];
+
 const emptyMealPlan = {
   0:{breakfast:null,lunch:null,dinner:null},
   1:{breakfast:null,lunch:null,dinner:null},
@@ -1651,6 +1677,87 @@ const MealPrepApp = ({ pendingJoinCode }) => {
               </p>
             </div>
 
+            {/* ── TRENDING THIS WEEK ─────────────────────────────── */}
+            <div style={{marginBottom:'28px'}}>
+              <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:'14px'}}>
+                <h2 style={{margin:0,fontSize:'17px',fontWeight:700,color:'#1c2820',fontFamily:"'Jost',sans-serif"}}>🔥 Trending This Week</h2>
+                <span style={{fontSize:'12px',color:'#9a9080'}}>Updated every Monday</span>
+              </div>
+              <div style={{display:'flex',gap:'12px',overflowX:'auto',paddingBottom:'8px',scrollbarWidth:'none',msOverflowStyle:'none',WebkitOverflowScrolling:'touch'}}>
+                {trendingRecipes.map((recipe, idx) => (
+                  <div key={recipe.id}
+                    style={{minWidth:'160px',maxWidth:'160px',background:'#fefcf8',borderRadius:'12px',overflow:'hidden',border:'1px solid #e0d8cc',cursor:'pointer',flexShrink:0,transition:'transform 0.15s'}}
+                    onMouseEnter={e=>e.currentTarget.style.transform='translateY(-2px)'}
+                    onMouseLeave={e=>e.currentTarget.style.transform='translateY(0)'}
+                    onClick={() => {
+                      const found = [...(allDiscoverRecipes||[]), ...communityRecipes, ...(userRecipes||[])].find(r=>r.id===recipe.id);
+                      if (found) setSelectedRecipe(found);
+                    }}
+                  >
+                    <div style={{position:'relative',height:'100px',backgroundImage:`url(${recipe.image})`,backgroundSize:'cover',backgroundPosition:'center'}}>
+                      <div style={{position:'absolute',inset:0,background:'linear-gradient(to bottom, transparent 40%, rgba(0,0,0,0.7) 100%)'}} />
+                      <div style={{position:'absolute',top:'7px',left:'7px',background:'rgba(0,0,0,0.6)',backdropFilter:'blur(6px)',padding:'3px 8px',borderRadius:'10px',fontSize:'10px',fontWeight:700,color:'#fff'}}>
+                        #{idx+1}
+                      </div>
+                    </div>
+                    <div style={{padding:'10px'}}>
+                      <p style={{margin:'0 0 4px 0',fontSize:'12px',fontWeight:700,color:'#1c2820',lineHeight:1.3}}>{recipe.name}</p>
+                      <p style={{margin:'0 0 6px 0',fontSize:'10px',color:'#9a9080'}}>{recipe.prepTime} • {recipe.servings} servings</p>
+                      <div style={{display:'flex',alignItems:'center',gap:'4px'}}>
+                        <span style={{fontSize:'11px',color:'#c0392b',fontWeight:600}}>+{recipe.weeklyAdds}</span>
+                        <span style={{fontSize:'10px',color:'#9a9080'}}>added this week</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* ── HOW-TO VIDEOS ───────────────────────────────────────── */}
+            <div style={{marginBottom:'28px'}}>
+              <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:'14px'}}>
+                <h2 style={{margin:0,fontSize:'17px',fontWeight:700,color:'#1c2820',fontFamily:"'Jost',sans-serif"}}>🎬 How-To Videos</h2>
+                <span style={{fontSize:'12px',color:'#9a9080'}}>Techniques & tips</span>
+              </div>
+              <div style={{display:'flex',gap:'12px',overflowX:'auto',paddingBottom:'8px',scrollbarWidth:'none',msOverflowStyle:'none',WebkitOverflowScrolling:'touch'}}>
+                {howToVideos.map(video => {
+                  const [videoOpen, setVideoOpen] = React.useState ? undefined : undefined;
+                  return (
+                    <a key={video.id}
+                      href={`https://www.youtube.com/watch?v=${video.youtubeId}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{minWidth:'220px',maxWidth:'220px',background:'#fefcf8',borderRadius:'12px',overflow:'hidden',border:'1px solid #e0d8cc',flexShrink:0,textDecoration:'none',display:'block',transition:'transform 0.15s'}}
+                      onMouseEnter={e=>e.currentTarget.style.transform='translateY(-2px)'}
+                      onMouseLeave={e=>e.currentTarget.style.transform='translateY(0)'}
+                    >
+                      <div style={{position:'relative',height:'124px',background:'#1c2820',overflow:'hidden'}}>
+                        <img
+                          src={`https://img.youtube.com/vi/${video.youtubeId}/mqdefault.jpg`}
+                          alt={video.title}
+                          style={{width:'100%',height:'100%',objectFit:'cover',opacity:0.85}}
+                        />
+                        <div style={{position:'absolute',inset:0,display:'flex',alignItems:'center',justifyContent:'center'}}>
+                          <div style={{width:'36px',height:'36px',background:'rgba(255,0,0,0.9)',borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',boxShadow:'0 2px 8px rgba(0,0,0,0.4)'}}>
+                            <span style={{fontSize:'14px',marginLeft:'2px'}}>▶</span>
+                          </div>
+                        </div>
+                        <div style={{position:'absolute',bottom:'7px',right:'7px',background:'rgba(0,0,0,0.75)',padding:'2px 7px',borderRadius:'6px',fontSize:'10px',fontWeight:600,color:'#fff'}}>{video.duration}</div>
+                        <div style={{position:'absolute',top:'7px',left:'7px',background:'rgba(0,0,0,0.6)',backdropFilter:'blur(6px)',padding:'3px 8px',borderRadius:'10px',fontSize:'10px',color:'#fff',fontWeight:600,textTransform:'capitalize'}}>{video.category}</div>
+                      </div>
+                      <div style={{padding:'10px'}}>
+                        <p style={{margin:'0 0 3px 0',fontSize:'12px',fontWeight:700,color:'#1c2820',lineHeight:1.4}}>{video.title}</p>
+                        <p style={{margin:0,fontSize:'11px',color:'#9a9080'}}>{video.channel}</p>
+                      </div>
+                    </a>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* ── WEEKLY FEED ─────────────────────────────────────────── */}
+            <h2 style={{margin:'0 0 16px 0',fontSize:'17px',fontWeight:700,color:'#1c2820',fontFamily:"'Jost',sans-serif"}}>📋 This Week's Feed</h2>
+
             {/* Category filter pills */}
             {(() => {
               const filters = [
@@ -1661,6 +1768,7 @@ const MealPrepApp = ({ pendingJoinCode }) => {
                 {id:'nutrition', label:'🥗 Nutrition'},
                 {id:'community', label:'⭐ Community'},
               ];
+              // Note: Trending and Videos sections are always shown above, not filtered
               const filtered = activeFilter === 'all' ? feedPosts : feedPosts.filter(p => p.category === activeFilter);
 
               return (

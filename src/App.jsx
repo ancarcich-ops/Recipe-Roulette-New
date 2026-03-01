@@ -282,12 +282,12 @@ const feedPosts = getWeeklyFeedPosts();
 // ── TRENDING RECIPES ──────────────────────────────────────────────────────
 // Seeded for now — swap for a Supabase query when real user volume exists.
 const trendingRecipes = [
-  { id:104, name:'Korean Beef Tacos', addedCount:42, weeklyAdds:12, image:'https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=400&h=300&fit=crop', tags:['Korean','Dinner'], prepTime:'35 min', servings:4 },
-  { id:2044, name:'Healthy Chicken Tikka Masala', addedCount:38, weeklyAdds:9, image:'https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?w=400&h=300&fit=crop', tags:['Indian','Healthy'], prepTime:'45 min', servings:4 },
-  { id:2062, name:'High-Protein Chicken Burrito Bowl', addedCount:31, weeklyAdds:8, image:'https://images.unsplash.com/photo-1626700051175-6818013e1d4f?w=400&h=300&fit=crop', tags:['Meal Prep','Protein'], prepTime:'30 min', servings:4 },
-  { id:102, name:'Honey Garlic Salmon', addedCount:29, weeklyAdds:7, image:'https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?w=400&h=300&fit=crop', tags:['Seafood','Quick'], prepTime:'20 min', servings:4 },
-  { id:2031, name:'One-Bowl Banana Oat Pancakes', addedCount:26, weeklyAdds:6, image:'https://images.unsplash.com/photo-1506084868230-bb9d95c24759?w=400&h=300&fit=crop', tags:['Breakfast','Vegan'], prepTime:'10 min', servings:2 },
-  { id:2112, name:'Tikka Masala Soup', addedCount:24, weeklyAdds:5, image:'https://images.themodernproper.com/production/posts/2019/Tikka-Masala-Soup-8_191019_231153.jpg?w=400&q=82&auto=format&fit=crop&dm=1771345301&s=4f62523a6ec10ce50e4bc7844fd9370d', tags:['Soup','Healthy'], prepTime:'40 min', servings:6 },
+  { id:2010, name:'Basic Chili', addedCount:42, weeklyAdds:12, image:'https://www.budgetbytes.com/wp-content/uploads/2018/09/Basic-Chili-in-Bowl-1200-368x276.jpg', tags:['Dinner','Easy'], prepTime:'5 min', servings:6 },
+  { id:2044, name:'Healthy Chicken Tikka Masala', addedCount:38, weeklyAdds:9, image:'https://www.skinnytaste.com/wp-content/uploads/2018/03/Skinny-Chicken-Tikka-Masala-5-500x500.jpg', tags:['Indian','Healthy'], prepTime:'20 min', servings:4 },
+  { id:2061, name:'Garlic Butter Shrimp and Orzo', addedCount:31, weeklyAdds:8, image:'https://damndelicious.net/wp-content/uploads/2025/12/One-Pot-Garlic-Butter-Shrimp-and-Orzo_126-360x540.jpg', tags:['Dinner','Easy'], prepTime:'10 min', servings:4 },
+  { id:2001, name:'Chicken Noodle Soup', addedCount:29, weeklyAdds:7, image:'https://www.budgetbytes.com/wp-content/uploads/2017/02/Chicken-Noodle-Soup-Overhead-368x276.jpg', tags:['Soup','Easy'], prepTime:'15 min', servings:8 },
+  { id:2112, name:'Tikka Masala Soup', addedCount:26, weeklyAdds:6, image:'https://images.themodernproper.com/production/posts/2019/Tikka-Masala-Soup-8_191019_231153.jpg?w=400&q=82&auto=format&fit=crop&dm=1771345301&s=4f62523a6ec10ce50e4bc7844fd9370d', tags:['Soup','Healthy'], prepTime:'40 min', servings:6 },
+  { id:2005, name:'One Pot Cajun Chicken Pasta', addedCount:24, weeklyAdds:5, image:'https://www.budgetbytes.com/wp-content/uploads/2018/10/One-Pot-Creamy-Cajun-Chicken-Pasta-pan-368x276.jpg', tags:['Dinner','Easy'], prepTime:'10 min', servings:4 },
 ];
 
 // ── HOW-TO VIDEOS ─────────────────────────────────────────────────────────
@@ -625,7 +625,7 @@ const MealPrepApp = ({ pendingJoinCode }) => {
   // De-duplicate by recipe id so sharing an existing sample recipe doesn't double it
   const allCommunityRecipes = React.useMemo(() => {
     const seen = new Set();
-    const merged = [...dynamicCommunityRecipes, ...communityRecipes];
+    const merged = [...dynamicCommunityRecipes]; // only real user-submitted recipes
     return merged.filter(r => {
       const key = r._sharedId || r.id;
       if (seen.has(key)) return false;
@@ -1737,32 +1737,53 @@ const MealPrepApp = ({ pendingJoinCode }) => {
                 <span style={{fontSize:'12px',color:'#9a9080'}}>Updated every Monday</span>
               </div>
               <div style={{display:'flex',gap:'12px',overflowX:'auto',paddingBottom:'8px',scrollbarWidth:'none',msOverflowStyle:'none',WebkitOverflowScrolling:'touch'}}>
-                {trendingRecipes.map((recipe, idx) => (
-                  <div key={recipe.id}
-                    style={{minWidth:'160px',maxWidth:'160px',background:'#fefcf8',borderRadius:'12px',overflow:'hidden',border:'1px solid #e0d8cc',cursor:'pointer',flexShrink:0,transition:'transform 0.15s'}}
-                    onMouseEnter={e=>e.currentTarget.style.transform='translateY(-2px)'}
-                    onMouseLeave={e=>e.currentTarget.style.transform='translateY(0)'}
-                    onClick={() => {
-                      const found = [...(allDiscoverRecipes||[]), ...communityRecipes, ...(userRecipes||[])].find(r=>r.id===recipe.id);
-                      if (found) setSelectedRecipe(found);
-                    }}
-                  >
-                    <div style={{position:'relative',height:'100px',backgroundImage:`url(${recipe.image})`,backgroundSize:'cover',backgroundPosition:'center'}}>
-                      <div style={{position:'absolute',inset:0,background:'linear-gradient(to bottom, transparent 40%, rgba(0,0,0,0.7) 100%)'}} />
-                      <div style={{position:'absolute',top:'7px',left:'7px',background:'rgba(0,0,0,0.6)',backdropFilter:'blur(6px)',padding:'3px 8px',borderRadius:'10px',fontSize:'10px',fontWeight:700,color:'#fff'}}>
-                        #{idx+1}
+                {trendingRecipes.map((recipe, idx) => {
+                  const fullRecipe = allDiscoverRecipes ? allDiscoverRecipes.find(r => r.id === recipe.id) : null;
+                  const alreadyAdded = fullRecipe && [...userRecipes, ...(guestMode ? sampleRecipes : [])].some(r => r.name === fullRecipe.name);
+                  return (
+                    <div key={recipe.id}
+                      style={{minWidth:'160px',maxWidth:'160px',background:'#fefcf8',borderRadius:'12px',overflow:'hidden',border:'1px solid #e0d8cc',flexShrink:0,display:'flex',flexDirection:'column'}}
+                    >
+                      <div
+                        style={{position:'relative',height:'100px',backgroundImage:`url(${recipe.image})`,backgroundSize:'cover',backgroundPosition:'center',cursor:'pointer'}}
+                        onClick={() => { if (fullRecipe) setSelectedRecipe(fullRecipe); }}
+                      >
+                        <div style={{position:'absolute',inset:0,background:'linear-gradient(to bottom, transparent 40%, rgba(0,0,0,0.7) 100%)'}} />
+                        <div style={{position:'absolute',top:'7px',left:'7px',background:'rgba(0,0,0,0.6)',backdropFilter:'blur(6px)',padding:'3px 8px',borderRadius:'10px',fontSize:'10px',fontWeight:700,color:'#fff'}}>
+                          #{idx+1}
+                        </div>
+                      </div>
+                      <div style={{padding:'10px',flex:1,display:'flex',flexDirection:'column',gap:'6px'}}>
+                        <div>
+                          <p style={{margin:'0 0 2px 0',fontSize:'12px',fontWeight:700,color:'#1c2820',lineHeight:1.3,cursor:'pointer'}} onClick={() => { if (fullRecipe) setSelectedRecipe(fullRecipe); }}>{recipe.name}</p>
+                          <p style={{margin:'0 0 4px 0',fontSize:'10px',color:'#9a9080'}}>{recipe.prepTime} • {recipe.servings} servings</p>
+                          <div style={{display:'flex',alignItems:'center',gap:'4px'}}>
+                            <span style={{fontSize:'11px',color:'#c0392b',fontWeight:600}}>+{recipe.weeklyAdds}</span>
+                            <span style={{fontSize:'10px',color:'#9a9080'}}>this week</span>
+                          </div>
+                        </div>
+                        {fullRecipe && (
+                          <button
+                            disabled={alreadyAdded}
+                            onClick={async (e) => {
+                              e.stopPropagation();
+                              if (alreadyAdded) return;
+                              const newR = {...fullRecipe, id: Date.now(), source:'discover'};
+                              if (guestMode) {
+                                setSampleRecipes(p => [...p, newR]);
+                              } else {
+                                setUserRecipes(p => [...p, newR]);
+                                await supabase.from('user_recipes').insert({user_id: session.user.id, recipe: newR});
+                              }
+                            }}
+                            style={{width:'100%',padding:'5px 0',background:alreadyAdded?'#f0ece4':'#2d5a3d',color:alreadyAdded?'#9a9080':'#fff',border:'none',borderRadius:'7px',fontSize:'10px',fontWeight:600,cursor:alreadyAdded?'default':'pointer'}}>
+                            {alreadyAdded ? '✓ In My Book' : '+ Add to Book'}
+                          </button>
+                        )}
                       </div>
                     </div>
-                    <div style={{padding:'10px'}}>
-                      <p style={{margin:'0 0 4px 0',fontSize:'12px',fontWeight:700,color:'#1c2820',lineHeight:1.3}}>{recipe.name}</p>
-                      <p style={{margin:'0 0 6px 0',fontSize:'10px',color:'#9a9080'}}>{recipe.prepTime} • {recipe.servings} servings</p>
-                      <div style={{display:'flex',alignItems:'center',gap:'4px'}}>
-                        <span style={{fontSize:'11px',color:'#c0392b',fontWeight:600}}>+{recipe.weeklyAdds}</span>
-                        <span style={{fontSize:'10px',color:'#9a9080'}}>added this week</span>
-                      </div>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
 

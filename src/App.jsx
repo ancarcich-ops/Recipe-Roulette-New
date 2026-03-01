@@ -2968,7 +2968,8 @@ const MealPrepApp = ({ pendingJoinCode }) => {
               <span style={{fontSize:'12px',color:'#6a6050',whiteSpace:'nowrap'}}>Or type your own:</span>
               <input type="text" maxLength={2} placeholder="✍️"
                 value={['🍽️','🥗','🍲','🥩','🐟','🥦','🧁','🍕','🌮','🥘','🍜','🥚','🥑','🍋','💪','⚡','🕯️','👶','🏠','📁'].includes(editFolderEmoji) ? '' : editFolderEmoji}
-                onChange={e => { if (e.target.value) setEditFolderEmoji(e.target.value); }}
+                onChange={e => setEditFolderEmoji(e.target.value || editFolderEmoji)}
+                onKeyDown={e => { if (e.key === 'Backspace' || e.key === 'Delete') setEditFolderEmoji('📁'); }}
                 style={{width:'60px',padding:'8px',background:'#f4f0ea',border:'1px solid #d8d0c4',borderRadius:'8px',fontSize:'20px',color:'#1c2820',textAlign:'center',outline:'none',boxSizing:'border-box'}} />
             </div>
             <label style={{display:'block',marginBottom:'8px',fontWeight:600,color:'#1c2820',fontSize:'13px'}}>Folder Name</label>
@@ -4511,7 +4512,8 @@ Ingredients: ${(recipe.ingredients||[]).join(', ')}`
                   placeholder="✍️"
                   maxLength={2}
                   value={['🍽️','🥗','🍲','🥩','🐟','🥦','🧁','🍕','🌮','🥘','🍜','🥚','🥑','🍋','💪','⚡','🕯️','👶','🏠','📁'].includes(newFolderEmoji) ? '' : newFolderEmoji}
-                  onChange={e => { const val = e.target.value; if (val) setNewFolderEmoji(val); }}
+                  onChange={e => setNewFolderEmoji(e.target.value || newFolderEmoji)}
+                  onKeyDown={e => { if (e.key === 'Backspace' || e.key === 'Delete') setNewFolderEmoji('📁'); }}
                   style={{width:'60px',padding:'8px',background:'#f4f0ea',border:'1px solid #d8d0c4',borderRadius:'8px',fontSize:'20px',color:'#1c2820',textAlign:'center',outline:'none',boxSizing:'border-box'}}
                 />
               </div>

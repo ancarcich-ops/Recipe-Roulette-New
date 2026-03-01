@@ -2084,8 +2084,12 @@ const MealPrepApp = ({ pendingJoinCode }) => {
                 <div style={{background:'#f4f0ea',borderRadius:'8px',padding:'10px 14px',marginBottom:'14px',border:'1px solid #e8e0d4',position:'relative'}}>
                   <button onClick={() => { setShowMealsTip(false); localStorage.setItem('mealsTipDismissed', 'true'); }}
                     style={{position:'absolute',top:'8px',right:'10px',background:'none',border:'none',cursor:'pointer',color:'#9a9080',fontSize:'16px',lineHeight:1,padding:0}}>×</button>
-                  <p style={{margin:'0 0 4px 0',fontSize:'12px',fontWeight:700,color:'#1c2820',fontFamily:"'Jost',sans-serif",letterSpacing:'0.3px'}}>💡 How to add meals</p>
-                  <p style={{margin:0,fontSize:'12px',color:'#6a6050',lineHeight:1.6,paddingRight:'16px'}}>Tap the <strong>+</strong> in any meal slot to add a recipe from your <strong>Recipe Book</strong> or saved Community recipes. Use <strong>Auto-Fill</strong> to plan your whole week at once. Can't see your recipes? Make sure they're saved in the Recipe Book tab first.</p>
+                  <p style={{margin:'0 0 8px 0',fontSize:'12px',fontWeight:700,color:'#1c2820',fontFamily:"'Jost',sans-serif",letterSpacing:'0.3px'}}>💡 How to plan your week</p>
+                  <div style={{display:'flex',flexDirection:'column',gap:'6px',paddingRight:'16px'}}>
+                    <p style={{margin:0,fontSize:'12px',color:'#6a6050',lineHeight:1.5}}><strong style={{color:'#1c2820'}}>Step 1 —</strong> Go to <button onClick={() => setCurrentView('settings')} style={{background:'none',border:'none',padding:0,color:'#2d5a3d',fontWeight:600,fontSize:'12px',cursor:'pointer',textDecoration:'underline',fontFamily:"'Jost',sans-serif"}}>Settings</button> to choose which meals and days you want to plan for.</p>
+                    <p style={{margin:0,fontSize:'12px',color:'#6a6050',lineHeight:1.5}}><strong style={{color:'#1c2820'}}>Step 2 —</strong> Tap the <strong>+</strong> in any slot to manually add recipes from your Recipe Book that you know you want to cook this week.</p>
+                    <p style={{margin:0,fontSize:'12px',color:'#6a6050',lineHeight:1.5}}><strong style={{color:'#1c2820'}}>Step 3 —</strong> Hit <strong>Auto-Fill</strong> to get suggestions for any remaining empty slots.</p>
+                  </div>
                 </div>
               )}
               <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'8px'}}>

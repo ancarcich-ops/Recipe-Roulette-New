@@ -174,27 +174,33 @@ const feedPostPool = [
   { id:'v1', type:'video', category:'video', tag:'🎬 Cooking Tips & Tricks',
     title:"Gordon Ramsay's Perfect Scrambled Eggs",
     body:"Low heat, constant motion, off the pan early. Three minutes of watching this will change how you scramble eggs forever.",
-    youtubeId:'ZJy1ajvMU1k', channel:'Gordon Ramsay', duration:'3:14' },
+    youtubeId:'ZJy1ajvMU1k', channel:'Gordon Ramsay', duration:'3:14',
+    thumbnail:'https://images.unsplash.com/photo-1582169296194-e4d644c48063?w=600&h=340&fit=crop' },
   { id:'v2', type:'video', category:'video', tag:'🎬 Cooking Tips & Tricks',
     title:'How to Season a Cast Iron Pan Properly',
     body:"Cast iron is the most forgiving pan you can own — once you know how to take care of it. This is the definitive guide.",
-    youtubeId:'t-WHGOPWRFE', channel:'Ethan Chlebowski', duration:'8:22' },
+    youtubeId:'t-WHGOPWRFE', channel:'Ethan Chlebowski', duration:'8:22',
+    thumbnail:'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=600&h=340&fit=crop' },
   { id:'v3', type:'video', category:'video', tag:'🎬 Cooking Tips & Tricks',
     title:'Knife Skills Every Home Cook Should Know',
     body:"The claw grip, the rocking motion, how to hold the knife. Ten minutes of practice here saves fingers for a lifetime.",
-    youtubeId:'0OHhoPz16NE', channel:'Jamie Oliver', duration:'7:45' },
+    youtubeId:'0OHhoPz16NE', channel:'Jamie Oliver', duration:'7:45',
+    thumbnail:'https://images.unsplash.com/photo-1607877742574-a7d9a7449af3?w=600&h=340&fit=crop' },
   { id:'v4', type:'video', category:'video', tag:'🎬 Cooking Tips & Tricks',
     title:'Meal Prep for the Whole Week in 1 Hour',
     body:"Batch grains, roast a sheet pan, prep your protein. This is the system that makes weeknight cooking effortless.",
-    youtubeId:'ogroTh_CNbg', channel:'Joshua Weissman', duration:'12:40' },
+    youtubeId:'ogroTh_CNbg', channel:'Joshua Weissman', duration:'12:40',
+    thumbnail:'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=600&h=340&fit=crop' },
   { id:'v5', type:'video', category:'video', tag:'🎬 Cooking Tips & Tricks',
     title:'How to Make Perfect Pasta Every Time',
     body:"Salt the water like the sea, pull it early, finish it in the sauce. The Italians figured this out centuries ago.",
-    youtubeId:'0MeX2p2G_oA', channel:'Italia Squisita', duration:'6:18' },
+    youtubeId:'0MeX2p2G_oA', channel:'Italia Squisita', duration:'6:18',
+    thumbnail:'https://images.unsplash.com/photo-1621996346565-e3dbc646d9a9?w=600&h=340&fit=crop' },
   { id:'v6', type:'video', category:'video', tag:'🎬 Cooking Tips & Tricks',
     title:'5 Sauces Every Cook Should Know',
     body:"Master these five and you can riff on almost any dish. Béchamel, vinaigrette, pan sauce, salsa verde, and a quick tomato.",
-    youtubeId:'U4KDxTVXoxI', channel:'Ethan Chlebowski', duration:'14:02' },
+    youtubeId:'U4KDxTVXoxI', channel:'Ethan Chlebowski', duration:'14:02',
+    thumbnail:'https://images.unsplash.com/photo-1495521821757-a1efb6729352?w=600&h=340&fit=crop' },
 
   // ── COMMUNITY ─────────────────────────────────────────────────────────────
   { id:'c1', type:'hero', category:'community', tag:'⭐ Community Favourite',
@@ -1806,7 +1812,7 @@ const MealPrepApp = ({ pendingJoinCode }) => {
                             >
                               <div style={{position:'relative',height:'200px',overflow:'hidden',background:'#111'}}>
                                 <img
-                                  src={`https://i.ytimg.com/vi/${post.youtubeId}/hqdefault.jpg`}
+                                  src={post.thumbnail}
                                   alt={post.title}
                                   style={{width:'100%',height:'100%',objectFit:'cover',opacity:0.82}}
                                 />

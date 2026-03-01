@@ -170,6 +170,32 @@ const feedPostPool = [
     body:"Legumes, lentils, Greek yogurt, eggs, tofu, edamame, and cottage cheese are all protein powerhouses. A cup of lentils has 18g of protein. Pair them strategically throughout the day and you'll hit your targets without relying on meat for every meal.",
     image:'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=800&h=450&fit=crop', recipe:null},
 
+  // ── COOKING TIPS & TRICKS (VIDEO CARDS) ──────────────────────────────────
+  { id:'v1', type:'video', category:'video', tag:'🎬 Cooking Tips & Tricks',
+    title:"Gordon Ramsay's Perfect Scrambled Eggs",
+    body:"Low heat, constant motion, off the pan early. Three minutes of watching this will change how you scramble eggs forever.",
+    youtubeId:'ZJy1ajvMU1k', channel:'Gordon Ramsay', duration:'3:14' },
+  { id:'v2', type:'video', category:'video', tag:'🎬 Cooking Tips & Tricks',
+    title:'How to Season a Cast Iron Pan Properly',
+    body:"Cast iron is the most forgiving pan you can own — once you know how to take care of it. This is the definitive guide.",
+    youtubeId:'t-WHGOPWRFE', channel:'Ethan Chlebowski', duration:'8:22' },
+  { id:'v3', type:'video', category:'video', tag:'🎬 Cooking Tips & Tricks',
+    title:'Knife Skills Every Home Cook Should Know',
+    body:"The claw grip, the rocking motion, how to hold the knife. Ten minutes of practice here saves fingers for a lifetime.",
+    youtubeId:'0OHhoPz16NE', channel:'Jamie Oliver', duration:'7:45' },
+  { id:'v4', type:'video', category:'video', tag:'🎬 Cooking Tips & Tricks',
+    title:'Meal Prep for the Whole Week in 1 Hour',
+    body:"Batch grains, roast a sheet pan, prep your protein. This is the system that makes weeknight cooking effortless.",
+    youtubeId:'ogroTh_CNbg', channel:'Joshua Weissman', duration:'12:40' },
+  { id:'v5', type:'video', category:'video', tag:'🎬 Cooking Tips & Tricks',
+    title:'How to Make Perfect Pasta Every Time',
+    body:"Salt the water like the sea, pull it early, finish it in the sauce. The Italians figured this out centuries ago.",
+    youtubeId:'0MeX2p2G_oA', channel:'Italia Squisita', duration:'6:18' },
+  { id:'v6', type:'video', category:'video', tag:'🎬 Cooking Tips & Tricks',
+    title:'5 Sauces Every Cook Should Know',
+    body:"Master these five and you can riff on almost any dish. Béchamel, vinaigrette, pan sauce, salsa verde, and a quick tomato.",
+    youtubeId:'U4KDxTVXoxI', channel:'Ethan Chlebowski', duration:'14:02' },
+
   // ── COMMUNITY ─────────────────────────────────────────────────────────────
   { id:'c1', type:'hero', category:'community', tag:'⭐ Community Favourite',
     title:"The Recipe Everyone is Adding to Their Plan",
@@ -208,6 +234,7 @@ const getWeeklyFeedPosts = () => {
     tip:      feedPostPool.filter(p => p.category === 'tip'),
     nutrition:feedPostPool.filter(p => p.category === 'nutrition'),
     community:feedPostPool.filter(p => p.category === 'community'),
+    video:    feedPostPool.filter(p => p.category === 'video'),
   };
 
   const pick = (arr, offset) => arr[(weekNum + offset) % arr.length];
@@ -217,10 +244,10 @@ const getWeeklyFeedPosts = () => {
     pick(byCategory.tip,       0),  // tip
     pick(byCategory.quick,     0),  // quick meal
     pick(byCategory.community, 0),  // community hero
+    pick(byCategory.video,     0),  // cooking tips & tricks video
     pick(byCategory.nutrition, 0),  // nutrition
-    pick(byCategory.tip,       1),  // second tip (different one)
+    pick(byCategory.tip,       1),  // second tip
     pick(byCategory.quick,     1),  // second quick meal
-    pick(byCategory.seasonal,  1),  // second seasonal
   ];
 };
 
@@ -1713,49 +1740,7 @@ const MealPrepApp = ({ pendingJoinCode }) => {
               </div>
             </div>
 
-            {/* ── HOW-TO VIDEOS ───────────────────────────────────────── */}
-            <div style={{marginBottom:'28px'}}>
-              <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:'14px'}}>
-                <h2 style={{margin:0,fontSize:'17px',fontWeight:700,color:'#1c2820',fontFamily:"'Jost',sans-serif"}}>🎬 How-To Videos</h2>
-                <span style={{fontSize:'12px',color:'#9a9080'}}>Techniques & tips</span>
-              </div>
-              <div style={{display:'flex',gap:'12px',overflowX:'auto',paddingBottom:'8px',scrollbarWidth:'none',msOverflowStyle:'none',WebkitOverflowScrolling:'touch'}}>
-                {howToVideos.map(video => {
-                  return (
-                    <a key={video.id}
-                      href={`https://www.youtube.com/watch?v=${video.youtubeId}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={{minWidth:'220px',maxWidth:'220px',background:'#fefcf8',borderRadius:'12px',overflow:'hidden',border:'1px solid #e0d8cc',flexShrink:0,textDecoration:'none',display:'block',transition:'transform 0.15s'}}
-                      onMouseEnter={e=>e.currentTarget.style.transform='translateY(-2px)'}
-                      onMouseLeave={e=>e.currentTarget.style.transform='translateY(0)'}
-                    >
-                      <div style={{position:'relative',height:'124px',background:'#1c2820',overflow:'hidden'}}>
-                        <img
-                          src={`https://img.youtube.com/vi/${video.youtubeId}/mqdefault.jpg`}
-                          alt={video.title}
-                          style={{width:'100%',height:'100%',objectFit:'cover',opacity:0.85}}
-                        />
-                        <div style={{position:'absolute',inset:0,display:'flex',alignItems:'center',justifyContent:'center'}}>
-                          <div style={{width:'36px',height:'36px',background:'rgba(255,0,0,0.9)',borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',boxShadow:'0 2px 8px rgba(0,0,0,0.4)'}}>
-                            <span style={{fontSize:'14px',marginLeft:'2px'}}>▶</span>
-                          </div>
-                        </div>
-                        <div style={{position:'absolute',bottom:'7px',right:'7px',background:'rgba(0,0,0,0.75)',padding:'2px 7px',borderRadius:'6px',fontSize:'10px',fontWeight:600,color:'#fff'}}>{video.duration}</div>
-                        <div style={{position:'absolute',top:'7px',left:'7px',background:'rgba(0,0,0,0.6)',backdropFilter:'blur(6px)',padding:'3px 8px',borderRadius:'10px',fontSize:'10px',color:'#fff',fontWeight:600,textTransform:'capitalize'}}>{video.category}</div>
-                      </div>
-                      <div style={{padding:'10px'}}>
-                        <p style={{margin:'0 0 3px 0',fontSize:'12px',fontWeight:700,color:'#1c2820',lineHeight:1.4}}>{video.title}</p>
-                        <p style={{margin:0,fontSize:'11px',color:'#9a9080'}}>{video.channel}</p>
-                      </div>
-                    </a>
-                  );
-                })}
-              </div>
-            </div>
-
             {/* ── WEEKLY FEED ─────────────────────────────────────────── */}
-            <h2 style={{margin:'0 0 16px 0',fontSize:'17px',fontWeight:700,color:'#1c2820',fontFamily:"'Jost',sans-serif"}}>📋 This Week's Feed</h2>
 
             {/* Category filter pills */}
             {(() => {
@@ -1766,8 +1751,8 @@ const MealPrepApp = ({ pendingJoinCode }) => {
                 {id:'tip', label:'💡 Tips'},
                 {id:'nutrition', label:'🥗 Nutrition'},
                 {id:'community', label:'⭐ Community'},
+                {id:'video', label:'🎬 Tips & Tricks'},
               ];
-              // Note: Trending and Videos sections are always shown above, not filtered
               const filtered = activeFilter === 'all' ? feedPosts : feedPosts.filter(p => p.category === activeFilter);
 
               return (
@@ -1787,12 +1772,40 @@ const MealPrepApp = ({ pendingJoinCode }) => {
                       const isSaved = savedPosts.has(post.id);
                       const isHero = post.type === 'hero';
                       const isTip = post.type === 'tip';
+                      const isVideo = post.type === 'video';
 
                       return (
                         <div key={post.id} style={{background:'#fefcf8',borderRadius:'16px',overflow:'hidden',border:'1px solid #e0d8cc',transition:'transform 0.15s'}}>
 
+                          {/* Video card */}
+                          {isVideo && (
+                            <a href={`https://www.youtube.com/watch?v=${post.youtubeId}`}
+                              target="_blank" rel="noopener noreferrer"
+                              style={{display:'block',textDecoration:'none'}}
+                              onClick={e => e.stopPropagation()}
+                            >
+                              <div style={{position:'relative',height:'200px',overflow:'hidden',background:'#111'}}>
+                                <img
+                                  src={`https://img.youtube.com/vi/${post.youtubeId}/mqdefault.jpg`}
+                                  alt={post.title}
+                                  style={{width:'100%',height:'100%',objectFit:'cover',opacity:0.82}}
+                                />
+                                <div style={{position:'absolute',inset:0,background:'linear-gradient(to bottom, transparent 30%, rgba(0,0,0,0.72) 100%)'}} />
+                                <div style={{position:'absolute',top:'14px',left:'14px',background:'rgba(0,0,0,0.55)',backdropFilter:'blur(8px)',padding:'5px 12px',borderRadius:'20px',fontSize:'12px',fontWeight:600,color:'#ffffff',border:'1px solid rgba(255,255,255,0.25)'}}>
+                                  {post.tag}
+                                </div>
+                                <div style={{position:'absolute',inset:0,display:'flex',alignItems:'center',justifyContent:'center'}}>
+                                  <div style={{width:'48px',height:'48px',background:'rgba(255,0,0,0.88)',borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',boxShadow:'0 2px 12px rgba(0,0,0,0.5)'}}>
+                                    <span style={{fontSize:'18px',marginLeft:'3px',color:'#fff'}}>▶</span>
+                                  </div>
+                                </div>
+                                <div style={{position:'absolute',bottom:'7px',right:'12px',background:'rgba(0,0,0,0.72)',padding:'3px 8px',borderRadius:'6px',fontSize:'11px',fontWeight:600,color:'#fff'}}>{post.duration}</div>
+                              </div>
+                            </a>
+                          )}
+
                           {/* Image — full width for hero, shorter for others */}
-                          {(isHero || !isTip) && (
+                          {!isVideo && (isHero || !isTip) && (
                             <div style={{position:'relative',height:isHero?'320px':'200px',backgroundImage:`url(${post.image})`,backgroundSize:'cover',backgroundPosition:'center'}}>
                               <div style={{position:'absolute',inset:0,background:isHero?'linear-gradient(to bottom, transparent 40%, rgba(0,0,0,0.85) 100%)':'linear-gradient(to bottom, transparent 30%, rgba(0,0,0,0.7) 100%)'}}>
                               </div>
@@ -1819,10 +1832,16 @@ const MealPrepApp = ({ pendingJoinCode }) => {
                             )}
 
                             {/* Title for non-hero */}
-                            {!isHero && (
+                            {!isHero && !isVideo && (
                               <h3 style={{margin:'0 0 8px 0',fontSize:'20px',fontWeight:600,color:'#1c2820',fontFamily:"'Cormorant Garamond',serif",lineHeight:1.3}}>{post.title}</h3>
                             )}
 
+                            {isVideo && (
+                              <div style={{marginBottom:'4px'}}>
+                                <p style={{margin:'0 0 4px 0',fontSize:'16px',fontWeight:600,color:'#1c2820',lineHeight:1.35,fontFamily:"'Cormorant Garamond',serif"}}>{post.title}</p>
+                                <p style={{margin:'0 0 10px 0',fontSize:'12px',color:'#9a9080'}}>{post.channel} · {post.duration}</p>
+                              </div>
+                            )}
                             <p style={{margin:'0 0 16px 0',fontSize:'14px',color:'#9a9080',lineHeight:1.7}}>{post.body}</p>
 
                             {/* Recipe card inside post */}

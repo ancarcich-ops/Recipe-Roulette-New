@@ -1828,16 +1828,7 @@ const MealPrepApp = ({ pendingJoinCode }) => {
                           {/* Video card */}
                           {isVideo && (
                             <div style={{position:'relative',height:'200px',overflow:'hidden',background:'#111'}}>
-                              {playingVideo === post.id ? (
-                                <iframe
-                                  src={`https://www.youtube.com/embed/${post.youtubeId}?autoplay=1`}
-                                  title={post.title}
-                                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                  allowFullScreen
-                                  style={{width:'100%',height:'100%',border:'none',display:'block'}}
-                                />
-                              ) : (
-                                <div onClick={() => setPlayingVideo(post.id)} style={{position:'relative',height:'100%',cursor:'pointer'}}>
+                              <div onClick={() => window.open(`https://www.youtube.com/watch?v=${post.youtubeId}`, '_blank', 'noopener,noreferrer')} style={{position:'relative',height:'100%',cursor:'pointer'}}>
                                   <img
                                     src={post.thumbnail}
                                     alt={post.title}
@@ -1857,7 +1848,6 @@ const MealPrepApp = ({ pendingJoinCode }) => {
                                   </div>
                                   <div style={{position:'absolute',bottom:'7px',right:'12px',background:'rgba(0,0,0,0.72)',padding:'3px 8px',borderRadius:'6px',fontSize:'11px',fontWeight:600,color:'#fff'}}>{post.duration}</div>
                                 </div>
-                              )}
                             </div>
                           )}
 

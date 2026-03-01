@@ -1756,6 +1756,24 @@ const MealPrepApp = ({ pendingJoinCode }) => {
                       <div style={{padding:'10px',flex:1,display:'flex',flexDirection:'column',gap:'6px'}}>
                         <div>
                           <p style={{margin:'0 0 2px 0',fontSize:'12px',fontWeight:700,color:'#1c2820',lineHeight:1.3,cursor:'pointer'}} onClick={() => { if (fullRecipe) setSelectedRecipe(fullRecipe); }}>{recipe.name}</p>
+                          <p style={{margin:'0 0 2px 0',fontSize:'10px',color:'#2d5a3d',fontWeight:600}}>{{
+                            'budget-bytes':'Budget Bytes',
+                            'brocc-your-body':'Brocc Your Body',
+                            'spend-with-pennies':'Spend With Pennies',
+                            'fit-foodie-finds':'Fit Foodie Finds',
+                            'alec-treffs':'Alec Treffs',
+                            'damn-delicious':'Damn Delicious',
+                            'downshiftology':'Downshiftology',
+                            'skinnytaste':'Skinnytaste',
+                            'pinch-of-yum':'Pinch of Yum',
+                            'half-baked-harvest':'Half Baked Harvest',
+                            'modern-proper':'The Modern Proper',
+                            'meal-prep-on-fleek':'Meal Prep on Fleek',
+                            'workweek-lunch':'Workweek Lunch',
+                            'ambitious-kitchen':'Ambitious Kitchen',
+                            'minimalist-baker':'Minimalist Baker',
+                            'sweet-peas-and-saffron':'Sweet Peas & Saffron',
+                          }[recipe.collection] || recipe.collection}</p>
                           <p style={{margin:'0 0 4px 0',fontSize:'10px',color:'#9a9080'}}>{recipe.prepTime} • {recipe.servings} servings</p>
                           <div style={{display:'flex',alignItems:'center',gap:'4px'}}>
                             <span style={{fontSize:'11px',color:'#c0392b',fontWeight:600}}>+{recipe.weeklyAdds}</span>

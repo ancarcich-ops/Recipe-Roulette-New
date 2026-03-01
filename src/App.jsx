@@ -2781,8 +2781,8 @@ const MealPrepApp = ({ pendingJoinCode }) => {
                               if (!on) { setDisabledSlots(p => ({...p,[key]:true})); removeMealFromPlan(di, mt); }
                               else { setDisabledSlots(p => { const n={...p}; delete n[key]; return n; }); }
                             }} style={{opacity:0,width:0,height:0}} />
-                            <span style={{position:'absolute',inset:0,background:mealTypeSettings[di][mt]?'#ffffff':'#333',borderRadius:'12px',transition:'0.3s'}}>
-                              <span style={{position:'absolute',height:'16px',width:'16px',left:mealTypeSettings[di][mt]?'24px':'4px',bottom:'4px',background:mealTypeSettings[di][mt]?'#000':'#999',borderRadius:'50%',transition:'0.3s'}} />
+                            <span style={{position:'absolute',inset:0,background:mealTypeSettings[di][mt]?'#2d5a3d':'#c0392b',borderRadius:'12px',transition:'0.3s'}}>
+                              <span style={{position:'absolute',height:'16px',width:'16px',left:mealTypeSettings[di][mt]?'24px':'4px',bottom:'4px',background:'#ffffff',borderRadius:'50%',transition:'0.3s'}} />
                             </span>
                           </label>
                         </td>

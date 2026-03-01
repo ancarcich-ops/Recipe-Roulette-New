@@ -1721,7 +1721,6 @@ const MealPrepApp = ({ pendingJoinCode }) => {
               </div>
               <div style={{display:'flex',gap:'12px',overflowX:'auto',paddingBottom:'8px',scrollbarWidth:'none',msOverflowStyle:'none',WebkitOverflowScrolling:'touch'}}>
                 {howToVideos.map(video => {
-                  const [videoOpen, setVideoOpen] = React.useState ? undefined : undefined;
                   return (
                     <a key={video.id}
                       href={`https://www.youtube.com/watch?v=${video.youtubeId}`}

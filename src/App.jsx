@@ -2122,7 +2122,7 @@ const MealPrepApp = ({ pendingJoinCode }) => {
                               }
                               <p style={{margin:0,fontSize:'10px',color:'#1c2820',fontWeight:600,lineHeight:1.3}}>{meal.name}</p>
                               <button onClick={e => { e.stopPropagation(); removeMealFromPlan(dayIndex, mealType); }}
-                                style={{marginTop:'4px',background:'none',border:'none',cursor:'pointer',color:'#7a7060',fontSize:'10px',padding:0}}>Remove</button>
+                                style={{marginTop:'4px',background:'none',border:'none',cursor:'pointer',color:'#c0392b',fontSize:'10px',padding:0,fontWeight:600}}>Remove</button>
                             </div>
                           ) : (
                             <button onClick={() => setShowRecipeSelector({dayIndex, mealType})}

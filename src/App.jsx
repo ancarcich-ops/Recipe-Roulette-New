@@ -78,7 +78,7 @@ const feedPostPool = [
     recipe:{id:207,name:'Slow-Cooked Beef Stew',prepTime:'20 min',cookTime:180,servings:6,image:'https://images.unsplash.com/photo-1574484284002-952d92456975?w=400&h=300&fit=crop',ingredients:['2 lbs beef chuck, cubed','4 carrots, chopped','4 potatoes, cubed','2 cups red wine','2 cups beef broth','1 onion','4 cloves garlic','2 tbsp tomato paste','Fresh thyme and rosemary'],instructions:['Brown beef in batches in a heavy pot.','Saute onion and garlic.','Add tomato paste, cook 2 minutes.','Add wine, broth, vegetables and herbs.','Simmer low for 2.5 to 3 hours.','Season and serve with crusty bread.'],tags:['Beef','Winter','Slow Cook'],timesMade:0,author:'Recipe Roulette',isEasy:false}},
   { id:'s5', type:'hero', category:'seasonal', tag:'🌿 Farm to Table',
     title:"Cooking with What's in Season Right Now",
-    body:"February is peak season for citrus, root vegetables, and hearty greens. Blood oranges, turnips, kale, and leeks are at their best and cheapest. Building meals around seasonal produce means better flavor and less waste.",
+    body:"Late winter into early spring means citrus, root vegetables, and hearty greens are still at their peak. Blood oranges, turnips, kale, and leeks are cheapest and most flavorful right now. Building meals around what's actually in season means better flavor and less waste.",
     image:'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?w=800&h=450&fit=crop',
     recipe:{id:204,name:'Roasted Root Vegetable Bowl',prepTime:'15 min',cookTime:40,servings:4,image:'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?w=400&h=300&fit=crop',ingredients:['2 large turnips, cubed','3 carrots, chopped','1 large beet, cubed','2 tbsp olive oil','1 tsp cumin','1 tsp smoked paprika','Salt and pepper','Fresh parsley','Tahini dressing'],instructions:['Preheat oven to 425F.','Toss vegetables with olive oil and spices.','Spread on a baking sheet.','Roast 35-40 minutes, turning halfway.','Serve over grains with tahini dressing.','Garnish with fresh parsley.'],tags:['Vegetarian','Healthy','Dinner'],timesMade:0,author:'Recipe Roulette',isEasy:false}},
   { id:'s6', type:'hero', category:'seasonal', tag:'🌊 Summer Freshness',
@@ -226,10 +226,30 @@ const getWeeklyFeedPosts = () => {
   const now = new Date();
   const startOfYear = new Date(now.getFullYear(), 0, 1);
   const weekNum = Math.floor((now - startOfYear) / (7 * 24 * 60 * 60 * 1000));
+  const month = now.getMonth(); // 0=Jan ... 11=Dec
 
-  // Always include one from each category for variety
+  // Only show seasonal content that matches the current season
+  // Winter: Dec-Feb, Spring: Mar-May, Summer: Jun-Aug, Autumn: Sep-Nov
+  const currentSeasonTags = (() => {
+    if (month >= 2 && month <= 4) return ['spring', 'farm'];       // Mar–May
+    if (month >= 5 && month <= 7) return ['summer'];               // Jun–Aug
+    if (month >= 8 && month <= 10) return ['autumn'];              // Sep–Nov
+    return ['winter', 'farm'];                                      // Dec–Feb
+  })();
+
+  const isRelevantSeasonal = (p) => {
+    if (p.category !== 'seasonal') return false;
+    const tagLower = (p.tag || '').toLowerCase();
+    return currentSeasonTags.some(s => tagLower.includes(s));
+  };
+
+  const allSeasonal = feedPostPool.filter(p => p.category === 'seasonal');
+  const relevantSeasonal = allSeasonal.filter(isRelevantSeasonal);
+  // Fall back to farm-to-table / generic if nothing matches (shouldn't happen)
+  const seasonalPool = relevantSeasonal.length > 0 ? relevantSeasonal : allSeasonal;
+
   const byCategory = {
-    seasonal: feedPostPool.filter(p => p.category === 'seasonal'),
+    seasonal: seasonalPool,
     quick:    feedPostPool.filter(p => p.category === 'quick'),
     tip:      feedPostPool.filter(p => p.category === 'tip'),
     nutrition:feedPostPool.filter(p => p.category === 'nutrition'),
@@ -240,7 +260,7 @@ const getWeeklyFeedPosts = () => {
   const pick = (arr, offset) => arr[(weekNum + offset) % arr.length];
 
   return [
-    pick(byCategory.seasonal,  0),  // hero — seasonal
+    pick(byCategory.seasonal,  0),  // hero — in-season only
     pick(byCategory.tip,       0),  // tip
     pick(byCategory.quick,     0),  // quick meal
     pick(byCategory.community, 0),  // community hero
@@ -1786,7 +1806,7 @@ const MealPrepApp = ({ pendingJoinCode }) => {
                             >
                               <div style={{position:'relative',height:'200px',overflow:'hidden',background:'#111'}}>
                                 <img
-                                  src={`https://img.youtube.com/vi/${post.youtubeId}/mqdefault.jpg`}
+                                  src={`https://i.ytimg.com/vi/${post.youtubeId}/hqdefault.jpg`}
                                   alt={post.title}
                                   style={{width:'100%',height:'100%',objectFit:'cover',opacity:0.82}}
                                 />

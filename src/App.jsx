@@ -2417,10 +2417,46 @@ const MealPrepApp = ({ pendingJoinCode }) => {
                 return (
                   <div>
                     <button onClick={() => setDiscoverCollection(null)} style={{display:'flex',alignItems:'center',gap:'8px',background:'none',border:'none',cursor:'pointer',color:'#6a6050',fontSize:'14px',marginBottom:'16px',padding:0}}>← All Collections</button>
-                    <div style={{display:'flex',alignItems:'center',gap:'12px',marginBottom:'20px'}}>
-                      <div style={{width:'44px',height:'44px',borderRadius:'12px',background:col?.color,display:'flex',alignItems:'center',justifyContent:'center',fontSize:'22px'}}>{col?.emoji}</div>
-                      <div><h2 style={{margin:'0 0 2px 0',fontSize:'22px',fontWeight:700,color:'#1c2820',fontFamily:"'Cormorant Garamond',serif"}}>{col?.name}</h2><p style={{margin:0,fontSize:'13px',color:'#6a6050'}}>{col?.tagline}</p></div>
-                    </div>
+                    {(() => {
+                      const allAdded = colRecipes.length > 0 && colRecipes.every(r => [...userRecipes,...sampleRecipes].some(x => x.name === r.name));
+                      const someAdded = colRecipes.some(r => [...userRecipes,...sampleRecipes].some(x => x.name === r.name));
+                      const remaining = colRecipes.filter(r => ![...userRecipes,...sampleRecipes].some(x => x.name === r.name));
+                      return (
+                        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:'20px',flexWrap:'wrap',gap:'12px'}}>
+                          <div style={{display:'flex',alignItems:'center',gap:'12px'}}>
+                            <div style={{width:'44px',height:'44px',borderRadius:'12px',background:col?.color,display:'flex',alignItems:'center',justifyContent:'center',fontSize:'22px'}}>{col?.emoji}</div>
+                            <div><h2 style={{margin:'0 0 2px 0',fontSize:'22px',fontWeight:700,color:'#1c2820',fontFamily:"'Cormorant Garamond',serif"}}>{col?.name}</h2><p style={{margin:0,fontSize:'13px',color:'#6a6050'}}>{col?.tagline}</p></div>
+                          </div>
+                          <button
+                            disabled={allAdded}
+                            onClick={async () => {
+                              if (allAdded) return;
+                              const toAdd = remaining.map(r => ({...r, id: Date.now() + Math.random(), source:'discover'}));
+                              if (guestMode) {
+                                setSampleRecipes(p => [...p, ...toAdd]);
+                              } else {
+                                setUserRecipes(p => [...p, ...toAdd]);
+                                await Promise.all(toAdd.map(r => supabase.from('user_recipes').insert({user_id: session.user.id, recipe: r})));
+                              }
+                            }}
+                            style={{
+                              padding:'9px 18px',
+                              background: allAdded ? '#f0ece4' : '#2d5a3d',
+                              color: allAdded ? '#9a9080' : '#fff',
+                              border: allAdded ? '1px solid #d8d0c4' : 'none',
+                              borderRadius:'10px',
+                              fontSize:'13px',
+                              fontWeight:600,
+                              cursor: allAdded ? 'default' : 'pointer',
+                              whiteSpace:'nowrap',
+                              transition:'all 0.15s',
+                              fontFamily:"'Jost',sans-serif",
+                            }}>
+                            {allAdded ? `✓ All ${colRecipes.length} Added` : someAdded ? `+ Add Remaining (${remaining.length})` : `+ Add All ${colRecipes.length} Recipes`}
+                          </button>
+                        </div>
+                      );
+                    })()}
                     <div style={{display:'grid',gridTemplateColumns:isMobile?'1fr':'repeat(auto-fill,minmax(280px,1fr))',gap:'16px'}}>
                       {colRecipes.map(r => {
                         const isAdded = [...userRecipes,...sampleRecipes].some(x=>x.name===r.name);

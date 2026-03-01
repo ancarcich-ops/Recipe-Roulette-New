@@ -923,6 +923,9 @@ const MealPrepApp = ({ pendingJoinCode }) => {
         groceryPrefs: prof.grocery_prefs || [],
         householdSize: (prof.adults || 2) + (prof.children || 0), adults: prof.adults ?? 2, children: prof.children ?? 0
       });
+      // Restore meal planning settings
+      if (prof.meal_type_settings) setMealTypeSettings(prof.meal_type_settings);
+      if (prof.disabled_slots) setDisabledSlots(prof.disabled_slots);
       // Load saved folders
       if (prof.folders && Array.isArray(prof.folders) && prof.folders.length > 0) {
         setFolders(prof.folders);
@@ -1514,6 +1517,20 @@ const MealPrepApp = ({ pendingJoinCode }) => {
     }
   }, [showSpinningWheel, drawWheelCanvas]);
 
+  // Auto-save meal planning settings to Supabase whenever they change
+  useEffect(() => {
+    if (!session?.user || guestMode) return;
+    const timer = setTimeout(() => {
+      supabase.from('profiles').upsert({
+        id: session.user.id,
+        meal_type_settings: mealTypeSettings,
+        disabled_slots: disabledSlots,
+        updated_at: new Date().toISOString()
+      }, { onConflict: 'id' });
+    }, 800);
+    return () => clearTimeout(timer);
+  }, [mealTypeSettings, disabledSlots, session, guestMode]);
+
   const autoFillCalendar = () => {
     setShowAutoFillModal(false);
     setShowSpinningWheel(true);
@@ -2086,9 +2103,10 @@ const MealPrepApp = ({ pendingJoinCode }) => {
                     style={{position:'absolute',top:'8px',right:'10px',background:'none',border:'none',cursor:'pointer',color:'#9a9080',fontSize:'16px',lineHeight:1,padding:0}}>×</button>
                   <p style={{margin:'0 0 8px 0',fontSize:'12px',fontWeight:700,color:'#1c2820',fontFamily:"'Jost',sans-serif",letterSpacing:'0.3px'}}>💡 How to plan your week</p>
                   <div style={{display:'flex',flexDirection:'column',gap:'6px',paddingRight:'16px'}}>
-                    <p style={{margin:0,fontSize:'12px',color:'#6a6050',lineHeight:1.5}}><strong style={{color:'#1c2820'}}>Step 1 —</strong> Go to <button onClick={() => setCurrentView('settings')} style={{background:'none',border:'none',padding:0,color:'#2d5a3d',fontWeight:600,fontSize:'12px',cursor:'pointer',textDecoration:'underline',fontFamily:"'Jost',sans-serif"}}>Settings</button> to choose which meals and days you want to plan for.</p>
-                    <p style={{margin:0,fontSize:'12px',color:'#6a6050',lineHeight:1.5}}><strong style={{color:'#1c2820'}}>Step 2 —</strong> Tap the <strong>+</strong> in any slot to manually add recipes from your Recipe Book that you know you want to cook this week.</p>
+                    <p style={{margin:0,fontSize:'12px',color:'#6a6050',lineHeight:1.5}}><strong style={{color:'#1c2820'}}>Step 1 —</strong> Go to <button onClick={() => setCurrentView('settings')} style={{background:'none',border:'none',padding:0,color:'#2d5a3d',fontWeight:600,fontSize:'12px',cursor:'pointer',textDecoration:'underline',fontFamily:"'Jost',sans-serif"}}>Settings</button> to choose which meals and days you want to plan for. Remove any day you don’t need this week (eating out, leftovers, fasting, etc.).</p>
+                    <p style={{margin:0,fontSize:'12px',color:'#6a6050',lineHeight:1.5}}><strong style={{color:'#1c2820'}}>Step 2 —</strong> Tap the <strong>+</strong> in any slot to manually add recipes from your existing Recipe Book that you know you want to cook this week.</p>
                     <p style={{margin:0,fontSize:'12px',color:'#6a6050',lineHeight:1.5}}><strong style={{color:'#1c2820'}}>Step 3 —</strong> Hit <strong>Auto-Fill</strong> to get suggestions for any remaining empty slots.</p>
+                    <p style={{margin:'4px 0 0 0',fontSize:'12px',color:'#6a6050',lineHeight:1.5,borderTop:'1px solid #e8e0d4',paddingTop:'8px'}}><strong style={{color:'#1c2820'}}>📚 Tip:</strong> To build out your Recipe Book, import your favorites and browse the <strong>Discover</strong> section in the Recipe Book tab for featured creators, or check the <strong>Community</strong> tab to see what your friends have saved.</p>
                   </div>
                 </div>
               )}

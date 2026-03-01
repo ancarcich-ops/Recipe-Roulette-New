@@ -1995,7 +1995,7 @@ const MealPrepApp = ({ pendingJoinCode }) => {
               const discoverCollections = [
                 {id:'budget-bytes',name:'Budget Bytes',emoji:'💵',tagline:'Delicious meals built around cost per serving',color:'#e8a838',website:'https://www.budgetbytes.com'},
                 {id:'spend-with-pennies',name:'Spend With Pennies',emoji:'🪙',tagline:'Comfort food classics that stretch your grocery budget',color:'#c46a3a',website:'https://www.spendwithpennies.com'},
-                {id:'brocc-your-body',name:'Brocc Your Body',emoji:'🥦',tagline:'Clean eating with a fitness-forward lens',color:'#5a9a6a',website:'https://www.brockyourbody.com'},
+
                 {id:'fit-foodie-finds',name:'Fit Foodie Finds',emoji:'💪',tagline:"Balanced meals that don't feel like diet food",color:'#e85d4a',website:'https://fitfoodiefinds.com'},
                 {id:'downshiftology',name:'Downshiftology',emoji:'🌿',tagline:'Whole foods, gluten-free friendly, beautifully simple',color:'#7aaa6a',website:'https://downshiftology.com'},
                 {id:'skinnytaste',name:'Skinnytaste',emoji:'⚖️',tagline:'Lighter versions of the comfort food you love',color:'#e87ab0',website:'https://www.skinnytaste.com'},

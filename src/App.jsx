@@ -175,32 +175,32 @@ const feedPostPool = [
     title:"Gordon Ramsay's Perfect Scrambled Eggs",
     body:"Low heat, constant motion, off the pan early. Three minutes of watching this will change how you scramble eggs forever.",
     youtubeId:'ZJy1ajvMU1k', channel:'Gordon Ramsay', duration:'3:14',
-    thumbnail:'https://images.unsplash.com/photo-1582169296194-e4d644c48063?w=600&h=340&fit=crop' },
+    thumbnail:`https://img.youtube.com/vi/ZJy1ajvMU1k/hqdefault.jpg` },
   { id:'v2', type:'video', category:'video', tag:'🎬 Cooking Tips & Tricks',
     title:'How to Season a Cast Iron Pan Properly',
     body:"Cast iron is the most forgiving pan you can own — once you know how to take care of it. This is the definitive guide.",
     youtubeId:'t-WHGOPWRFE', channel:'Ethan Chlebowski', duration:'8:22',
-    thumbnail:'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=600&h=340&fit=crop' },
+    thumbnail:`https://img.youtube.com/vi/t-WHGOPWRFE/hqdefault.jpg` },
   { id:'v3', type:'video', category:'video', tag:'🎬 Cooking Tips & Tricks',
     title:'Knife Skills Every Home Cook Should Know',
     body:"The claw grip, the rocking motion, how to hold the knife. Ten minutes of practice here saves fingers for a lifetime.",
     youtubeId:'0OHhoPz16NE', channel:'Jamie Oliver', duration:'7:45',
-    thumbnail:'https://images.unsplash.com/photo-1607877742574-a7d9a7449af3?w=600&h=340&fit=crop' },
+    thumbnail:`https://img.youtube.com/vi/0OHhoPz16NE/hqdefault.jpg` },
   { id:'v4', type:'video', category:'video', tag:'🎬 Cooking Tips & Tricks',
     title:'Meal Prep for the Whole Week in 1 Hour',
     body:"Batch grains, roast a sheet pan, prep your protein. This is the system that makes weeknight cooking effortless.",
     youtubeId:'ogroTh_CNbg', channel:'Joshua Weissman', duration:'12:40',
-    thumbnail:'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=600&h=340&fit=crop' },
+    thumbnail:`https://img.youtube.com/vi/ogroTh_CNbg/hqdefault.jpg` },
   { id:'v5', type:'video', category:'video', tag:'🎬 Cooking Tips & Tricks',
     title:'How to Make Perfect Pasta Every Time',
     body:"Salt the water like the sea, pull it early, finish it in the sauce. The Italians figured this out centuries ago.",
     youtubeId:'0MeX2p2G_oA', channel:'Italia Squisita', duration:'6:18',
-    thumbnail:'https://images.unsplash.com/photo-1621996346565-e3dbc646d9a9?w=600&h=340&fit=crop' },
+    thumbnail:`https://img.youtube.com/vi/0MeX2p2G_oA/hqdefault.jpg` },
   { id:'v6', type:'video', category:'video', tag:'🎬 Cooking Tips & Tricks',
     title:'5 Sauces Every Cook Should Know',
     body:"Master these five and you can riff on almost any dish. Béchamel, vinaigrette, pan sauce, salsa verde, and a quick tomato.",
     youtubeId:'U4KDxTVXoxI', channel:'Ethan Chlebowski', duration:'14:02',
-    thumbnail:'https://images.unsplash.com/photo-1495521821757-a1efb6729352?w=600&h=340&fit=crop' },
+    thumbnail:`https://img.youtube.com/vi/U4KDxTVXoxI/hqdefault.jpg` },
 
   // ── COMMUNITY ─────────────────────────────────────────────────────────────
   { id:'c1', type:'hero', category:'community', tag:'⭐ Community Favourite',
@@ -530,6 +530,7 @@ const MealPrepApp = ({ pendingJoinCode }) => {
   const [likedPosts, setLikedPosts] = useState(new Set());
   const [savedPosts, setSavedPosts] = useState(new Set());
   const [activeFilter, setActiveFilter] = useState('all');
+  const [playingVideo, setPlayingVideo] = useState(null);
   const [folders, setFolders] = useState([
     {id:'f1', name:'House Favorites', emoji:'🏠', recipes:[]}
   ]);
@@ -1756,24 +1757,6 @@ const MealPrepApp = ({ pendingJoinCode }) => {
                       <div style={{padding:'10px',flex:1,display:'flex',flexDirection:'column',gap:'6px'}}>
                         <div>
                           <p style={{margin:'0 0 2px 0',fontSize:'12px',fontWeight:700,color:'#1c2820',lineHeight:1.3,cursor:'pointer'}} onClick={() => { if (fullRecipe) setSelectedRecipe(fullRecipe); }}>{recipe.name}</p>
-                          <p style={{margin:'0 0 2px 0',fontSize:'10px',color:'#2d5a3d',fontWeight:600}}>{{
-                            'budget-bytes':'Budget Bytes',
-                            'brocc-your-body':'Brocc Your Body',
-                            'spend-with-pennies':'Spend With Pennies',
-                            'fit-foodie-finds':'Fit Foodie Finds',
-                            'alec-treffs':'Alec Treffs',
-                            'damn-delicious':'Damn Delicious',
-                            'downshiftology':'Downshiftology',
-                            'skinnytaste':'Skinnytaste',
-                            'pinch-of-yum':'Pinch of Yum',
-                            'half-baked-harvest':'Half Baked Harvest',
-                            'modern-proper':'The Modern Proper',
-                            'meal-prep-on-fleek':'Meal Prep on Fleek',
-                            'workweek-lunch':'Workweek Lunch',
-                            'ambitious-kitchen':'Ambitious Kitchen',
-                            'minimalist-baker':'Minimalist Baker',
-                            'sweet-peas-and-saffron':'Sweet Peas & Saffron',
-                          }[recipe.collection] || recipe.collection}</p>
                           <p style={{margin:'0 0 4px 0',fontSize:'10px',color:'#9a9080'}}>{recipe.prepTime} • {recipe.servings} servings</p>
                           <div style={{display:'flex',alignItems:'center',gap:'4px'}}>
                             <span style={{fontSize:'11px',color:'#c0392b',fontWeight:600}}>+{recipe.weeklyAdds}</span>
@@ -1844,25 +1827,37 @@ const MealPrepApp = ({ pendingJoinCode }) => {
 
                           {/* Video card */}
                           {isVideo && (
-                            <div
-                              onClick={() => window.open(`https://www.youtube.com/watch?v=${post.youtubeId}`, '_blank', 'noopener,noreferrer')}
-                              style={{position:'relative',height:'200px',overflow:'hidden',background:'#111',cursor:'pointer'}}
-                            >
-                              <img
-                                src={post.thumbnail}
-                                alt={post.title}
-                                style={{width:'100%',height:'100%',objectFit:'cover',opacity:0.82}}
-                              />
-                              <div style={{position:'absolute',inset:0,background:'linear-gradient(to bottom, transparent 30%, rgba(0,0,0,0.72) 100%)'}} />
-                              <div style={{position:'absolute',top:'14px',left:'14px',background:'rgba(0,0,0,0.55)',backdropFilter:'blur(8px)',padding:'5px 12px',borderRadius:'20px',fontSize:'12px',fontWeight:600,color:'#ffffff',border:'1px solid rgba(255,255,255,0.25)'}}>
-                                {post.tag}
-                              </div>
-                              <div style={{position:'absolute',inset:0,display:'flex',alignItems:'center',justifyContent:'center'}}>
-                                <div style={{width:'48px',height:'48px',background:'rgba(255,0,0,0.88)',borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',boxShadow:'0 2px 12px rgba(0,0,0,0.5)'}}>
-                                  <span style={{fontSize:'18px',marginLeft:'3px',color:'#fff'}}>▶</span>
+                            <div style={{position:'relative',height:'200px',overflow:'hidden',background:'#111'}}>
+                              {playingVideo === post.id ? (
+                                <iframe
+                                  src={`https://www.youtube.com/embed/${post.youtubeId}?autoplay=1`}
+                                  title={post.title}
+                                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                  allowFullScreen
+                                  style={{width:'100%',height:'100%',border:'none',display:'block'}}
+                                />
+                              ) : (
+                                <div onClick={() => setPlayingVideo(post.id)} style={{position:'relative',height:'100%',cursor:'pointer'}}>
+                                  <img
+                                    src={post.thumbnail}
+                                    alt={post.title}
+                                    style={{width:'100%',height:'100%',objectFit:'cover',opacity:0.82}}
+                                  />
+                                  <div style={{position:'absolute',inset:0,background:'linear-gradient(to bottom, transparent 30%, rgba(0,0,0,0.72) 100%)'}} />
+                                  <div style={{position:'absolute',top:'14px',left:'14px',background:'rgba(0,0,0,0.55)',backdropFilter:'blur(8px)',padding:'5px 12px',borderRadius:'20px',fontSize:'12px',fontWeight:600,color:'#ffffff',border:'1px solid rgba(255,255,255,0.25)'}}>
+                                    {post.tag}
+                                  </div>
+                                  <div style={{position:'absolute',inset:0,display:'flex',alignItems:'center',justifyContent:'center'}}>
+                                    <div style={{width:'52px',height:'52px',background:'rgba(255,0,0,0.9)',borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',boxShadow:'0 2px 16px rgba(0,0,0,0.5)',transition:'transform 0.15s'}}
+                                      onMouseEnter={e => e.currentTarget.style.transform='scale(1.1)'}
+                                      onMouseLeave={e => e.currentTarget.style.transform='scale(1)'}
+                                    >
+                                      <span style={{fontSize:'20px',marginLeft:'4px',color:'#fff'}}>▶</span>
+                                    </div>
+                                  </div>
+                                  <div style={{position:'absolute',bottom:'7px',right:'12px',background:'rgba(0,0,0,0.72)',padding:'3px 8px',borderRadius:'6px',fontSize:'11px',fontWeight:600,color:'#fff'}}>{post.duration}</div>
                                 </div>
-                              </div>
-                              <div style={{position:'absolute',bottom:'7px',right:'12px',background:'rgba(0,0,0,0.72)',padding:'3px 8px',borderRadius:'6px',fontSize:'11px',fontWeight:600,color:'#fff'}}>{post.duration}</div>
+                              )}
                             </div>
                           )}
 
@@ -1927,11 +1922,13 @@ const MealPrepApp = ({ pendingJoinCode }) => {
                             <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
                               <span style={{fontSize:'12px',color:'#7a7060'}}>{isVideo ? post.channel : 'Recipe Roulette'}</span>
                               {isVideo && (
-                                <button
-                                  onClick={() => window.open(`https://www.youtube.com/watch?v=${post.youtubeId}`, '_blank', 'noopener,noreferrer')}
-                                  style={{padding:'7px 14px',background:'#ff0000',color:'#fff',border:'none',borderRadius:'8px',fontSize:'12px',fontWeight:600,cursor:'pointer',display:'flex',alignItems:'center',gap:'6px'}}>
+                                <a
+                                  href={`https://www.youtube.com/watch?v=${post.youtubeId}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  style={{padding:'7px 14px',background:'#ff0000',color:'#fff',border:'none',borderRadius:'8px',fontSize:'12px',fontWeight:600,cursor:'pointer',display:'flex',alignItems:'center',gap:'6px',textDecoration:'none'}}>
                                   ▶ Watch on YouTube
-                                </button>
+                                </a>
                               )}
                               {post.recipe && (
                                 <div style={{display:'flex',gap:'8px'}}>

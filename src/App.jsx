@@ -1805,29 +1805,26 @@ const MealPrepApp = ({ pendingJoinCode }) => {
 
                           {/* Video card */}
                           {isVideo && (
-                            <a href={`https://www.youtube.com/watch?v=${post.youtubeId}`}
-                              target="_blank" rel="noopener noreferrer"
-                              style={{display:'block',textDecoration:'none'}}
-                              onClick={e => e.stopPropagation()}
+                            <div
+                              onClick={() => window.open(`https://www.youtube.com/watch?v=${post.youtubeId}`, '_blank', 'noopener,noreferrer')}
+                              style={{position:'relative',height:'200px',overflow:'hidden',background:'#111',cursor:'pointer'}}
                             >
-                              <div style={{position:'relative',height:'200px',overflow:'hidden',background:'#111'}}>
-                                <img
-                                  src={post.thumbnail}
-                                  alt={post.title}
-                                  style={{width:'100%',height:'100%',objectFit:'cover',opacity:0.82}}
-                                />
-                                <div style={{position:'absolute',inset:0,background:'linear-gradient(to bottom, transparent 30%, rgba(0,0,0,0.72) 100%)'}} />
-                                <div style={{position:'absolute',top:'14px',left:'14px',background:'rgba(0,0,0,0.55)',backdropFilter:'blur(8px)',padding:'5px 12px',borderRadius:'20px',fontSize:'12px',fontWeight:600,color:'#ffffff',border:'1px solid rgba(255,255,255,0.25)'}}>
-                                  {post.tag}
-                                </div>
-                                <div style={{position:'absolute',inset:0,display:'flex',alignItems:'center',justifyContent:'center'}}>
-                                  <div style={{width:'48px',height:'48px',background:'rgba(255,0,0,0.88)',borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',boxShadow:'0 2px 12px rgba(0,0,0,0.5)'}}>
-                                    <span style={{fontSize:'18px',marginLeft:'3px',color:'#fff'}}>▶</span>
-                                  </div>
-                                </div>
-                                <div style={{position:'absolute',bottom:'7px',right:'12px',background:'rgba(0,0,0,0.72)',padding:'3px 8px',borderRadius:'6px',fontSize:'11px',fontWeight:600,color:'#fff'}}>{post.duration}</div>
+                              <img
+                                src={post.thumbnail}
+                                alt={post.title}
+                                style={{width:'100%',height:'100%',objectFit:'cover',opacity:0.82}}
+                              />
+                              <div style={{position:'absolute',inset:0,background:'linear-gradient(to bottom, transparent 30%, rgba(0,0,0,0.72) 100%)'}} />
+                              <div style={{position:'absolute',top:'14px',left:'14px',background:'rgba(0,0,0,0.55)',backdropFilter:'blur(8px)',padding:'5px 12px',borderRadius:'20px',fontSize:'12px',fontWeight:600,color:'#ffffff',border:'1px solid rgba(255,255,255,0.25)'}}>
+                                {post.tag}
                               </div>
-                            </a>
+                              <div style={{position:'absolute',inset:0,display:'flex',alignItems:'center',justifyContent:'center'}}>
+                                <div style={{width:'48px',height:'48px',background:'rgba(255,0,0,0.88)',borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',boxShadow:'0 2px 12px rgba(0,0,0,0.5)'}}>
+                                  <span style={{fontSize:'18px',marginLeft:'3px',color:'#fff'}}>▶</span>
+                                </div>
+                              </div>
+                              <div style={{position:'absolute',bottom:'7px',right:'12px',background:'rgba(0,0,0,0.72)',padding:'3px 8px',borderRadius:'6px',fontSize:'11px',fontWeight:600,color:'#fff'}}>{post.duration}</div>
+                            </div>
                           )}
 
                           {/* Image — full width for hero, shorter for others */}
@@ -1889,7 +1886,14 @@ const MealPrepApp = ({ pendingJoinCode }) => {
 
                             {/* Action row */}
                             <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
-                              <span style={{fontSize:'12px',color:'#7a7060'}}>Recipe Roulette</span>
+                              <span style={{fontSize:'12px',color:'#7a7060'}}>{isVideo ? post.channel : 'Recipe Roulette'}</span>
+                              {isVideo && (
+                                <button
+                                  onClick={() => window.open(`https://www.youtube.com/watch?v=${post.youtubeId}`, '_blank', 'noopener,noreferrer')}
+                                  style={{padding:'7px 14px',background:'#ff0000',color:'#fff',border:'none',borderRadius:'8px',fontSize:'12px',fontWeight:600,cursor:'pointer',display:'flex',alignItems:'center',gap:'6px'}}>
+                                  ▶ Watch on YouTube
+                                </button>
+                              )}
                               {post.recipe && (
                                 <div style={{display:'flex',gap:'8px'}}>
                                   <button
@@ -2358,7 +2362,7 @@ const MealPrepApp = ({ pendingJoinCode }) => {
                       <div style={{padding:'20px'}}>
                         <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:'12px',flexWrap:'wrap',gap:'12px'}}>
                           <h2 style={{margin:0,fontSize:'24px',fontWeight:700,color:'#1c2820',fontFamily:"'Cormorant Garamond',serif"}}>{discoverRecipe.name}</h2>
-                          <button onClick={() => { if (!isAdded) { const newR={...discoverRecipe,id:Date.now(),source:'discover'}; if(guestMode){setSampleRecipes(p=>[...p,newR]);}else{setUserRecipes(p=>[...p,newR]);} } }} style={{padding:'10px 18px',background:isAdded?'#e8f5e9':'#2d5a3d',color:isAdded?'#2d5a3d':'white',border:isAdded?'1px solid #c8e6c9':'none',borderRadius:'10px',cursor:isAdded?'default':'pointer',fontWeight:600,fontSize:'14px',whiteSpace:'nowrap'}}>{isAdded?'✓ In My Book':'+ Add to My Book'}</button>
+                          <button onClick={async () => { if (!isAdded) { const newR={...discoverRecipe,id:Date.now(),source:'discover'}; if(guestMode){setSampleRecipes(p=>[...p,newR]);}else{setUserRecipes(p=>[...p,newR]); await supabase.from('user_recipes').insert({user_id:session.user.id, recipe:newR});} } }} style={{padding:'10px 18px',background:isAdded?'#e8f5e9':'#2d5a3d',color:isAdded?'#2d5a3d':'white',border:isAdded?'1px solid #c8e6c9':'none',borderRadius:'10px',cursor:isAdded?'default':'pointer',fontWeight:600,fontSize:'14px',whiteSpace:'nowrap'}}>{isAdded?'✓ In My Book':'+ Add to My Book'}</button>
                         </div>
                         <div style={{display:'flex',gap:'16px',marginBottom:'16px',flexWrap:'wrap'}}>
                           <span style={{fontSize:'13px',color:'#6a6050'}}>⏱ Prep: {discoverRecipe.prepTime}</span>

@@ -554,7 +554,7 @@ const MealPrepApp = ({ pendingJoinCode }) => {
   const wheelTargetRef    = React.useRef(0);
   const wheelStartTimeRef = React.useRef(null);
   const wheelLastSegRef   = React.useRef(0);
-  const [settingsLoaded, setSettingsLoaded] = React.useState(false);
+  const settingsLoadedRef = React.useRef(false);
   const dataLoadedRef = React.useRef(false);
   const [wheelSpinning,      setWheelSpinning]      = useState(false);
   const [wheelDone,          setWheelDone]          = useState(false);
@@ -639,13 +639,13 @@ const MealPrepApp = ({ pendingJoinCode }) => {
   }, [dynamicCommunityRecipes]);
   const [recipeCostCache, setRecipeCostCache] = useState({}); // { recipeId: costPerServing }
   const [mealTypeSettings, setMealTypeSettings] = useState({
-    0:{breakfast:true,lunch:false,dinner:true},
+    0:{breakfast:true,lunch:true,dinner:true},
     1:{breakfast:true,lunch:true,dinner:true},
     2:{breakfast:true,lunch:true,dinner:true},
     3:{breakfast:true,lunch:true,dinner:true},
     4:{breakfast:true,lunch:true,dinner:true},
     5:{breakfast:true,lunch:true,dinner:true},
-    6:{breakfast:true,lunch:false,dinner:true}
+    6:{breakfast:true,lunch:true,dinner:true}
   });
   const [disabledSlots, setDisabledSlots] = useState({});
   const [mealPlan, setMealPlan] = useState(emptyMealPlan);
@@ -936,7 +936,7 @@ const MealPrepApp = ({ pendingJoinCode }) => {
         });
         setDisabledSlots(derived);
       } else { console.log('⚠️ No meal_type_settings in DB'); }
-      setSettingsLoaded(true);
+      settingsLoadedRef.current = true;
       // Load saved folders
       if (prof.folders && Array.isArray(prof.folders) && prof.folders.length > 0) {
         setFolders(prof.folders);
@@ -949,7 +949,7 @@ const MealPrepApp = ({ pendingJoinCode }) => {
       // Brand new user — no profile yet
       setShowOnboarding(true);
       setOnboardingStep(1);
-      setSettingsLoaded(true);
+      settingsLoadedRef.current = true;
     }
     setLoadingProfile(false);
     // Load user ratings
@@ -1551,7 +1551,7 @@ const MealPrepApp = ({ pendingJoinCode }) => {
 
   // Auto-save meal planning settings to Supabase whenever they change
   useEffect(() => {
-    if (!session?.user || guestMode || !settingsLoaded) return;
+    if (!session?.user || guestMode || !settingsLoadedRef.current) return;
     const timer = setTimeout(async () => {
       const { error } = await supabase.from('profiles').upsert({
         id: session.user.id,
@@ -1563,7 +1563,7 @@ const MealPrepApp = ({ pendingJoinCode }) => {
       else console.log('✅ Saved meal settings:', { mealTypeSettings, disabledSlots });
     }, 800);
     return () => clearTimeout(timer);
-  }, [mealTypeSettings, disabledSlots, session, guestMode, settingsLoaded]);
+  }, [mealTypeSettings, disabledSlots, session, guestMode]);
 
   const autoFillCalendar = () => {
     setShowAutoFillModal(false);

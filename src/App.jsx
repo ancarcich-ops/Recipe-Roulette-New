@@ -587,6 +587,7 @@ const MealPrepApp = ({ pendingJoinCode }) => {
   const [showAddRecipeModal, setShowAddRecipeModal] = useState(false);
   const [showEditRecipeModal, setShowEditRecipeModal] = useState(null);
   const [shareToast, setShareToast] = useState(''); // 'copying' | 'copied' | ''
+  const [autoFillWarning, setAutoFillWarning] = useState('');
   const [selectionMode, setSelectionMode] = useState(false);
   const [selectedRecipeIds, setSelectedRecipeIds] = useState(new Set());
   const [showBulkDeleteConfirm, setShowBulkDeleteConfirm] = useState(false);
@@ -1511,6 +1512,26 @@ const MealPrepApp = ({ pendingJoinCode }) => {
         for (let j = 0; j < autoFillSettings.untriedRecipes && i < slots.length; j++, i++) newPlan[slots[i].d][slots[i].mt] = pickForSlot(untried, slots[i]);
         const budget = all.filter(r => recipeCostCache[r.id] !== undefined && recipeCostCache[r.id] <= 5).sort(() => Math.random() - 0.5);
         for (let j = 0; j < autoFillSettings.budgetMeals && i < slots.length; j++, i++) newPlan[slots[i].d][slots[i].mt] = pickForSlot(budget.length ? budget : all, slots[i]);
+        // Fill any remaining empty slots from Recipe Book, repeating if needed
+        if (i < slots.length) {
+          const fallback = myRecipes.length > 0 ? myRecipes : all;
+          let usedRepeats = false;
+          while (i < slots.length) {
+            const suitable = filterForSlot(fallback, slots[i].mt, userPrefs);
+            const pool = suitable.length > 0 ? suitable : fallback;
+            // Check if we're about to repeat something already in the plan
+            const alreadyUsed = Object.values(newPlan).flatMap(day => Object.values(day)).filter(Boolean).map(r => r.id);
+            const fresh = pool.filter(r => !alreadyUsed.includes(r.id));
+            if (fresh.length === 0) usedRepeats = true;
+            const pick = fresh.length > 0 ? fresh[Math.floor(Math.random() * fresh.length)] : pool[Math.floor(Math.random() * pool.length)];
+            newPlan[slots[i].d][slots[i].mt] = pick;
+            i++;
+          }
+          if (usedRepeats) {
+            setAutoFillWarning('duplicate');
+            setTimeout(() => setAutoFillWarning(''), 8000);
+          }
+        }
         setMealPlan(newPlan); saveMealPlan(newPlan);
       }, 1200);
     }
@@ -2104,6 +2125,16 @@ const MealPrepApp = ({ pendingJoinCode }) => {
             <div style={{marginBottom:'24px'}}>
               <h2 style={{fontSize:isMobile?'24px':'30px',fontWeight:600,color:'#1c2820',margin:'0 0 2px 0',fontFamily:"'Cormorant Garamond',serif",fontStyle:'italic'}}>Weekly Meal Plan</h2>
               <p style={{color:'#6a6050',margin:'0 0 10px 0',fontSize:'13px'}}>Drag meals to rearrange • Click to view details</p>
+              {autoFillWarning === 'duplicate' && (
+                <div style={{background:'#fff8e6',border:'1px solid #f0c040',borderRadius:'8px',padding:'10px 14px',marginBottom:'14px',display:'flex',alignItems:'flex-start',gap:'10px'}}>
+                  <span style={{fontSize:'16px',flexShrink:0}}>⚠️</span>
+                  <div>
+                    <p style={{margin:'0 0 2px 0',fontSize:'12px',fontWeight:700,color:'#7a5c00'}}>Not enough recipes to avoid repeats</p>
+                    <p style={{margin:0,fontSize:'12px',color:'#7a5c00',lineHeight:1.5}}>Your Recipe Book didn't have enough variety to fill your full week without duplicates. Try adding more recipes from the Discover tab, or increase the Community Meals slider in Auto-Fill settings.</p>
+                  </div>
+                  <button onClick={() => setAutoFillWarning('')} style={{background:'none',border:'none',cursor:'pointer',color:'#7a5c00',fontSize:'16px',flexShrink:0,padding:0,marginLeft:'auto'}}>×</button>
+                </div>
+              )}
               {showMealsTip && (
                 <div style={{background:'#f4f0ea',borderRadius:'8px',padding:'10px 14px',marginBottom:'14px',border:'1px solid #e8e0d4',position:'relative'}}>
                   <button onClick={() => { setShowMealsTip(false); localStorage.setItem('mealsTipDismissed', 'true'); }}

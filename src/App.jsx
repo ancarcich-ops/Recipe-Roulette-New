@@ -555,6 +555,7 @@ const MealPrepApp = ({ pendingJoinCode }) => {
   const wheelStartTimeRef = React.useRef(null);
   const wheelLastSegRef   = React.useRef(0);
   const [settingsLoaded, setSettingsLoaded] = React.useState(false);
+  const dataLoadedRef = React.useRef(false);
   const [wheelSpinning,      setWheelSpinning]      = useState(false);
   const [wheelDone,          setWheelDone]          = useState(false);
   const [wheelPointerBounce, setWheelPointerBounce] = useState(false);
@@ -799,7 +800,8 @@ const MealPrepApp = ({ pendingJoinCode }) => {
   }, [guestMode]);
 
   useEffect(() => {
-    if (session?.user) {
+    if (session?.user && !dataLoadedRef.current) {
+      dataLoadedRef.current = true;
       loadUserData(session.user.id);
       if (pendingJoinCode) {
         setShowHouseholdModal(true);

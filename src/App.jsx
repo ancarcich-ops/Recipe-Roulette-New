@@ -925,7 +925,7 @@ const MealPrepApp = ({ pendingJoinCode }) => {
         householdSize: (prof.adults || 2) + (prof.children || 0), adults: prof.adults ?? 2, children: prof.children ?? 0
       });
       // Restore meal planning settings
-      if (prof.meal_type_settings) setMealTypeSettings(prof.meal_type_settings);
+      if (prof.meal_type_settings) { console.log('✅ Loading meal_type_settings:', prof.meal_type_settings); setMealTypeSettings(prof.meal_type_settings); } else { console.log('⚠️ No meal_type_settings in DB'); }
       if (prof.disabled_slots) setDisabledSlots(prof.disabled_slots);
       setSettingsLoaded(true);
       // Load saved folders
@@ -1523,13 +1523,15 @@ const MealPrepApp = ({ pendingJoinCode }) => {
   // Auto-save meal planning settings to Supabase whenever they change
   useEffect(() => {
     if (!session?.user || guestMode || !settingsLoaded) return;
-    const timer = setTimeout(() => {
-      supabase.from('profiles').upsert({
+    const timer = setTimeout(async () => {
+      const { error } = await supabase.from('profiles').upsert({
         id: session.user.id,
         meal_type_settings: mealTypeSettings,
         disabled_slots: disabledSlots,
         updated_at: new Date().toISOString()
       }, { onConflict: 'id' });
+      if (error) console.error('❌ Failed to save meal settings:', error);
+      else console.log('✅ Saved meal settings:', { mealTypeSettings, disabledSlots });
     }, 800);
     return () => clearTimeout(timer);
   }, [mealTypeSettings, disabledSlots, session, guestMode, settingsLoaded]);

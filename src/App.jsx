@@ -928,8 +928,14 @@ const MealPrepApp = ({ pendingJoinCode }) => {
         householdSize: (prof.adults || 2) + (prof.children || 0), adults: prof.adults ?? 2, children: prof.children ?? 0
       });
       // Restore meal planning settings
-      if (prof.meal_type_settings) { console.log('✅ Loading meal_type_settings:', prof.meal_type_settings); setMealTypeSettings(prof.meal_type_settings); } else { console.log('⚠️ No meal_type_settings in DB'); }
-      if (prof.disabled_slots) setDisabledSlots(prof.disabled_slots);
+      if (prof.meal_type_settings) { console.log('✅ Loading meal_type_settings:', prof.meal_type_settings); setMealTypeSettings(prof.meal_type_settings);
+        // Derive disabledSlots from mealTypeSettings so they stay in sync
+        const derived = {};
+        Object.entries(prof.meal_type_settings).forEach(([d, meals]) => {
+          Object.entries(meals).forEach(([mt, on]) => { if (!on) derived[`${d}-${mt}`] = true; });
+        });
+        setDisabledSlots(derived);
+      } else { console.log('⚠️ No meal_type_settings in DB'); }
       setSettingsLoaded(true);
       // Load saved folders
       if (prof.folders && Array.isArray(prof.folders) && prof.folders.length > 0) {

@@ -568,6 +568,7 @@ const MealPrepApp = ({ pendingJoinCode }) => {
   const [showMealPlanShare, setShowMealPlanShare] = useState(false);
   const [generatingCard, setGeneratingCard] = useState(false);
   const [follows, setFollows] = useState(new Set()); // set of user_ids we follow
+  const [followedRecipes, setFollowedRecipes] = useState([]); // recipes from followed users
   const [showFindPeople, setShowFindPeople] = useState(false);
   const [peopleSearch, setPeopleSearch] = useState('');
   const [peopleResults, setPeopleResults] = useState([]);
@@ -913,7 +914,21 @@ const MealPrepApp = ({ pendingJoinCode }) => {
     setUserRecipes(loadedRecipes);
 
     // Apply parallel results
-    if (followData) setFollows(new Set(followData.map(f => f.following_id)));
+    if (followData) {
+      const followedIds = followData.map(f => f.following_id);
+      console.log('👥 followData:', followData, 'followedIds:', followedIds);
+      setFollows(new Set(followedIds));
+      // Load recipes from followed users
+      if (followedIds.length > 0) {
+        const { data: friendRecipes, error: frErr } = await supabase.from('user_recipes').select('recipe, user_id').in('user_id', followedIds);
+        console.log('🍽 friendRecipes:', friendRecipes, 'error:', frErr);
+        if (friendRecipes) {
+          setFollowedRecipes(friendRecipes.map(r => ({ ...r.recipe, _followedUserId: r.user_id })));
+        }
+      }
+    } else {
+      console.log('⚠️ followData is null/empty');
+    }
     if (saved) setSavedRecipes(new Set(saved.map(r => r.recipe_id)));
 
     // Upsert public profile (fire and forget)
@@ -1143,6 +1158,9 @@ const MealPrepApp = ({ pendingJoinCode }) => {
     const userId = session.user.id;
     await supabase.from('follows').insert({ follower_id: userId, following_id: targetUserId });
     setFollows(prev => new Set([...prev, targetUserId]));
+    // Load their recipes
+    const { data: friendRecipes } = await supabase.from('user_recipes').select('recipe, user_id').eq('user_id', targetUserId);
+    if (friendRecipes) setFollowedRecipes(prev => [...prev, ...friendRecipes.map(r => ({ ...r.recipe, _followedUserId: r.user_id }))]);
     // Increment follower count
     await supabase.rpc('increment_follower_count', { target_user_id: targetUserId }).catch(() => {});
   };
@@ -1151,6 +1169,7 @@ const MealPrepApp = ({ pendingJoinCode }) => {
     if (!session?.user) return;
     await supabase.from('follows').delete().eq('follower_id', session.user.id).eq('following_id', targetUserId);
     setFollows(prev => { const n = new Set(prev); n.delete(targetUserId); return n; });
+    setFollowedRecipes(prev => prev.filter(r => r._followedUserId !== targetUserId));
   };
 
   const toggleFollow = async (targetUserId) => {
@@ -2058,19 +2077,17 @@ const MealPrepApp = ({ pendingJoinCode }) => {
             <FilterBar showAuthor />
             <div style={{display:'grid',gridTemplateColumns:isMobile?'1fr':'repeat(auto-fill, minmax(260px, 1fr))',gap:'18px'}}>
               {((() => {
-                let list = filterRecipes(allCommunityRecipes);
-                if (communityFilter === 'following') list = list.filter(r => r.user_id && follows.has(r.user_id));
-                if (communitySearch.trim()) list = list.filter(r => r.name.toLowerCase().includes(communitySearch.toLowerCase()) || (r.tags||[]).some(t => t.toLowerCase().includes(communitySearch.toLowerCase())) || r.author.toLowerCase().includes(communitySearch.toLowerCase()));
+                let list = communityFilter === 'following' ? followedRecipes : filterRecipes(allCommunityRecipes);
+                if (communitySearch.trim()) list = list.filter(r => r.name.toLowerCase().includes(communitySearch.toLowerCase()) || (r.tags||[]).some(t => t.toLowerCase().includes(communitySearch.toLowerCase())) || (r.author||'').toLowerCase().includes(communitySearch.toLowerCase()));
                 return list;
               })()).length === 0 ? (
                 <div style={{gridColumn:'1/-1',textAlign:'center',padding:'60px',background:'#fefcf8',borderRadius:'12px',border:'1px solid #e0d8cc'}}>
                   <p style={{fontSize:'32px',margin:'0 0 10px 0'}}>{communitySearch ? '🔍' : '🍽'}</p>
-                  <p style={{color:'#9a9080'}}>{communitySearch ? `No recipes match "${communitySearch}"` : communityFilter === 'following' ? 'Follow some users to see their recipes here' : 'No recipes match your filters'}</p>
+                  <p style={{color:'#9a9080'}}>{communitySearch ? `No recipes match "${communitySearch}"` : communityFilter === 'following' ? follows.size === 0 ? 'Follow some users to see their recipes here' : 'No recipes from people you follow yet' : 'No recipes match your filters'}</p>
                 </div>
               ) : ((() => {
-                let list = filterRecipes(allCommunityRecipes);
-                if (communityFilter === 'following') list = list.filter(r => r.user_id && follows.has(r.user_id));
-                if (communitySearch.trim()) list = list.filter(r => r.name.toLowerCase().includes(communitySearch.toLowerCase()) || (r.tags||[]).some(t => t.toLowerCase().includes(communitySearch.toLowerCase())) || r.author.toLowerCase().includes(communitySearch.toLowerCase()));
+                let list = communityFilter === 'following' ? followedRecipes : filterRecipes(allCommunityRecipes);
+                if (communitySearch.trim()) list = list.filter(r => r.name.toLowerCase().includes(communitySearch.toLowerCase()) || (r.tags||[]).some(t => t.toLowerCase().includes(communitySearch.toLowerCase())) || (r.author||'').toLowerCase().includes(communitySearch.toLowerCase()));
                 return list;
               })()).map(recipe => (
                 <div key={recipe.id} style={{background:'#fefcf8',borderRadius:'12px',overflow:'hidden',border:'1px solid #e0d8cc'}}>

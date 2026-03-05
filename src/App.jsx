@@ -391,9 +391,7 @@ const PublicUserRecipes = ({ userId, onSelect }) => {
   const [loading, setLoading] = useState(true);
   useEffect(() => {
     const load = async () => {
-      console.log('🔍 Loading recipes for userId:', userId);
       const { data, error } = await supabase.from('user_recipes').select('recipe').eq('user_id', userId);
-      console.log('📦 user_recipes result:', { data, error });
       setRecipes(data ? data.map(r => r.recipe) : []);
       setLoading(false);
     };
@@ -916,18 +914,15 @@ const MealPrepApp = ({ pendingJoinCode }) => {
     // Apply parallel results
     if (followData) {
       const followedIds = followData.map(f => f.following_id);
-      console.log('👥 followData:', followData, 'followedIds:', followedIds);
       setFollows(new Set(followedIds));
       // Load recipes from followed users
       if (followedIds.length > 0) {
         const { data: friendRecipes, error: frErr } = await supabase.from('user_recipes').select('recipe, user_id').in('user_id', followedIds);
-        console.log('🍽 friendRecipes:', friendRecipes, 'error:', frErr);
         if (friendRecipes) {
           setFollowedRecipes(friendRecipes.map(r => ({ ...r.recipe, _followedUserId: r.user_id })));
         }
       }
     } else {
-      console.log('⚠️ followData is null/empty');
     }
     if (saved) setSavedRecipes(new Set(saved.map(r => r.recipe_id)));
 
@@ -953,14 +948,14 @@ const MealPrepApp = ({ pendingJoinCode }) => {
         householdSize: (prof.adults || 2) + (prof.children || 0), adults: prof.adults ?? 2, children: prof.children ?? 0
       });
       // Restore meal planning settings
-      if (prof.meal_type_settings) { console.log('✅ Loading meal_type_settings:', prof.meal_type_settings); setMealTypeSettings(prof.meal_type_settings);
+      if (prof.meal_type_settings) { setMealTypeSettings(prof.meal_type_settings);
         // Derive disabledSlots from mealTypeSettings so they stay in sync
         const derived = {};
         Object.entries(prof.meal_type_settings).forEach(([d, meals]) => {
           Object.entries(meals).forEach(([mt, on]) => { if (!on) derived[`${d}-${mt}`] = true; });
         });
         setDisabledSlots(derived);
-      } else { console.log('⚠️ No meal_type_settings in DB'); }
+      }
       settingsLoadedRef.current = true;
       // Load saved folders
       if (prof.folders && Array.isArray(prof.folders) && prof.folders.length > 0) {
@@ -1587,8 +1582,6 @@ const MealPrepApp = ({ pendingJoinCode }) => {
         disabled_slots: disabledSlots,
         updated_at: new Date().toISOString()
       }, { onConflict: 'id' });
-      if (error) console.error('❌ Failed to save meal settings:', error);
-      else console.log('✅ Saved meal settings:', { mealTypeSettings, disabledSlots });
     }, 800);
     return () => clearTimeout(timer);
   }, [mealTypeSettings, disabledSlots, session, guestMode]);

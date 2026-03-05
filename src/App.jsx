@@ -587,7 +587,6 @@ const MealPrepApp = ({ pendingJoinCode }) => {
   const [communitySearch, setCommunitySearch] = useState('');
   const [showAddRecipeModal, setShowAddRecipeModal] = useState(false);
   const [showEditRecipeModal, setShowEditRecipeModal] = useState(null);
-  const [shareToast, setShareToast] = useState(''); // 'copying' | 'copied' | ''
   const [autoFillWarning, setAutoFillWarning] = useState('');
   const [selectionMode, setSelectionMode] = useState(false);
   const [selectedRecipeIds, setSelectedRecipeIds] = useState(new Set());
@@ -625,19 +624,7 @@ const MealPrepApp = ({ pendingJoinCode }) => {
   const [draggedMeal, setDraggedMeal] = useState(null);
   const [recipeFilters, setRecipeFilters] = useState({cookTime:'all',mealType:'all',tried:'all',author:'all'});
   const [autoFillSettings, setAutoFillSettings] = useState({easyMeals:3,communityMeals:2,untriedRecipes:2,budgetMeals:0});
-  const [dynamicCommunityRecipes, setDynamicCommunityRecipes] = useState([]);
-  // Merge hardcoded sample community recipes with user-shared recipes from DB
-  // De-duplicate by recipe id so sharing an existing sample recipe doesn't double it
-  const allCommunityRecipes = React.useMemo(() => {
-    const seen = new Set();
-    const merged = [...dynamicCommunityRecipes]; // only real user-submitted recipes
-    return merged.filter(r => {
-      const key = r._sharedId || r.id;
-      if (seen.has(key)) return false;
-      seen.add(key);
-      return true;
-    });
-  }, [dynamicCommunityRecipes]);
+  const allCommunityRecipes = []; // shared_recipes feature removed
   const [recipeCostCache, setRecipeCostCache] = useState({}); // { recipeId: costPerServing }
   const [mealTypeSettings, setMealTypeSettings] = useState({
     0:{breakfast:true,lunch:true,dinner:true},
@@ -849,7 +836,6 @@ const MealPrepApp = ({ pendingJoinCode }) => {
       { data: followData },
       { data: saved },
       { data: ratings },
-      { data: sharedRecipes },
       { data: communityRatingsData },
     ] = await Promise.all([
       mealsQuery,
@@ -858,7 +844,6 @@ const MealPrepApp = ({ pendingJoinCode }) => {
       supabase.from('follows').select('following_id').eq('follower_id', userId),
       supabase.from('saved_recipes').select('recipe_id').eq('user_id', userId),
       supabase.from('recipe_ratings').select('*').eq('user_id', userId),
-      supabase.from('shared_recipes').select('*').order('created_at', { ascending: false }),
       supabase.from('recipe_ratings').select('recipe_id, rating'),
     ]);
     let loadedRecipes = recipes ? recipes.map(r => r.recipe) : [];
@@ -978,20 +963,6 @@ const MealPrepApp = ({ pendingJoinCode }) => {
       const ratingsMap = {};
       ratings.forEach(r => { ratingsMap[r.recipe_id] = {rating: r.rating, ratedAt: r.created_at}; });
       setUserRatings(ratingsMap);
-    }
-
-    // Apply shared recipes (loaded in parallel)
-    if (sharedRecipes) {
-      const formatted = sharedRecipes.map(row => ({
-        ...row.recipe,
-        id: row.recipe?.id || row.id,
-        _sharedId: row.id,
-        author: row.recipe?.author || 'Community Member',
-        user_id: row.created_by,
-        likes: row.recipe?.likes || 0,
-        isShared: true,
-      }));
-      setDynamicCommunityRecipes(formatted);
     }
 
     // Apply community ratings (loaded in parallel)
@@ -1191,41 +1162,6 @@ const MealPrepApp = ({ pendingJoinCode }) => {
     const d = getDayDate(dayIndex);
     const now = new Date();
     return d.getDate() === now.getDate() && d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
-  };
-
-  const shareRecipe = async (recipe) => {
-    setShareToast('copying');
-    try {
-      // Check if already shared
-      const { data: existing } = await supabase.from('shared_recipes').select('id').eq('recipe->>id', recipe.id).single();
-      let shareId = existing?.id;
-      if (!shareId) {
-        // Generate short random ID
-        shareId = Math.random().toString(36).slice(2, 8);
-        await supabase.from('shared_recipes').insert({
-          id: shareId,
-          recipe: recipe,
-          created_by: session?.user?.id || 'guest'
-        });
-      }
-      const url = `${window.location.origin}${window.location.pathname}?r=${shareId}`;
-      await navigator.clipboard.writeText(url);
-      setShareToast('copied');
-      setTimeout(() => setShareToast(''), 2500);
-      // Refresh community recipes so shared recipe appears immediately
-      const { data: sharedRecipes } = await supabase.from('shared_recipes').select('*').order('created_at', { ascending: false });
-      if (sharedRecipes) {
-        const formatted = sharedRecipes.map(row => ({
-          ...row.recipe, id: row.recipe?.id || row.id, _sharedId: row.id,
-          author: row.recipe?.author || 'Community Member', user_id: row.created_by,
-          likes: row.recipe?.likes || 0, isShared: true,
-        }));
-        setDynamicCommunityRecipes(formatted);
-      }
-    } catch (err) {
-      console.error('Share error:', err);
-      setShareToast('');
-    }
   };
 
   const getWeekStart = () => {
@@ -2040,7 +1976,7 @@ const MealPrepApp = ({ pendingJoinCode }) => {
                   👥 Find People
                 </button>
               </div>
-              <p style={{color:'#6a6050',margin:0}}>{followedRecipes.length > 0 ? followedRecipes.length : filterRecipes(allCommunityRecipes).length} recipes</p>
+              <p style={{color:'#6a6050',margin:0}}>{followedRecipes.length} recipes</p>
             </div>
             {/* Community search bar */}
             <div style={{position:'relative',marginBottom:'16px'}}>
@@ -2059,16 +1995,16 @@ const MealPrepApp = ({ pendingJoinCode }) => {
             <FilterBar showAuthor />
             <div style={{display:'grid',gridTemplateColumns:isMobile?'1fr':'repeat(auto-fill, minmax(260px, 1fr))',gap:'18px'}}>
               {((() => {
-                let list = followedRecipes.length > 0 ? followedRecipes : filterRecipes(allCommunityRecipes);
+                let list = followedRecipes;
                 if (communitySearch.trim()) list = list.filter(r => r.name.toLowerCase().includes(communitySearch.toLowerCase()) || (r.tags||[]).some(t => t.toLowerCase().includes(communitySearch.toLowerCase())) || (r.author||'').toLowerCase().includes(communitySearch.toLowerCase()));
                 return list;
               })()).length === 0 ? (
                 <div style={{gridColumn:'1/-1',textAlign:'center',padding:'60px',background:'#fefcf8',borderRadius:'12px',border:'1px solid #e0d8cc'}}>
                   <p style={{fontSize:'32px',margin:'0 0 10px 0'}}>{communitySearch ? '🔍' : '🍽'}</p>
-                  <p style={{color:'#9a9080'}}>{communitySearch ? `No recipes match "${communitySearch}"` : follows.size === 0 ? 'Follow some friends to see their recipes here' : 'No recipes from people you follow yet'}</p>
+                  <p style={{color:'#9a9080'}}>{communitySearch ? `No recipes match "${communitySearch}"` : follows.size === 0 ? 'Find and follow friends to see their recipes here.' : 'No recipes from people you follow yet'}</p>
                 </div>
               ) : ((() => {
-                let list = followedRecipes.length > 0 ? followedRecipes : filterRecipes(allCommunityRecipes);
+                let list = followedRecipes;
                 if (communitySearch.trim()) list = list.filter(r => r.name.toLowerCase().includes(communitySearch.toLowerCase()) || (r.tags||[]).some(t => t.toLowerCase().includes(communitySearch.toLowerCase())) || (r.author||'').toLowerCase().includes(communitySearch.toLowerCase()));
                 return list;
               })()).map(recipe => (
@@ -2864,13 +2800,6 @@ const MealPrepApp = ({ pendingJoinCode }) => {
         )}
       </div>
 
-      {/* LINK COPIED TOAST */}
-      {shareToast === 'copied' && (
-        <div style={{position:'fixed',bottom:'24px',left:'50%',transform:'translateX(-50%)',background:'#fefcf8',border:'1px solid #5a9a6a',borderRadius:'10px',padding:'12px 20px',zIndex:9999,display:'flex',alignItems:'center',gap:'8px',boxShadow:'0 4px 24px rgba(0,0,0,0.5)',whiteSpace:'nowrap'}}>
-          <span style={{fontSize:'16px'}}>✅</span>
-          <span style={{color:'#1c2820',fontWeight:600,fontSize:'14px'}}>Link copied to clipboard!</span>
-        </div>
-      )}
 
       {/* FIND PEOPLE MODAL */}
       {showFindPeople && (
@@ -4797,13 +4726,6 @@ Ingredients: ${(recipe.ingredients||[]).join(', ')}`
         </div>
       )}
 
-      {/* SHARE TOAST */}
-      {shareToast === 'copied' && (
-        <div style={{position:'fixed',bottom:'28px',left:'50%',transform:'translateX(-50%)',background:'#fefcf8',border:'1px solid #5a9a6a',borderRadius:'12px',padding:'12px 22px',zIndex:2000,display:'flex',alignItems:'center',gap:'8px',boxShadow:'0 8px 32px rgba(0,0,0,0.5)',animation:'fadeIn 0.2s ease'}}>
-          <span style={{color:'#5a9a6a',fontSize:'18px'}}>✓</span>
-          <span style={{color:'#1c2820',fontWeight:600,fontSize:'14px',whiteSpace:'nowrap'}}>Link copied to clipboard!</span>
-        </div>
-      )}
 
       {/* RECIPE DETAIL MODAL */}
       {selectedRecipe && (
@@ -4834,9 +4756,7 @@ Ingredients: ${(recipe.ingredients||[]).join(', ')}`
                   <button onClick={() => { setShowAddToCalendar(selectedRecipe); setSelectedRecipe(null); }} style={{padding:'7px 12px',background:'#fefcf8',border:'none',borderRadius:'8px',fontWeight:600,fontSize:'12px',cursor:'pointer',color:'#1c2820',whiteSpace:'nowrap'}}>
                     + Calendar
                   </button>
-                  <button onClick={() => shareRecipe(selectedRecipe)} style={{padding:'7px 12px',background:'#fefcf8',border:'1px solid #d8d0c4',borderRadius:'8px',fontWeight:600,fontSize:'12px',cursor:'pointer',color:'#a78bfa',whiteSpace:'nowrap'}}>
-                    {shareToast === 'copying' ? '...' : shareToast === 'copied' ? '✓ Copied!' : '🔗 Share'}
-                  </button>
+
                 </div>
               </div>
               {userRecipes.find(r => r.id === selectedRecipe.id) && (
@@ -4910,13 +4830,6 @@ Ingredients: ${(recipe.ingredients||[]).join(', ')}`
         </div>
       )}
 
-      {/* SHARE TOAST */}
-      {shareToast === 'copied' && (
-        <div style={{position:'fixed',bottom:'32px',left:'50%',transform:'translateX(-50%)',background:'#fefcf8',border:'1px solid #5a9a6a',borderRadius:'10px',padding:'12px 20px',zIndex:9999,display:'flex',alignItems:'center',gap:'8px',boxShadow:'0 8px 24px rgba(0,0,0,0.5)',whiteSpace:'nowrap'}}>
-          <span style={{fontSize:'18px'}}>✅</span>
-          <span style={{color:'#1c2820',fontWeight:600,fontSize:'14px'}}>Link copied to clipboard!</span>
-        </div>
-      )}
     </div>
   );
 };

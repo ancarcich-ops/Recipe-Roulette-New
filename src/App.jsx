@@ -2040,16 +2040,7 @@ const MealPrepApp = ({ pendingJoinCode }) => {
                   👥 Find People
                 </button>
               </div>
-              {/* Following filter pill */}
-              <div style={{display:'flex',gap:'8px',marginBottom:'12px'}}>
-                <button onClick={() => setCommunityFilter(communityFilter === 'following' ? 'all' : 'following')}
-                  style={{padding:'6px 14px',borderRadius:'20px',border:`1px solid ${communityFilter==='following'?'#1c2820':'#d8d0c4'}`,cursor:'pointer',fontWeight:communityFilter==='following'?600:400,fontSize:'12px',
-                  background: communityFilter==='following' ? '#1c2820' : '#fefcf8',
-                  color: communityFilter==='following' ? '#f0ece4' : '#6a6050'}}>
-                  {`Following (${follows.size})`}
-                </button>
-              </div>
-              <p style={{color:'#6a6050',margin:0}}>{communityFilter === 'following' ? followedRecipes.length : filterRecipes(allCommunityRecipes).length} recipes</p>
+              <p style={{color:'#6a6050',margin:0}}>{followedRecipes.length > 0 ? followedRecipes.length : filterRecipes(allCommunityRecipes).length} recipes</p>
             </div>
             {/* Community search bar */}
             <div style={{position:'relative',marginBottom:'16px'}}>
@@ -2068,16 +2059,16 @@ const MealPrepApp = ({ pendingJoinCode }) => {
             <FilterBar showAuthor />
             <div style={{display:'grid',gridTemplateColumns:isMobile?'1fr':'repeat(auto-fill, minmax(260px, 1fr))',gap:'18px'}}>
               {((() => {
-                let list = communityFilter === 'following' ? followedRecipes : filterRecipes(allCommunityRecipes);
+                let list = followedRecipes.length > 0 ? followedRecipes : filterRecipes(allCommunityRecipes);
                 if (communitySearch.trim()) list = list.filter(r => r.name.toLowerCase().includes(communitySearch.toLowerCase()) || (r.tags||[]).some(t => t.toLowerCase().includes(communitySearch.toLowerCase())) || (r.author||'').toLowerCase().includes(communitySearch.toLowerCase()));
                 return list;
               })()).length === 0 ? (
                 <div style={{gridColumn:'1/-1',textAlign:'center',padding:'60px',background:'#fefcf8',borderRadius:'12px',border:'1px solid #e0d8cc'}}>
                   <p style={{fontSize:'32px',margin:'0 0 10px 0'}}>{communitySearch ? '🔍' : '🍽'}</p>
-                  <p style={{color:'#9a9080'}}>{communitySearch ? `No recipes match "${communitySearch}"` : communityFilter === 'following' ? follows.size === 0 ? 'Follow some users to see their recipes here' : 'No recipes from people you follow yet' : 'No recipes match your filters'}</p>
+                  <p style={{color:'#9a9080'}}>{communitySearch ? `No recipes match "${communitySearch}"` : follows.size === 0 ? 'Follow some friends to see their recipes here' : 'No recipes from people you follow yet'}</p>
                 </div>
               ) : ((() => {
-                let list = communityFilter === 'following' ? followedRecipes : filterRecipes(allCommunityRecipes);
+                let list = followedRecipes.length > 0 ? followedRecipes : filterRecipes(allCommunityRecipes);
                 if (communitySearch.trim()) list = list.filter(r => r.name.toLowerCase().includes(communitySearch.toLowerCase()) || (r.tags||[]).some(t => t.toLowerCase().includes(communitySearch.toLowerCase())) || (r.author||'').toLowerCase().includes(communitySearch.toLowerCase()));
                 return list;
               })()).map(recipe => (

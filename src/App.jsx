@@ -566,6 +566,9 @@ const MealPrepApp = ({ pendingJoinCode }) => {
   const [showMealPlanShare, setShowMealPlanShare] = useState(false);
   const [generatingCard, setGeneratingCard] = useState(false);
   const [follows, setFollows] = useState(new Set()); // set of user_ids we follow
+  const [followers, setFollowers] = useState([]); // people who follow you: [{user_id, username, avatar_url}]
+  const [followingList, setFollowingList] = useState([]); // people you follow: [{user_id, username, avatar_url}]
+  const [showFollowModal, setShowFollowModal] = useState(null); // 'followers' | 'following' | null
   const [followedRecipes, setFollowedRecipes] = useState([]); // recipes from followed users
   const [showFindPeople, setShowFindPeople] = useState(false);
   const [peopleSearch, setPeopleSearch] = useState('');
@@ -900,14 +903,21 @@ const MealPrepApp = ({ pendingJoinCode }) => {
     if (followData) {
       const followedIds = followData.map(f => f.following_id);
       setFollows(new Set(followedIds));
-      // Load recipes from followed users
       if (followedIds.length > 0) {
-        const { data: friendRecipes, error: frErr } = await supabase.from('user_recipes').select('recipe, user_id').in('user_id', followedIds);
-        if (friendRecipes) {
-          setFollowedRecipes(friendRecipes.map(r => ({ ...r.recipe, _followedUserId: r.user_id })));
-        }
+        const [{ data: friendRecipes }, { data: followingProfiles }] = await Promise.all([
+          supabase.from('user_recipes').select('recipe, user_id').in('user_id', followedIds),
+          supabase.from('user_profiles_public').select('user_id, username, avatar_url').in('user_id', followedIds),
+        ]);
+        if (friendRecipes) setFollowedRecipes(friendRecipes.map(r => ({ ...r.recipe, _followedUserId: r.user_id })));
+        if (followingProfiles) setFollowingList(followingProfiles);
       }
-    } else {
+      // Load people who follow you
+      const { data: followerData } = await supabase.from('follows').select('follower_id').eq('following_id', userId);
+      if (followerData && followerData.length > 0) {
+        const followerIds = followerData.map(f => f.follower_id);
+        const { data: followerProfiles } = await supabase.from('user_profiles_public').select('user_id, username, avatar_url').in('user_id', followerIds);
+        if (followerProfiles) setFollowers(followerProfiles);
+      }
     }
     if (saved) setSavedRecipes(new Set(saved.map(r => r.recipe_id)));
 
@@ -2801,6 +2811,47 @@ const MealPrepApp = ({ pendingJoinCode }) => {
       </div>
 
 
+      {/* FOLLOWING / FOLLOWERS MODAL */}
+      {showFollowModal && (
+        <div onClick={() => setShowFollowModal(null)} style={{position:'fixed',inset:0,background:'rgba(20,30,22,0.9)',display:'flex',alignItems:'flex-start',justifyContent:'center',zIndex:1002,padding:'20px',paddingTop:'60px'}}>
+          <div onClick={e => e.stopPropagation()} style={{background:'#fefcf8',borderRadius:'16px',width:'100%',maxWidth:'420px',overflow:'hidden',border:'1px solid #e0d8cc'}}>
+            {/* Header with tabs */}
+            <div style={{display:'flex',borderBottom:'1px solid #e0d8cc'}}>
+              {['following','followers'].map(tab => (
+                <button key={tab} onClick={() => setShowFollowModal(tab)}
+                  style={{flex:1,padding:'16px',background:'none',border:'none',borderBottom:`2px solid ${showFollowModal===tab?'#1c2820':'transparent'}`,cursor:'pointer',fontWeight:showFollowModal===tab?700:400,fontSize:'14px',color:showFollowModal===tab?'#1c2820':'#9a9080',textTransform:'capitalize'}}>
+                  {tab === 'following' ? `Following (${follows.size})` : `Followers (${followers.length})`}
+                </button>
+              ))}
+              <button onClick={() => setShowFollowModal(null)} style={{padding:'16px',background:'none',border:'none',cursor:'pointer'}}><X size={18} color="#999" /></button>
+            </div>
+            {/* List */}
+            <div style={{maxHeight:'420px',overflowY:'auto',padding:'8px 0'}}>
+              {(showFollowModal === 'following' ? followingList : followers).length === 0 ? (
+                <p style={{textAlign:'center',color:'#9a9080',padding:'40px 20px',fontSize:'14px'}}>
+                  {showFollowModal === 'following' ? 'You aren\'t following anyone yet.' : 'No one is following you yet.'}
+                </p>
+              ) : (showFollowModal === 'following' ? followingList : followers).map(person => (
+                <div key={person.user_id} style={{display:'flex',alignItems:'center',gap:'12px',padding:'12px 20px'}}>
+                  <div style={{width:'44px',height:'44px',borderRadius:'50%',background:'#e0d8cc',flexShrink:0,overflow:'hidden',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'18px'}}>
+                    {person.avatar_url ? <img src={person.avatar_url} style={{width:'100%',height:'100%',objectFit:'cover'}} /> : '👤'}
+                  </div>
+                  <div style={{flex:1}}>
+                    <div style={{fontWeight:600,color:'#1c2820',fontSize:'14px'}}>{person.username || 'Unknown'}</div>
+                  </div>
+                  {showFollowModal === 'following' && (
+                    <button onClick={() => { toggleFollow(person.user_id); setFollowingList(prev => prev.filter(p => p.user_id !== person.user_id)); }}
+                      style={{padding:'7px 14px',borderRadius:'8px',border:'1px solid #d8d0c4',background:'#f0ece4',fontWeight:600,fontSize:'12px',cursor:'pointer',color:'#6a6050'}}>
+                      Unfollow
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* FIND PEOPLE MODAL */}
       {showFindPeople && (
         <div onClick={() => { setShowFindPeople(false); setPeopleSearch(''); setPeopleResults([]); }} style={{position:'fixed',inset:0,background:'rgba(20,30,22,0.9)',display:'flex',alignItems:'flex-start',justifyContent:'center',zIndex:1000,padding:'20px',paddingTop:'60px',overflowY:'auto'}}>
@@ -3333,6 +3384,17 @@ const MealPrepApp = ({ pendingJoinCode }) => {
                   </label>
                 </div>
                 <p style={{margin:0,fontSize:'12px',color:'#7a7060',textAlign:'center'}}>Tap the camera to change your photo</p>
+                {/* Following / Followers summary */}
+                <div style={{display:'flex',gap:'24px',marginTop:'4px'}}>
+                  <button onClick={() => setShowFollowModal('following')} style={{background:'none',border:'none',cursor:'pointer',textAlign:'center',padding:0}}>
+                    <div style={{fontSize:'18px',fontWeight:700,color:'#fefcf8'}}>{follows.size}</div>
+                    <div style={{fontSize:'11px',color:'#7a7060',textTransform:'uppercase',letterSpacing:'0.5px'}}>Following</div>
+                  </button>
+                  <button onClick={() => setShowFollowModal('followers')} style={{background:'none',border:'none',cursor:'pointer',textAlign:'center',padding:0}}>
+                    <div style={{fontSize:'18px',fontWeight:700,color:'#fefcf8'}}>{followers.length}</div>
+                    <div style={{fontSize:'11px',color:'#7a7060',textTransform:'uppercase',letterSpacing:'0.5px'}}>Followers</div>
+                  </button>
+                </div>
               </div>
 
               {/* Display name */}

@@ -391,7 +391,9 @@ const PublicUserRecipes = ({ userId, onSelect }) => {
   const [loading, setLoading] = useState(true);
   useEffect(() => {
     const load = async () => {
-      const { data } = await supabase.from('user_recipes').select('recipe').eq('user_id', userId);
+      console.log('🔍 Loading recipes for userId:', userId);
+      const { data, error } = await supabase.from('user_recipes').select('recipe').eq('user_id', userId);
+      console.log('📦 user_recipes result:', { data, error });
       setRecipes(data ? data.map(r => r.recipe) : []);
       setLoading(false);
     };
@@ -826,26 +828,40 @@ const MealPrepApp = ({ pendingJoinCode }) => {
   const loadUserData = async (userId) => {
     const hh = await loadHousehold(userId);
     const hhId = hh?.id;
-    // Load meals - if in household, load all household members' meals
+
+    // Build queries
     let mealsQuery = supabase.from('meal_plans').select('*');
-    if (hhId) {
-      const { data: members } = await supabase.from('household_members').select('user_id').eq('household_id', hhId);
-      const memberIds = members ? members.map(m => m.user_id) : [userId];
-      mealsQuery = mealsQuery.in('user_id', memberIds);
-    } else {
-      mealsQuery = mealsQuery.eq('user_id', userId);
-    }
-    const { data: meals } = await mealsQuery;
-    // Load recipes - if in household, load all members' recipes
     let recipesQuery = supabase.from('user_recipes').select('*');
     if (hhId) {
       const { data: members } = await supabase.from('household_members').select('user_id').eq('household_id', hhId);
       const memberIds = members ? members.map(m => m.user_id) : [userId];
+      mealsQuery = mealsQuery.in('user_id', memberIds);
       recipesQuery = recipesQuery.in('user_id', memberIds);
     } else {
+      mealsQuery = mealsQuery.eq('user_id', userId);
       recipesQuery = recipesQuery.eq('user_id', userId);
     }
-    const { data: recipes } = await recipesQuery;
+
+    // Fire all independent queries in parallel
+    const [
+      { data: meals },
+      { data: recipes },
+      { data: prof },
+      { data: followData },
+      { data: saved },
+      { data: ratings },
+      { data: sharedRecipes },
+      { data: communityRatingsData },
+    ] = await Promise.all([
+      mealsQuery,
+      recipesQuery,
+      supabase.from('profiles').select('*').eq('id', userId).single(),
+      supabase.from('follows').select('following_id').eq('follower_id', userId),
+      supabase.from('saved_recipes').select('recipe_id').eq('user_id', userId),
+      supabase.from('recipe_ratings').select('*').eq('user_id', userId),
+      supabase.from('shared_recipes').select('*').order('created_at', { ascending: false }),
+      supabase.from('recipe_ratings').select('recipe_id, rating'),
+    ]);
     let loadedRecipes = recipes ? recipes.map(r => r.recipe) : [];
 
     if (meals && meals.length > 0) {
@@ -895,27 +911,21 @@ const MealPrepApp = ({ pendingJoinCode }) => {
     }
 
     setUserRecipes(loadedRecipes);
-    // Load follows
-    const { data: followData } = await supabase.from('follows').select('following_id').eq('follower_id', userId);
+
+    // Apply parallel results
     if (followData) setFollows(new Set(followData.map(f => f.following_id)));
-    // Upsert public profile
-    if (session?.user) {
-      const { data: prof } = await supabase.from('profiles').select('display_name,avatar_url').eq('id', userId).single();
-      if (prof?.display_name) {
-        await supabase.from('user_profiles_public').upsert({
-          user_id: userId,
-          username: prof.display_name,
-          phone: prof.phone || '',
-        zipCode: prof.zip_code || '',
-          avatar_url: prof.avatar_url || '',
-          recipe_count: loadedRecipes.length
-        }, { onConflict: 'user_id' });
-      }
-    }
-    const { data: saved } = await supabase.from('saved_recipes').select('recipe_id').eq('user_id', userId);
     if (saved) setSavedRecipes(new Set(saved.map(r => r.recipe_id)));
-    // Load profile
-    const { data: prof } = await supabase.from('profiles').select('*').eq('id', userId).single();
+
+    // Upsert public profile (fire and forget)
+    if (prof?.display_name) {
+      supabase.from('user_profiles_public').upsert({
+        user_id: userId,
+        username: prof.display_name,
+        avatar_url: prof.avatar_url || '',
+        recipe_count: loadedRecipes.length
+      }, { onConflict: 'user_id' });
+    }
+
     if (prof) {
       setProfile({
         displayName: prof.display_name || '',
@@ -952,15 +962,15 @@ const MealPrepApp = ({ pendingJoinCode }) => {
       settingsLoadedRef.current = true;
     }
     setLoadingProfile(false);
-    // Load user ratings
-    const { data: ratings } = await supabase.from('recipe_ratings').select('*').eq('user_id', userId);
+
+    // Apply ratings (already loaded in parallel)
     if (ratings) {
       const ratingsMap = {};
       ratings.forEach(r => { ratingsMap[r.recipe_id] = {rating: r.rating, ratedAt: r.created_at}; });
       setUserRatings(ratingsMap);
     }
-    // Load shared recipes from community
-    const { data: sharedRecipes } = await supabase.from('shared_recipes').select('*').order('created_at', { ascending: false });
+
+    // Apply shared recipes (loaded in parallel)
     if (sharedRecipes) {
       const formatted = sharedRecipes.map(row => ({
         ...row.recipe,
@@ -974,11 +984,10 @@ const MealPrepApp = ({ pendingJoinCode }) => {
       setDynamicCommunityRecipes(formatted);
     }
 
-    // Load community ratings (average + count per recipe)
-    const { data: communityRatings } = await supabase.from('recipe_ratings').select('recipe_id, rating');
-    if (communityRatings) {
+    // Apply community ratings (loaded in parallel)
+    if (communityRatingsData) {
       const ratingsMap = {};
-      communityRatings.forEach(r => {
+      communityRatingsData.forEach(r => {
         if (!ratingsMap[r.recipe_id]) ratingsMap[r.recipe_id] = {total: 0, count: 0};
         ratingsMap[r.recipe_id].total += r.rating;
         ratingsMap[r.recipe_id].count += 1;

@@ -1611,7 +1611,7 @@ const MealPrepApp = ({ pendingJoinCode }) => {
           {label:'Cook Time',key:'cookTime',opts:[['all','All Times'],['quick','Quick < 20min'],['medium','20-40min'],['long','40+min']]},
           {label:'Meal Type',key:'mealType',opts:[['all','All Meals'],['breakfast','Breakfast'],['lunch','Lunch'],['dinner','Dinner']]},
           ...(showTried?[{label:'Status',key:'tried',opts:[['all','All'],['tried','Tried'],['untried','Not Tried']]}]:[]),
-          ...(showAuthor?[{label:'Author',key:'author',opts:[['all','All Authors'],...[...new Set(allCommunityRecipes.map(r=>r.author))].sort().map(a=>[a,a])]}]:[])
+          ...(showAuthor?[{label:'Author',key:'author',opts:[['all','All Authors'],...[...new Set(followedRecipes.map(r=>r.author).filter(Boolean))].sort().map(a=>[a,a])]}]:[])
         ].map(({label,key,opts}) => (
           <div key={key}>
             <label style={{display:'block',marginBottom:'4px',fontSize:'11px',fontWeight:600,color:'#9a9080',textTransform:'uppercase'}}>{label}</label>
@@ -1976,7 +1976,7 @@ const MealPrepApp = ({ pendingJoinCode }) => {
                   👥 Find People
                 </button>
               </div>
-              <p style={{color:'#6a6050',margin:0}}>{followedRecipes.length} recipes</p>
+              <p style={{color:'#6a6050',margin:0}}>{filterRecipes(followedRecipes).length} recipes</p>
             </div>
             {/* Community search bar */}
             <div style={{position:'relative',marginBottom:'16px'}}>
@@ -1995,7 +1995,7 @@ const MealPrepApp = ({ pendingJoinCode }) => {
             <FilterBar showAuthor />
             <div style={{display:'grid',gridTemplateColumns:isMobile?'1fr':'repeat(auto-fill, minmax(260px, 1fr))',gap:'18px'}}>
               {((() => {
-                let list = followedRecipes;
+                let list = filterRecipes(followedRecipes);
                 if (communitySearch.trim()) list = list.filter(r => r.name.toLowerCase().includes(communitySearch.toLowerCase()) || (r.tags||[]).some(t => t.toLowerCase().includes(communitySearch.toLowerCase())) || (r.author||'').toLowerCase().includes(communitySearch.toLowerCase()));
                 return list;
               })()).length === 0 ? (
@@ -2004,7 +2004,7 @@ const MealPrepApp = ({ pendingJoinCode }) => {
                   <p style={{color:'#9a9080'}}>{communitySearch ? `No recipes match "${communitySearch}"` : follows.size === 0 ? 'Find and follow friends to see their recipes here.' : 'No recipes from people you follow yet'}</p>
                 </div>
               ) : ((() => {
-                let list = followedRecipes;
+                let list = filterRecipes(followedRecipes);
                 if (communitySearch.trim()) list = list.filter(r => r.name.toLowerCase().includes(communitySearch.toLowerCase()) || (r.tags||[]).some(t => t.toLowerCase().includes(communitySearch.toLowerCase())) || (r.author||'').toLowerCase().includes(communitySearch.toLowerCase()));
                 return list;
               })()).map(recipe => (

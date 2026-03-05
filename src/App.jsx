@@ -2601,17 +2601,18 @@ const MealPrepApp = ({ pendingJoinCode }) => {
                   {/* Folder cards */}
                   {folders.map(folder => {
                     const folderRecipes = folder.recipes.map(rid => allMyRecipes.find(r => r.id === rid)).filter(Boolean);
-                    const sortedFolderRecipes = [...folderRecipes].sort((a, b) => (b.image ? 1 : 0) - (a.image ? 1 : 0));
+                    const folderThumbRecipes = folderRecipes.filter(r => r.image).slice(0, 4);
+                    const emptySlots = 4 - folderThumbRecipes.length;
                     return (
                       <div key={folder.id} style={{background:'#fefcf8',borderRadius:'16px',overflow:'hidden',border:'1px solid #e0d8cc',cursor:'pointer',transition:'border-color 0.15s',position:'relative'}}
                         onClick={() => setActiveFolder(folder.id)}>
                         <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gridTemplateRows:'1fr 1fr',height:'180px',gap:'2px',position:'relative'}}>
-                          {sortedFolderRecipes.slice(0,4).map((r,i) => (
-                            <div key={i} style={{backgroundImage:r.image?`url(${r.image})`:'none',backgroundSize:'cover',backgroundPosition:'center',background:r.image?'transparent':'#f0ece4'}} />
+                          {folderThumbRecipes.map((r,i) => (
+                            <div key={i} style={{backgroundImage:`url(${r.image})`,backgroundSize:'cover',backgroundPosition:'center'}} />
                           ))}
-                          {sortedFolderRecipes.length < 4 && Array.from({length: 4 - Math.min(sortedFolderRecipes.length,4)}).map((_,i) => (
+                          {emptySlots > 0 && Array.from({length: emptySlots}).map((_,i) => (
                             <div key={i} style={{background:'#f0ece4',display:'flex',alignItems:'center',justifyContent:'center'}}>
-                              {sortedFolderRecipes.length === 0 && i === 1 && <span style={{fontSize:'32px',opacity:0.3}}>{folder.emoji}</span>}
+                              {folderThumbRecipes.length === 0 && i === 1 && <span style={{fontSize:'32px',opacity:0.3}}>{folder.emoji}</span>}
                             </div>
                           ))}
                         </div>

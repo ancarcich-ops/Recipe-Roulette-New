@@ -1985,7 +1985,8 @@ const MealPrepApp = ({ pendingJoinCode }) => {
                 <button onClick={() => setShowFindPeople(true)} style={{padding:'9px 16px',background:'#fefcf8',border:'1px solid #d8d0c4',borderRadius:'8px',fontWeight:600,fontSize:'13px',cursor:'pointer',color:'#5a9a6a',whiteSpace:'nowrap'}}>
                   👥 Find People
                 </button>
-                <div style={{display:'flex',gap:'16px'}}>
+              </div>
+              <div style={{display:'flex',justifyContent:'center',gap:'32px',marginBottom:'12px'}}>
                   <button onClick={() => setShowFollowModal('following')} style={{background:'none',border:'none',cursor:'pointer',textAlign:'center',padding:0}}>
                     <span style={{fontWeight:700,color:'#1c2820',fontSize:'14px'}}>{follows.size}</span>
                     <span style={{color:'#9a9080',fontSize:'13px',marginLeft:'4px'}}>Following</span>
@@ -1994,7 +1995,6 @@ const MealPrepApp = ({ pendingJoinCode }) => {
                     <span style={{fontWeight:700,color:'#1c2820',fontSize:'14px'}}>{followers.length}</span>
                     <span style={{color:'#9a9080',fontSize:'13px',marginLeft:'4px'}}>Followers</span>
                   </button>
-                </div>
               </div>
               <p style={{color:'#6a6050',margin:0}}>{filterRecipes(followedRecipes).length} recipes</p>
             </div>

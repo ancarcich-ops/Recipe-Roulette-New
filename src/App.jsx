@@ -592,6 +592,9 @@ const MealPrepApp = ({ pendingJoinCode }) => {
   const [showEditRecipeModal, setShowEditRecipeModal] = useState(null);
   const [autoFillWarning, setAutoFillWarning] = useState('');
   const [selectionMode, setSelectionMode] = useState(false);
+  const [reorderMode, setReorderMode] = useState(false);
+  const dragItem = React.useRef(null);
+  const dragOverItem = React.useRef(null);
   const [selectedRecipeIds, setSelectedRecipeIds] = useState(new Set());
   const [showBulkDeleteConfirm, setShowBulkDeleteConfirm] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
@@ -2669,10 +2672,22 @@ const MealPrepApp = ({ pendingJoinCode }) => {
                   <button onClick={() => setShowAddRecipeModal(true)} style={{padding:'10px 18px',background:'#fefcf8',border:'none',borderRadius:'8px',cursor:'pointer',display:'flex',alignItems:'center',gap:'6px',fontWeight:600,fontSize:'13px',color:'#1c2820'}}>
                     <Plus size={16} /> Add Recipe
                   </button>
+                  {activeFolder !== 'all' && (
+                    <button onClick={() => setReorderMode(r => !r)} style={{padding:'10px 18px',background:reorderMode?'#1c2820':'#fefcf8',border:'1px solid #e0d8cc',borderRadius:'8px',cursor:'pointer',fontWeight:600,fontSize:'13px',color:reorderMode?'#f0ece4':'#1c2820'}}>
+                      {reorderMode ? '✓ Done' : '⇅ Reorder'}
+                    </button>
+                  )}
                 </div>
 
                 {/* Filter bar for all recipes view */}
                 {activeFolder === 'all' && <FilterBar showTried />}
+
+                {/* Reorder hint */}
+                {reorderMode && (
+                  <div style={{background:'#f0ece4',borderRadius:'8px',padding:'10px 14px',marginBottom:'16px',fontSize:'13px',color:'#6a6050',display:'flex',alignItems:'center',gap:'8px'}}>
+                    ⇅ Drag recipes to reorder — the first 4 with images set the folder cover photo.
+                  </div>
+                )}
 
                 {/* Recipe grid */}
                 {(() => {
@@ -2696,7 +2711,28 @@ const MealPrepApp = ({ pendingJoinCode }) => {
                         let pressTimer = null;
                         return (
                           <div key={recipe.id}
-                            style={{background:'#fefcf8',borderRadius:'12px',overflow:'hidden',border:`2px solid ${isSelected ? '#ff6b6b' : selectionMode ? '#333' : '#262626'}`,position:'relative',transition:'border-color 0.15s',transform:isSelected?'scale(0.97)':'scale(1)'}}
+                            draggable={reorderMode}
+                            onDragStart={() => { dragItem.current = recipesToShow.indexOf(recipe); }}
+                            onDragEnter={() => { dragOverItem.current = recipesToShow.indexOf(recipe); }}
+                            onDragEnd={() => {
+                              if (dragItem.current === null || dragOverItem.current === null || dragItem.current === dragOverItem.current) return;
+                              const folder = folders.find(f => f.id === activeFolder);
+                              if (!folder) return;
+                              const newOrder = [...folder.recipes];
+                              // Map visual indices back to recipe IDs
+                              const fromId = recipesToShow[dragItem.current]?.id;
+                              const toId = recipesToShow[dragOverItem.current]?.id;
+                              const fromIdx = newOrder.indexOf(fromId);
+                              const toIdx = newOrder.indexOf(toId);
+                              if (fromIdx === -1 || toIdx === -1) return;
+                              newOrder.splice(fromIdx, 1);
+                              newOrder.splice(toIdx, 0, fromId);
+                              updateFolders(prev => prev.map(f => f.id === activeFolder ? {...f, recipes: newOrder} : f));
+                              dragItem.current = null;
+                              dragOverItem.current = null;
+                            }}
+                            onDragOver={e => e.preventDefault()}
+                            style={{background:'#fefcf8',borderRadius:'12px',overflow:'hidden',border:`2px solid ${isSelected ? '#ff6b6b' : selectionMode ? '#333' : '#262626'}`,position:'relative',transition:'border-color 0.15s',transform:isSelected?'scale(0.97)':'scale(1)',cursor:reorderMode?'grab':'default',opacity:reorderMode?0.95:1}}
                             onMouseDown={() => { if (!selectionMode && isUserRecipe) { pressTimer = setTimeout(() => { setSelectionMode(true); setSelectedRecipeIds(new Set([recipe.id])); }, 500); } }}
                             onMouseUp={() => clearTimeout(pressTimer)}
                             onMouseLeave={() => clearTimeout(pressTimer)}

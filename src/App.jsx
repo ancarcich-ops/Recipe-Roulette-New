@@ -2038,31 +2038,19 @@ const MealPrepApp = ({ pendingJoinCode }) => {
                       {recipe.cookTime < 20 && <div style={{position:'absolute',top:'10px',left:'10px',background:'#5a9a6a',color:'#fff',padding:'3px 8px',borderRadius:'6px',fontSize:'11px',fontWeight:600,display:'flex',alignItems:'center',gap:'3px'}}><Clock size={11} /> Quick</div>}
                     </div>
                     <div style={{padding:'14px 14px 8px'}}>
-                      <div style={{display:'flex',alignItems:'center',gap:'8px',marginBottom:'6px'}}>
-                        <div onClick={async e => { e.stopPropagation(); if (recipe.user_id) { const {data} = await supabase.from('user_profiles_public').select('*').eq('user_id', recipe.user_id).single(); if (data) setViewingProfile(data); } }}
-                          style={{display:'flex',alignItems:'center',gap:'6px',cursor:recipe.user_id?'pointer':'default'}}>
-                          <div style={{width:'26px',height:'26px',borderRadius:'50%',background:'#fefcf8',display:'flex',alignItems:'center',justifyContent:'center',color:'#1c2820',fontSize:'10px',fontWeight:700,overflow:'hidden',flexShrink:0}}>
-                            {recipe.avatarUrl ? <img src={recipe.avatarUrl} style={{width:'100%',height:'100%',objectFit:'cover'}} /> : recipe.avatar}
+                      <div style={{display:'flex',alignItems:'center',gap:'8px',marginBottom:'8px'}}>
+                        <div onClick={async e => { e.stopPropagation(); const p = followingList.find(p => p.user_id === recipe._followedUserId); if (p) setViewingProfile(p); }}
+                          style={{display:'flex',alignItems:'center',gap:'7px',cursor:'pointer',flex:1,minWidth:0}}>
+                          <div style={{width:'26px',height:'26px',borderRadius:'50%',background:'#e0d8cc',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'12px',flexShrink:0,overflow:'hidden'}}>
+                            {(() => { const p = followingList.find(p => p.user_id === recipe._followedUserId); return p?.avatar_url ? <img src={p.avatar_url} style={{width:'100%',height:'100%',objectFit:'cover'}} /> : '👤'; })()}
                           </div>
-                          <span style={{fontSize:'12px',color: recipe.user_id ? '#a78bfa' : '#666'}}>{recipe.author}</span>
+                          <span style={{fontSize:'12px',color:'#5a9a6a',fontWeight:600,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>
+                            {followingList.find(p => p.user_id === recipe._followedUserId)?.username || recipe.author || 'Unknown'}
+                          </span>
                         </div>
-                        {recipe.user_id && recipe.user_id !== session?.user?.id && (
-                          <button onClick={e => { e.stopPropagation(); toggleFollow(recipe.user_id); }}
-                            style={{marginLeft:'auto',padding:'3px 8px',borderRadius:'20px',border:'none',cursor:'pointer',fontWeight:600,fontSize:'10px',
-                            background: follows.has(recipe.user_id) ? '#262626' : '#a78bfa',
-                            color: follows.has(recipe.user_id) ? '#666' : '#fff'}}>
-                            {follows.has(recipe.user_id) ? 'Following' : '+ Follow'}
-                          </button>
-                        )}
                       </div>
-                      <h3 style={{margin:'0 0 4px 0',fontSize:'15px',fontWeight:600,color:'#1c2820',fontFamily:"'Cormorant Garamond',serif"}}>{recipe.name}</h3>
-                      <RatingDisplay recipeId={recipe.id} compact />
-                      <p style={{margin:'6px 0 8px 0',fontSize:'12px',color:'#9a9080'}}>{recipe.prepTime}</p>
-                      <div style={{display:'flex',gap:'14px',fontSize:'12px',color:'#6a6050'}}>
-                        <span style={{display:'flex',alignItems:'center',gap:'3px'}}><Heart size={11} /> {recipe.likes}</span>
-                        <span>{recipe.onMenu} on menu</span>
-                        <span style={{display:'flex',alignItems:'center',gap:'3px'}}><Archive size={11} /> {recipe.saves + (savedRecipes.has(recipe.id)?1:0)}</span>
-                      </div>
+                      <h3 style={{margin:'0 0 6px 0',fontSize:'15px',fontWeight:600,color:'#1c2820',fontFamily:"'Cormorant Garamond',serif"}}>{recipe.name}</h3>
+                      <p style={{margin:0,fontSize:'12px',color:'#9a9080'}}>{[recipe.prepTime, recipe.cookTime ? `${recipe.cookTime} min cook` : null].filter(Boolean).join(' · ') || ' '}</p>
                     </div>
                   </div>
                   <div style={{padding:'8px 14px 14px',display:'flex',gap:'6px',flexWrap:'wrap'}}>

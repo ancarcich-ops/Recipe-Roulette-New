@@ -2040,18 +2040,16 @@ const MealPrepApp = ({ pendingJoinCode }) => {
                   👥 Find People
                 </button>
               </div>
-              {/* Following filter pills */}
+              {/* Following filter pill */}
               <div style={{display:'flex',gap:'8px',marginBottom:'12px'}}>
-                {['all','following'].map(f => (
-                  <button key={f} onClick={() => setCommunityFilter(f)}
-                    style={{padding:'6px 14px',borderRadius:'20px',border:`1px solid ${communityFilter===f?'#1c2820':'#d8d0c4'}`,cursor:'pointer',fontWeight:communityFilter===f?600:400,fontSize:'12px',
-                    background: communityFilter===f ? '#1c2820' : '#fefcf8',
-                    color: communityFilter===f ? '#f0ece4' : '#6a6050'}}>
-                    {f === 'all' ? 'All Recipes' : `Following (${follows.size})`}
-                  </button>
-                ))}
+                <button onClick={() => setCommunityFilter(communityFilter === 'following' ? 'all' : 'following')}
+                  style={{padding:'6px 14px',borderRadius:'20px',border:`1px solid ${communityFilter==='following'?'#1c2820':'#d8d0c4'}`,cursor:'pointer',fontWeight:communityFilter==='following'?600:400,fontSize:'12px',
+                  background: communityFilter==='following' ? '#1c2820' : '#fefcf8',
+                  color: communityFilter==='following' ? '#f0ece4' : '#6a6050'}}>
+                  {`Following (${follows.size})`}
+                </button>
               </div>
-              <p style={{color:'#6a6050',margin:0}}>{filterRecipes(allCommunityRecipes).length} recipes</p>
+              <p style={{color:'#6a6050',margin:0}}>{communityFilter === 'following' ? followedRecipes.length : filterRecipes(allCommunityRecipes).length} recipes</p>
             </div>
             {/* Community search bar */}
             <div style={{position:'relative',marginBottom:'16px'}}>

@@ -727,13 +727,13 @@ const MealPrepApp = ({ pendingJoinCode }) => {
               try {
                 const KROGER_CLIENT_ID = 'thereciperoulette-bbcc09pc';
                 const creds = btoa(`${KROGER_CLIENT_ID}:KIJMvRMbsD0cf19lnsiU06SCp3pzlh0-_3eofy1K`);
-                const tokenRes = await fetch('https://recipe-roulette-new.vercel.app/api/kroger-token', {
+                const tokenRes = await fetch('https://reciperoulette.io/api/kroger-token', {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify({ grant_type: 'client_credentials', scope: 'product.compact' })
                 });
                 const tokenData = await tokenRes.json();
-                const locRes = await fetch('https://recipe-roulette-new.vercel.app/api/kroger-proxy', {
+                const locRes = await fetch('https://reciperoulette.io/api/kroger-proxy', {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify({ path: `/v1/locations?filter.zipCode=${zip}&filter.limit=1`, method: 'GET', token: tokenData.access_token })
@@ -751,7 +751,7 @@ const MealPrepApp = ({ pendingJoinCode }) => {
           for (const ingredient of ingredients.slice(0, 50)) {
             const groceryPrefStr = (profile.groceryPrefs || []).join(' ');
             const searchTerm = groceryPrefStr ? `${groceryPrefStr} ${ingredient.name}` : ingredient.name;
-            const sr = await fetch('https://recipe-roulette-new.vercel.app/api/kroger-proxy', {
+            const sr = await fetch('https://reciperoulette.io/api/kroger-proxy', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ path: `/v1/products?filter.term=${encodeURIComponent(searchTerm)}&filter.limit=1${locationParam}`, method: 'GET', token: krogerToken })
@@ -762,7 +762,7 @@ const MealPrepApp = ({ pendingJoinCode }) => {
           }
 
           if (cartItems.length > 0) {
-            const cartRes = await fetch('https://recipe-roulette-new.vercel.app/api/kroger-proxy', {
+            const cartRes = await fetch('https://reciperoulette.io/api/kroger-proxy', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ path: '/v1/cart/add', method: 'PUT', token: krogerToken, body: { items: cartItems } })
@@ -3762,7 +3762,7 @@ const MealPrepApp = ({ pendingJoinCode }) => {
 
               // ── KROGER CONFIG ──────────────────────────────────
               const KROGER_CLIENT_ID = 'thereciperoulette-bbcc09pc';
-              const KROGER_REDIRECT_URI = 'https://recipe-roulette-new.vercel.app/auth/callback';
+              const KROGER_REDIRECT_URI = 'https://reciperoulette.io/auth/callback';
               const KROGER_SCOPES = 'cart.basic:write product.compact';
 
               // ── INSTACART HANDLER ──────────────────────────────
@@ -3773,9 +3773,9 @@ const MealPrepApp = ({ pendingJoinCode }) => {
                     headers: { 'Authorization': `Bearer ${INSTACART_API_KEY}`, 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                       title: 'Recipe Roulette — Weekly Groceries',
-                      image_url: 'https://recipe-roulette-new.vercel.app/logo.png',
+                      image_url: 'https://reciperoulette.io/logo.png',
                       author: 'Recipe Roulette',
-                      landing_page_configuration: { partner_linkback_url: 'https://recipe-roulette-new.vercel.app', enable_pantry_items: true },
+                      landing_page_configuration: { partner_linkback_url: 'https://reciperoulette.io', enable_pantry_items: true },
                       ingredients: allIngredients.map(i => ({
                         name: i.name,
                         measurements: [{ quantity: i.count || 1, unit: 'each' }]
@@ -3795,7 +3795,7 @@ const MealPrepApp = ({ pendingJoinCode }) => {
               // ── KROGER HANDLER ─────────────────────────────────
               const getKrogerAppToken = async () => {
                 const creds = btoa(`${KROGER_CLIENT_ID}:KIJMvRMbsD0cf19lnsiU06SCp3pzlh0-_3eofy1K`);
-                const res = await fetch('https://recipe-roulette-new.vercel.app/api/kroger-token', {
+                const res = await fetch('https://reciperoulette.io/api/kroger-token', {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify({ grant_type: 'client_credentials', scope: 'product.compact' })
@@ -3809,7 +3809,7 @@ const MealPrepApp = ({ pendingJoinCode }) => {
                 if (cached) return cached;
                 try {
                   const appToken = await getKrogerAppToken();
-                  const res = await fetch('https://recipe-roulette-new.vercel.app/api/kroger-proxy', {
+                  const res = await fetch('https://reciperoulette.io/api/kroger-proxy', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ path: `/v1/locations?filter.zipCode=${zip}&filter.limit=1`, method: 'GET', token: appToken })
@@ -3851,7 +3851,7 @@ const MealPrepApp = ({ pendingJoinCode }) => {
                       const locationParam = locationId ? `&filter.locationId=${locationId}` : '';
                       const groceryPrefStr = (profile.groceryPrefs || []).join(' ');
                       const searchTerm = groceryPrefStr ? `${groceryPrefStr} ${ingredient.name}` : ingredient.name;
-                      const searchRes = await fetch('https://recipe-roulette-new.vercel.app/api/kroger-proxy', {
+                      const searchRes = await fetch('https://reciperoulette.io/api/kroger-proxy', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ path: `/v1/products?filter.term=${encodeURIComponent(searchTerm)}&filter.limit=1${locationParam}`, method: 'GET', token: krogerToken })
@@ -3861,7 +3861,7 @@ const MealPrepApp = ({ pendingJoinCode }) => {
                       if (product) cartItems.push({ upc: product.upc, quantity: ingredient.count || 1, modality: 'PICKUP' });
                     }
                     if (cartItems.length > 0) {
-                      await fetch('https://recipe-roulette-new.vercel.app/api/kroger-proxy', {
+                      await fetch('https://reciperoulette.io/api/kroger-proxy', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ path: '/v1/cart/add', method: 'PUT', token: krogerToken, body: { items: cartItems } })
@@ -4740,7 +4740,7 @@ Ingredients: ${(recipe.ingredients||[]).join(', ')}`
               <div style={{marginTop:'16px',paddingTop:'14px',borderTop:'1px solid rgba(255,255,255,0.06)',display:'flex',alignItems:'center',justifyContent:'center',gap:'8px'}}>
                 <span style={{fontSize:'11px',color:'#7a7060'}}>Made with</span>
                 <img src="/logo.png" alt="" style={{width:'16px',height:'16px',objectFit:'contain'}} />
-                <a href="https://recipe-roulette-new.vercel.app" target="_blank" rel="noopener noreferrer" style={{fontSize:'11px',color:'#a78bfa',fontWeight:600,textDecoration:'none'}}>Recipe Roulette</a>
+                <a href="https://reciperoulette.io" target="_blank" rel="noopener noreferrer" style={{fontSize:'11px',color:'#a78bfa',fontWeight:600,textDecoration:'none'}}>Recipe Roulette</a>
               </div>
             </div>
 
@@ -4955,9 +4955,9 @@ const App = () => {
     if (krogerState === savedState || savedState === null) {
       const KROGER_CLIENT_ID = 'thereciperoulette-bbcc09pc';
       const KROGER_CLIENT_SECRET = 'KIJMvRMbsD0cf19lnsiU06SCp3pzlh0-_3eofy1K';
-      const KROGER_REDIRECT_URI = 'https://recipe-roulette-new.vercel.app/auth/callback';
+      const KROGER_REDIRECT_URI = 'https://reciperoulette.io/auth/callback';
       const credentials = btoa(`${KROGER_CLIENT_ID}:${KROGER_CLIENT_SECRET}`);
-      fetch('https://recipe-roulette-new.vercel.app/api/kroger-token', {
+      fetch('https://reciperoulette.io/api/kroger-token', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ code: krogerCode, redirect_uri: KROGER_REDIRECT_URI })

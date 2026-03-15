@@ -175,32 +175,32 @@ const feedPostPool = [
     title:"Gordon Ramsay's Perfect Scrambled Eggs",
     body:"Low heat, constant motion, off the pan early. Three minutes of watching this will change how you scramble eggs forever.",
     youtubeId:'ZJy1ajvMU1k', channel:'Gordon Ramsay', duration:'3:14',
-    thumbnail:`https://img.youtube.com/vi/ZJy1ajvMU1k/hqdefault.jpg` },
+    thumbnail:'https://images.unsplash.com/photo-1582169296194-e4d644c48063?w=600&h=340&fit=crop' },
   { id:'v2', type:'video', category:'video', tag:'🎬 Cooking Tips & Tricks',
     title:'How to Season a Cast Iron Pan Properly',
     body:"Cast iron is the most forgiving pan you can own — once you know how to take care of it. This is the definitive guide.",
     youtubeId:'t-WHGOPWRFE', channel:'Ethan Chlebowski', duration:'8:22',
-    thumbnail:`https://img.youtube.com/vi/t-WHGOPWRFE/hqdefault.jpg` },
+    thumbnail:'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=600&h=340&fit=crop' },
   { id:'v3', type:'video', category:'video', tag:'🎬 Cooking Tips & Tricks',
     title:'Knife Skills Every Home Cook Should Know',
     body:"The claw grip, the rocking motion, how to hold the knife. Ten minutes of practice here saves fingers for a lifetime.",
     youtubeId:'0OHhoPz16NE', channel:'Jamie Oliver', duration:'7:45',
-    thumbnail:`https://img.youtube.com/vi/0OHhoPz16NE/hqdefault.jpg` },
+    thumbnail:'https://images.unsplash.com/photo-1607877742574-a7d9a7449af3?w=600&h=340&fit=crop' },
   { id:'v4', type:'video', category:'video', tag:'🎬 Cooking Tips & Tricks',
     title:'Meal Prep for the Whole Week in 1 Hour',
     body:"Batch grains, roast a sheet pan, prep your protein. This is the system that makes weeknight cooking effortless.",
     youtubeId:'ogroTh_CNbg', channel:'Joshua Weissman', duration:'12:40',
-    thumbnail:`https://img.youtube.com/vi/ogroTh_CNbg/hqdefault.jpg` },
+    thumbnail:'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=600&h=340&fit=crop' },
   { id:'v5', type:'video', category:'video', tag:'🎬 Cooking Tips & Tricks',
     title:'How to Make Perfect Pasta Every Time',
     body:"Salt the water like the sea, pull it early, finish it in the sauce. The Italians figured this out centuries ago.",
     youtubeId:'0MeX2p2G_oA', channel:'Italia Squisita', duration:'6:18',
-    thumbnail:`https://img.youtube.com/vi/0MeX2p2G_oA/hqdefault.jpg` },
+    thumbnail:'https://images.unsplash.com/photo-1621996346565-e3dbc646d9a9?w=600&h=340&fit=crop' },
   { id:'v6', type:'video', category:'video', tag:'🎬 Cooking Tips & Tricks',
     title:'5 Sauces Every Cook Should Know',
     body:"Master these five and you can riff on almost any dish. Béchamel, vinaigrette, pan sauce, salsa verde, and a quick tomato.",
     youtubeId:'U4KDxTVXoxI', channel:'Ethan Chlebowski', duration:'14:02',
-    thumbnail:`https://img.youtube.com/vi/U4KDxTVXoxI/hqdefault.jpg` },
+    thumbnail:'https://images.unsplash.com/photo-1495521821757-a1efb6729352?w=600&h=340&fit=crop' },
 
   // ── COMMUNITY ─────────────────────────────────────────────────────────────
   { id:'c1', type:'hero', category:'community', tag:'⭐ Community Favourite',
@@ -325,6 +325,15 @@ const AuthScreen = ({ onGuest }) => {
   const handle = async (e) => {
     e.preventDefault();
     setLoading(true); setError(''); setMessage('');
+    if (mode === 'forgot') {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: 'https://reciperoulette.io'
+      });
+      if (error) setError(error.message);
+      else setMessage('Check your email — we sent you a password reset link.');
+      setLoading(false);
+      return;
+    }
     if (mode === 'login') {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) setError(error.message);
@@ -344,40 +353,67 @@ const AuthScreen = ({ onGuest }) => {
           <p style={{margin:0,color:'#6a6050',fontSize:'15px'}}>Plan together, eat better</p>
         </div>
         <div style={{background:'#fefcf8',borderRadius:'12px',padding:'32px',border:'1px solid #e0d8cc'}}>
-          <div style={{display:'flex',gap:'8px',marginBottom:'24px',background:'#f4f0ea',borderRadius:'8px',padding:'4px'}}>
-            {['login','signup'].map(m => (
-              <button key={m} onClick={() => { setMode(m); setError(''); setMessage(''); }}
-                style={{flex:1,padding:'10px',background:mode===m?'#ffffff':'transparent',color:mode===m?'#000000':'#999',border:'none',borderRadius:'6px',fontWeight:600,fontSize:'14px',cursor:'pointer'}}>
-                {m === 'login' ? 'Log In' : 'Sign Up'}
+          {mode !== 'forgot' && (
+            <div style={{display:'flex',gap:'8px',marginBottom:'24px',background:'#f4f0ea',borderRadius:'8px',padding:'4px'}}>
+              {['login','signup'].map(m => (
+                <button key={m} onClick={() => { setMode(m); setError(''); setMessage(''); }}
+                  style={{flex:1,padding:'10px',background:mode===m?'#ffffff':'transparent',color:mode===m?'#000000':'#999',border:'none',borderRadius:'6px',fontWeight:600,fontSize:'14px',cursor:'pointer'}}>
+                  {m === 'login' ? 'Log In' : 'Sign Up'}
+                </button>
+              ))}
+            </div>
+          )}
+          {mode === 'forgot' && (
+            <div style={{marginBottom:'20px'}}>
+              <button onClick={() => { setMode('login'); setError(''); setMessage(''); }}
+                style={{background:'none',border:'none',cursor:'pointer',color:'#9a9080',fontSize:'13px',padding:0,display:'flex',alignItems:'center',gap:'4px'}}>
+                ← Back to Log In
               </button>
-            ))}
-          </div>
+              <h3 style={{margin:'12px 0 4px',fontSize:'20px',fontWeight:600,color:'#1c2820',fontFamily:"'Cormorant Garamond',serif"}}>Reset Password</h3>
+              <p style={{margin:0,fontSize:'13px',color:'#6a6050'}}>Enter your email and we'll send you a reset link.</p>
+            </div>
+          )}
           <form onSubmit={handle}>
             <div style={{marginBottom:'16px'}}>
               <label style={{display:'block',marginBottom:'6px',fontWeight:600,color:'#1c2820',fontSize:'14px'}}>Email</label>
               <input type="email" value={email} onChange={e => setEmail(e.target.value)} required placeholder="you@example.com"
                 style={{width:'100%',padding:'11px 14px',border:'1px solid #e0d8cc',borderRadius:'8px',fontSize:'14px',background:'#f4f0ea',color:'#1c2820',outline:'none',boxSizing:'border-box'}} />
             </div>
-            <div style={{marginBottom:'24px'}}>
-              <label style={{display:'block',marginBottom:'6px',fontWeight:600,color:'#1c2820',fontSize:'14px'}}>Password</label>
-              <input type="password" value={password} onChange={e => setPassword(e.target.value)} required placeholder="Min 6 characters" minLength={6}
-                style={{width:'100%',padding:'11px 14px',border:'1px solid #e0d8cc',borderRadius:'8px',fontSize:'14px',background:'#f4f0ea',color:'#1c2820',outline:'none',boxSizing:'border-box'}} />
-            </div>
+            {mode !== 'forgot' && (
+              <div style={{marginBottom:'8px'}}>
+                <label style={{display:'block',marginBottom:'6px',fontWeight:600,color:'#1c2820',fontSize:'14px'}}>Password</label>
+                <input type="password" value={password} onChange={e => setPassword(e.target.value)} required placeholder="Min 6 characters" minLength={6}
+                  style={{width:'100%',padding:'11px 14px',border:'1px solid #e0d8cc',borderRadius:'8px',fontSize:'14px',background:'#f4f0ea',color:'#1c2820',outline:'none',boxSizing:'border-box'}} />
+              </div>
+            )}
+            {mode === 'login' && (
+              <div style={{textAlign:'right',marginBottom:'20px'}}>
+                <button type="button" onClick={() => { setMode('forgot'); setError(''); setMessage(''); }}
+                  style={{background:'none',border:'none',cursor:'pointer',color:'#9a9080',fontSize:'12px',fontWeight:500,padding:0,textDecoration:'underline'}}>
+                  Forgot password?
+                </button>
+              </div>
+            )}
+            {mode !== 'login' && mode !== 'forgot' && <div style={{marginBottom:'24px'}} />}
             {error && <div style={{background:'#2d1515',border:'1px solid #ff4444',borderRadius:'8px',padding:'12px',marginBottom:'16px',color:'#c46a3a',fontSize:'13px'}}>{error}</div>}
             {message && <div style={{background:'#152d1a',border:'1px solid #5a9a6a',borderRadius:'8px',padding:'12px',marginBottom:'16px',color:'#5a9a6a',fontSize:'13px'}}>{message}</div>}
             <button type="submit" disabled={loading}
               style={{width:'100%',padding:'13px',background:'#1c2820',color:'#f0ece4',border:'none',borderRadius:'8px',fontSize:'15px',fontWeight:700,cursor:loading?'not-allowed':'pointer',opacity:loading?0.7:1}}>
-              {loading ? 'Please wait...' : mode === 'login' ? 'Log In' : 'Create Account'}
+              {loading ? 'Please wait...' : mode === 'login' ? 'Log In' : mode === 'forgot' ? 'Send Reset Link' : 'Create Account'}
             </button>
-            <div style={{display:'flex',alignItems:'center',gap:'12px',margin:'20px 0 0'}}>
-              <div style={{flex:1,height:'1px',background:'#f0ece4'}} />
-              <span style={{color:'#7a7060',fontSize:'12px',fontWeight:600}}>OR</span>
-              <div style={{flex:1,height:'1px',background:'#f0ece4'}} />
-            </div>
-            <button type="button" onClick={onGuest}
-              style={{width:'100%',marginTop:'12px',padding:'13px',background:'transparent',color:'#9a9080',border:'1px solid #e0d8cc',borderRadius:'8px',fontSize:'14px',fontWeight:600,cursor:'pointer'}}>
-              👀 View as Guest
-            </button>
+            {mode !== 'forgot' && (
+              <>
+                <div style={{display:'flex',alignItems:'center',gap:'12px',margin:'20px 0 0'}}>
+                  <div style={{flex:1,height:'1px',background:'#f0ece4'}} />
+                  <span style={{color:'#7a7060',fontSize:'12px',fontWeight:600}}>OR</span>
+                  <div style={{flex:1,height:'1px',background:'#f0ece4'}} />
+                </div>
+                <button type="button" onClick={onGuest}
+                  style={{width:'100%',marginTop:'12px',padding:'13px',background:'transparent',color:'#9a9080',border:'1px solid #e0d8cc',borderRadius:'8px',fontSize:'14px',fontWeight:600,cursor:'pointer'}}>
+                  👀 View as Guest
+                </button>
+              </>
+            )}
           </form>
         </div>
       </div>
@@ -391,7 +427,7 @@ const PublicUserRecipes = ({ userId, onSelect }) => {
   const [loading, setLoading] = useState(true);
   useEffect(() => {
     const load = async () => {
-      const { data, error } = await supabase.from('user_recipes').select('recipe').eq('user_id', userId);
+      const { data } = await supabase.from('user_recipes').select('recipe').eq('user_id', userId);
       setRecipes(data ? data.map(r => r.recipe) : []);
       setLoading(false);
     };
@@ -530,7 +566,6 @@ const MealPrepApp = ({ pendingJoinCode }) => {
   const [likedPosts, setLikedPosts] = useState(new Set());
   const [savedPosts, setSavedPosts] = useState(new Set());
   const [activeFilter, setActiveFilter] = useState('all');
-  const [playingVideo, setPlayingVideo] = useState(null);
   const [folders, setFolders] = useState([
     {id:'f1', name:'House Favorites', emoji:'🏠', recipes:[]}
   ]);
@@ -554,8 +589,6 @@ const MealPrepApp = ({ pendingJoinCode }) => {
   const wheelTargetRef    = React.useRef(0);
   const wheelStartTimeRef = React.useRef(null);
   const wheelLastSegRef   = React.useRef(0);
-  const settingsLoadedRef = React.useRef(false);
-  const dataLoadedRef = React.useRef(false);
   const [wheelSpinning,      setWheelSpinning]      = useState(false);
   const [wheelDone,          setWheelDone]          = useState(false);
   const [wheelPointerBounce, setWheelPointerBounce] = useState(false);
@@ -566,10 +599,6 @@ const MealPrepApp = ({ pendingJoinCode }) => {
   const [showMealPlanShare, setShowMealPlanShare] = useState(false);
   const [generatingCard, setGeneratingCard] = useState(false);
   const [follows, setFollows] = useState(new Set()); // set of user_ids we follow
-  const [followers, setFollowers] = useState([]); // people who follow you: [{user_id, username, avatar_url}]
-  const [followingList, setFollowingList] = useState([]); // people you follow: [{user_id, username, avatar_url}]
-  const [showFollowModal, setShowFollowModal] = useState(null); // 'followers' | 'following' | null
-  const [followedRecipes, setFollowedRecipes] = useState([]); // recipes from followed users
   const [showFindPeople, setShowFindPeople] = useState(false);
   const [peopleSearch, setPeopleSearch] = useState('');
   const [peopleResults, setPeopleResults] = useState([]);
@@ -590,11 +619,8 @@ const MealPrepApp = ({ pendingJoinCode }) => {
   const [communitySearch, setCommunitySearch] = useState('');
   const [showAddRecipeModal, setShowAddRecipeModal] = useState(false);
   const [showEditRecipeModal, setShowEditRecipeModal] = useState(null);
-  const [autoFillWarning, setAutoFillWarning] = useState('');
+  const [shareToast, setShareToast] = useState(''); // 'copying' | 'copied' | ''
   const [selectionMode, setSelectionMode] = useState(false);
-  const [reorderMode, setReorderMode] = useState(false);
-  const dragItem = React.useRef(null);
-  const dragOverItem = React.useRef(null);
   const [selectedRecipeIds, setSelectedRecipeIds] = useState(new Set());
   const [showBulkDeleteConfirm, setShowBulkDeleteConfirm] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
@@ -630,16 +656,28 @@ const MealPrepApp = ({ pendingJoinCode }) => {
   const [draggedMeal, setDraggedMeal] = useState(null);
   const [recipeFilters, setRecipeFilters] = useState({cookTime:'all',mealType:'all',tried:'all',author:'all'});
   const [autoFillSettings, setAutoFillSettings] = useState({easyMeals:3,communityMeals:2,untriedRecipes:2,budgetMeals:0});
-  const allCommunityRecipes = []; // shared_recipes feature removed
+  const [dynamicCommunityRecipes, setDynamicCommunityRecipes] = useState([]);
+  // Merge hardcoded sample community recipes with user-shared recipes from DB
+  // De-duplicate by recipe id so sharing an existing sample recipe doesn't double it
+  const allCommunityRecipes = React.useMemo(() => {
+    const seen = new Set();
+    const merged = [...dynamicCommunityRecipes]; // only real user-submitted recipes
+    return merged.filter(r => {
+      const key = r._sharedId || r.id;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  }, [dynamicCommunityRecipes]);
   const [recipeCostCache, setRecipeCostCache] = useState({}); // { recipeId: costPerServing }
   const [mealTypeSettings, setMealTypeSettings] = useState({
-    0:{breakfast:true,lunch:true,dinner:true},
+    0:{breakfast:true,lunch:false,dinner:true},
     1:{breakfast:true,lunch:true,dinner:true},
     2:{breakfast:true,lunch:true,dinner:true},
     3:{breakfast:true,lunch:true,dinner:true},
     4:{breakfast:true,lunch:true,dinner:true},
     5:{breakfast:true,lunch:true,dinner:true},
-    6:{breakfast:true,lunch:true,dinner:true}
+    6:{breakfast:true,lunch:false,dinner:true}
   });
   const [disabledSlots, setDisabledSlots] = useState({});
   const [mealPlan, setMealPlan] = useState(emptyMealPlan);
@@ -795,8 +833,7 @@ const MealPrepApp = ({ pendingJoinCode }) => {
   }, [guestMode]);
 
   useEffect(() => {
-    if (session?.user && !dataLoadedRef.current) {
-      dataLoadedRef.current = true;
+    if (session?.user) {
       loadUserData(session.user.id);
       if (pendingJoinCode) {
         setShowHouseholdModal(true);
@@ -820,38 +857,26 @@ const MealPrepApp = ({ pendingJoinCode }) => {
   const loadUserData = async (userId) => {
     const hh = await loadHousehold(userId);
     const hhId = hh?.id;
-
-    // Build queries
+    // Load meals - if in household, load all household members' meals
     let mealsQuery = supabase.from('meal_plans').select('*');
-    let recipesQuery = supabase.from('user_recipes').select('*');
     if (hhId) {
       const { data: members } = await supabase.from('household_members').select('user_id').eq('household_id', hhId);
       const memberIds = members ? members.map(m => m.user_id) : [userId];
       mealsQuery = mealsQuery.in('user_id', memberIds);
-      recipesQuery = recipesQuery.in('user_id', memberIds);
     } else {
       mealsQuery = mealsQuery.eq('user_id', userId);
+    }
+    const { data: meals } = await mealsQuery;
+    // Load recipes - if in household, load all members' recipes
+    let recipesQuery = supabase.from('user_recipes').select('*');
+    if (hhId) {
+      const { data: members } = await supabase.from('household_members').select('user_id').eq('household_id', hhId);
+      const memberIds = members ? members.map(m => m.user_id) : [userId];
+      recipesQuery = recipesQuery.in('user_id', memberIds);
+    } else {
       recipesQuery = recipesQuery.eq('user_id', userId);
     }
-
-    // Fire all independent queries in parallel
-    const [
-      { data: meals },
-      { data: recipes },
-      { data: prof },
-      { data: followData },
-      { data: saved },
-      { data: ratings },
-      { data: communityRatingsData },
-    ] = await Promise.all([
-      mealsQuery,
-      recipesQuery,
-      supabase.from('profiles').select('*').eq('id', userId).single(),
-      supabase.from('follows').select('following_id').eq('follower_id', userId),
-      supabase.from('saved_recipes').select('recipe_id').eq('user_id', userId),
-      supabase.from('recipe_ratings').select('*').eq('user_id', userId),
-      supabase.from('recipe_ratings').select('recipe_id, rating'),
-    ]);
+    const { data: recipes } = await recipesQuery;
     let loadedRecipes = recipes ? recipes.map(r => r.recipe) : [];
 
     if (meals && meals.length > 0) {
@@ -901,39 +926,27 @@ const MealPrepApp = ({ pendingJoinCode }) => {
     }
 
     setUserRecipes(loadedRecipes);
-
-    // Apply parallel results
-    if (followData) {
-      const followedIds = followData.map(f => f.following_id);
-      setFollows(new Set(followedIds));
-      if (followedIds.length > 0) {
-        const [{ data: friendRecipes }, { data: followingProfiles }] = await Promise.all([
-          supabase.from('user_recipes').select('recipe, user_id').in('user_id', followedIds),
-          supabase.from('user_profiles_public').select('user_id, username, avatar_url').in('user_id', followedIds),
-        ]);
-        if (friendRecipes) setFollowedRecipes(friendRecipes.map(r => ({ ...r.recipe, _followedUserId: r.user_id })));
-        if (followingProfiles) setFollowingList(followingProfiles);
-      }
-      // Load people who follow you
-      const { data: followerData } = await supabase.from('follows').select('follower_id').eq('following_id', userId);
-      if (followerData && followerData.length > 0) {
-        const followerIds = followerData.map(f => f.follower_id);
-        const { data: followerProfiles } = await supabase.from('user_profiles_public').select('user_id, username, avatar_url').in('user_id', followerIds);
-        if (followerProfiles) setFollowers(followerProfiles);
+    // Load follows
+    const { data: followData } = await supabase.from('follows').select('following_id').eq('follower_id', userId);
+    if (followData) setFollows(new Set(followData.map(f => f.following_id)));
+    // Upsert public profile
+    if (session?.user) {
+      const { data: prof } = await supabase.from('profiles').select('display_name,avatar_url').eq('id', userId).single();
+      if (prof?.display_name) {
+        await supabase.from('user_profiles_public').upsert({
+          user_id: userId,
+          username: prof.display_name,
+          phone: prof.phone || '',
+        zipCode: prof.zip_code || '',
+          avatar_url: prof.avatar_url || '',
+          recipe_count: loadedRecipes.length
+        }, { onConflict: 'user_id' });
       }
     }
+    const { data: saved } = await supabase.from('saved_recipes').select('recipe_id').eq('user_id', userId);
     if (saved) setSavedRecipes(new Set(saved.map(r => r.recipe_id)));
-
-    // Upsert public profile (fire and forget)
-    if (prof?.display_name) {
-      supabase.from('user_profiles_public').upsert({
-        user_id: userId,
-        username: prof.display_name,
-        avatar_url: prof.avatar_url || '',
-        recipe_count: loadedRecipes.length
-      }, { onConflict: 'user_id' });
-    }
-
+    // Load profile
+    const { data: prof } = await supabase.from('profiles').select('*').eq('id', userId).single();
     if (prof) {
       setProfile({
         displayName: prof.display_name || '',
@@ -945,16 +958,6 @@ const MealPrepApp = ({ pendingJoinCode }) => {
         groceryPrefs: prof.grocery_prefs || [],
         householdSize: (prof.adults || 2) + (prof.children || 0), adults: prof.adults ?? 2, children: prof.children ?? 0
       });
-      // Restore meal planning settings
-      if (prof.meal_type_settings) { setMealTypeSettings(prof.meal_type_settings);
-        // Derive disabledSlots from mealTypeSettings so they stay in sync
-        const derived = {};
-        Object.entries(prof.meal_type_settings).forEach(([d, meals]) => {
-          Object.entries(meals).forEach(([mt, on]) => { if (!on) derived[`${d}-${mt}`] = true; });
-        });
-        setDisabledSlots(derived);
-      }
-      settingsLoadedRef.current = true;
       // Load saved folders
       if (prof.folders && Array.isArray(prof.folders) && prof.folders.length > 0) {
         setFolders(prof.folders);
@@ -967,21 +970,35 @@ const MealPrepApp = ({ pendingJoinCode }) => {
       // Brand new user — no profile yet
       setShowOnboarding(true);
       setOnboardingStep(1);
-      settingsLoadedRef.current = true;
     }
     setLoadingProfile(false);
-
-    // Apply ratings (already loaded in parallel)
+    // Load user ratings
+    const { data: ratings } = await supabase.from('recipe_ratings').select('*').eq('user_id', userId);
     if (ratings) {
       const ratingsMap = {};
       ratings.forEach(r => { ratingsMap[r.recipe_id] = {rating: r.rating, ratedAt: r.created_at}; });
       setUserRatings(ratingsMap);
     }
+    // Load shared recipes from community
+    const { data: sharedRecipes } = await supabase.from('shared_recipes').select('*').order('created_at', { ascending: false });
+    if (sharedRecipes) {
+      const formatted = sharedRecipes.map(row => ({
+        ...row.recipe,
+        id: row.recipe?.id || row.id,
+        _sharedId: row.id,
+        author: row.recipe?.author || 'Community Member',
+        user_id: row.created_by,
+        likes: row.recipe?.likes || 0,
+        isShared: true,
+      }));
+      setDynamicCommunityRecipes(formatted);
+    }
 
-    // Apply community ratings (loaded in parallel)
-    if (communityRatingsData) {
+    // Load community ratings (average + count per recipe)
+    const { data: communityRatings } = await supabase.from('recipe_ratings').select('recipe_id, rating');
+    if (communityRatings) {
       const ratingsMap = {};
-      communityRatingsData.forEach(r => {
+      communityRatings.forEach(r => {
         if (!ratingsMap[r.recipe_id]) ratingsMap[r.recipe_id] = {total: 0, count: 0};
         ratingsMap[r.recipe_id].total += r.rating;
         ratingsMap[r.recipe_id].count += 1;
@@ -1137,9 +1154,6 @@ const MealPrepApp = ({ pendingJoinCode }) => {
     const userId = session.user.id;
     await supabase.from('follows').insert({ follower_id: userId, following_id: targetUserId });
     setFollows(prev => new Set([...prev, targetUserId]));
-    // Load their recipes
-    const { data: friendRecipes } = await supabase.from('user_recipes').select('recipe, user_id').eq('user_id', targetUserId);
-    if (friendRecipes) setFollowedRecipes(prev => [...prev, ...friendRecipes.map(r => ({ ...r.recipe, _followedUserId: r.user_id }))]);
     // Increment follower count
     await supabase.rpc('increment_follower_count', { target_user_id: targetUserId }).catch(() => {});
   };
@@ -1148,7 +1162,6 @@ const MealPrepApp = ({ pendingJoinCode }) => {
     if (!session?.user) return;
     await supabase.from('follows').delete().eq('follower_id', session.user.id).eq('following_id', targetUserId);
     setFollows(prev => { const n = new Set(prev); n.delete(targetUserId); return n; });
-    setFollowedRecipes(prev => prev.filter(r => r._followedUserId !== targetUserId));
   };
 
   const toggleFollow = async (targetUserId) => {
@@ -1175,6 +1188,41 @@ const MealPrepApp = ({ pendingJoinCode }) => {
     const d = getDayDate(dayIndex);
     const now = new Date();
     return d.getDate() === now.getDate() && d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+  };
+
+  const shareRecipe = async (recipe) => {
+    setShareToast('copying');
+    try {
+      // Check if already shared
+      const { data: existing } = await supabase.from('shared_recipes').select('id').eq('recipe->>id', recipe.id).single();
+      let shareId = existing?.id;
+      if (!shareId) {
+        // Generate short random ID
+        shareId = Math.random().toString(36).slice(2, 8);
+        await supabase.from('shared_recipes').insert({
+          id: shareId,
+          recipe: recipe,
+          created_by: session?.user?.id || 'guest'
+        });
+      }
+      const url = `${window.location.origin}${window.location.pathname}?r=${shareId}`;
+      await navigator.clipboard.writeText(url);
+      setShareToast('copied');
+      setTimeout(() => setShareToast(''), 2500);
+      // Refresh community recipes so shared recipe appears immediately
+      const { data: sharedRecipes } = await supabase.from('shared_recipes').select('*').order('created_at', { ascending: false });
+      if (sharedRecipes) {
+        const formatted = sharedRecipes.map(row => ({
+          ...row.recipe, id: row.recipe?.id || row.id, _sharedId: row.id,
+          author: row.recipe?.author || 'Community Member', user_id: row.created_by,
+          likes: row.recipe?.likes || 0, isShared: true,
+        }));
+        setDynamicCommunityRecipes(formatted);
+      }
+    } catch (err) {
+      console.error('Share error:', err);
+      setShareToast('');
+    }
   };
 
   const getWeekStart = () => {
@@ -1490,26 +1538,6 @@ const MealPrepApp = ({ pendingJoinCode }) => {
         for (let j = 0; j < autoFillSettings.untriedRecipes && i < slots.length; j++, i++) newPlan[slots[i].d][slots[i].mt] = pickForSlot(untried, slots[i]);
         const budget = all.filter(r => recipeCostCache[r.id] !== undefined && recipeCostCache[r.id] <= 5).sort(() => Math.random() - 0.5);
         for (let j = 0; j < autoFillSettings.budgetMeals && i < slots.length; j++, i++) newPlan[slots[i].d][slots[i].mt] = pickForSlot(budget.length ? budget : all, slots[i]);
-        // Fill any remaining empty slots from Recipe Book, repeating if needed
-        if (i < slots.length) {
-          const fallback = myRecipes.length > 0 ? myRecipes : all;
-          let usedRepeats = false;
-          while (i < slots.length) {
-            const suitable = filterForSlot(fallback, slots[i].mt, userPrefs);
-            const pool = suitable.length > 0 ? suitable : fallback;
-            // Check if we're about to repeat something already in the plan
-            const alreadyUsed = Object.values(newPlan).flatMap(day => Object.values(day)).filter(Boolean).map(r => r.id);
-            const fresh = pool.filter(r => !alreadyUsed.includes(r.id));
-            if (fresh.length === 0) usedRepeats = true;
-            const pick = fresh.length > 0 ? fresh[Math.floor(Math.random() * fresh.length)] : pool[Math.floor(Math.random() * pool.length)];
-            newPlan[slots[i].d][slots[i].mt] = pick;
-            i++;
-          }
-          if (usedRepeats) {
-            setAutoFillWarning('duplicate');
-            setTimeout(() => setAutoFillWarning(''), 8000);
-          }
-        }
         setMealPlan(newPlan); saveMealPlan(newPlan);
       }, 1200);
     }
@@ -1520,20 +1548,6 @@ const MealPrepApp = ({ pendingJoinCode }) => {
       drawWheelCanvas(wheelCanvasRef.current, wheelDegRef.current);
     }
   }, [showSpinningWheel, drawWheelCanvas]);
-
-  // Auto-save meal planning settings to Supabase whenever they change
-  useEffect(() => {
-    if (!session?.user || guestMode || !settingsLoadedRef.current) return;
-    const timer = setTimeout(async () => {
-      const { error } = await supabase.from('profiles').upsert({
-        id: session.user.id,
-        meal_type_settings: mealTypeSettings,
-        disabled_slots: disabledSlots,
-        updated_at: new Date().toISOString()
-      }, { onConflict: 'id' });
-    }, 800);
-    return () => clearTimeout(timer);
-  }, [mealTypeSettings, disabledSlots, session, guestMode]);
 
   const autoFillCalendar = () => {
     setShowAutoFillModal(false);
@@ -1624,7 +1638,7 @@ const MealPrepApp = ({ pendingJoinCode }) => {
           {label:'Cook Time',key:'cookTime',opts:[['all','All Times'],['quick','Quick < 20min'],['medium','20-40min'],['long','40+min']]},
           {label:'Meal Type',key:'mealType',opts:[['all','All Meals'],['breakfast','Breakfast'],['lunch','Lunch'],['dinner','Dinner']]},
           ...(showTried?[{label:'Status',key:'tried',opts:[['all','All'],['tried','Tried'],['untried','Not Tried']]}]:[]),
-          ...(showAuthor?[{label:'Author',key:'author',opts:[['all','All Authors'],...[...new Set(followedRecipes.map(r=>r.author).filter(Boolean))].sort().map(a=>[a,a])]}]:[])
+          ...(showAuthor?[{label:'Author',key:'author',opts:[['all','All Authors'],...[...new Set(allCommunityRecipes.map(r=>r.author))].sort().map(a=>[a,a])]}]:[])
         ].map(({label,key,opts}) => (
           <div key={key}>
             <label style={{display:'block',marginBottom:'4px',fontSize:'11px',fontWeight:600,color:'#9a9080',textTransform:'uppercase'}}>{label}</label>
@@ -1848,27 +1862,25 @@ const MealPrepApp = ({ pendingJoinCode }) => {
 
                           {/* Video card */}
                           {isVideo && (
-                            <div style={{position:'relative',height:'200px',overflow:'hidden',background:'#111'}}>
-                              <div onClick={() => window.open(`https://www.youtube.com/watch?v=${post.youtubeId}`, '_blank', 'noopener,noreferrer')} style={{position:'relative',height:'100%',cursor:'pointer'}}>
-                                  <img
-                                    src={post.thumbnail}
-                                    alt={post.title}
-                                    style={{width:'100%',height:'100%',objectFit:'cover',opacity:0.82}}
-                                  />
-                                  <div style={{position:'absolute',inset:0,background:'linear-gradient(to bottom, transparent 30%, rgba(0,0,0,0.72) 100%)'}} />
-                                  <div style={{position:'absolute',top:'14px',left:'14px',background:'rgba(0,0,0,0.55)',backdropFilter:'blur(8px)',padding:'5px 12px',borderRadius:'20px',fontSize:'12px',fontWeight:600,color:'#ffffff',border:'1px solid rgba(255,255,255,0.25)'}}>
-                                    {post.tag}
-                                  </div>
-                                  <div style={{position:'absolute',inset:0,display:'flex',alignItems:'center',justifyContent:'center'}}>
-                                    <div style={{width:'52px',height:'52px',background:'rgba(255,0,0,0.9)',borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',boxShadow:'0 2px 16px rgba(0,0,0,0.5)',transition:'transform 0.15s'}}
-                                      onMouseEnter={e => e.currentTarget.style.transform='scale(1.1)'}
-                                      onMouseLeave={e => e.currentTarget.style.transform='scale(1)'}
-                                    >
-                                      <span style={{fontSize:'20px',marginLeft:'4px',color:'#fff'}}>▶</span>
-                                    </div>
-                                  </div>
-                                  <div style={{position:'absolute',bottom:'7px',right:'12px',background:'rgba(0,0,0,0.72)',padding:'3px 8px',borderRadius:'6px',fontSize:'11px',fontWeight:600,color:'#fff'}}>{post.duration}</div>
+                            <div
+                              onClick={() => window.open(`https://www.youtube.com/watch?v=${post.youtubeId}`, '_blank', 'noopener,noreferrer')}
+                              style={{position:'relative',height:'200px',overflow:'hidden',background:'#111',cursor:'pointer'}}
+                            >
+                              <img
+                                src={post.thumbnail}
+                                alt={post.title}
+                                style={{width:'100%',height:'100%',objectFit:'cover',opacity:0.82}}
+                              />
+                              <div style={{position:'absolute',inset:0,background:'linear-gradient(to bottom, transparent 30%, rgba(0,0,0,0.72) 100%)'}} />
+                              <div style={{position:'absolute',top:'14px',left:'14px',background:'rgba(0,0,0,0.55)',backdropFilter:'blur(8px)',padding:'5px 12px',borderRadius:'20px',fontSize:'12px',fontWeight:600,color:'#ffffff',border:'1px solid rgba(255,255,255,0.25)'}}>
+                                {post.tag}
+                              </div>
+                              <div style={{position:'absolute',inset:0,display:'flex',alignItems:'center',justifyContent:'center'}}>
+                                <div style={{width:'48px',height:'48px',background:'rgba(255,0,0,0.88)',borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',boxShadow:'0 2px 12px rgba(0,0,0,0.5)'}}>
+                                  <span style={{fontSize:'18px',marginLeft:'3px',color:'#fff'}}>▶</span>
                                 </div>
+                              </div>
+                              <div style={{position:'absolute',bottom:'7px',right:'12px',background:'rgba(0,0,0,0.72)',padding:'3px 8px',borderRadius:'6px',fontSize:'11px',fontWeight:600,color:'#fff'}}>{post.duration}</div>
                             </div>
                           )}
 
@@ -1933,13 +1945,11 @@ const MealPrepApp = ({ pendingJoinCode }) => {
                             <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
                               <span style={{fontSize:'12px',color:'#7a7060'}}>{isVideo ? post.channel : 'Recipe Roulette'}</span>
                               {isVideo && (
-                                <a
-                                  href={`https://www.youtube.com/watch?v=${post.youtubeId}`}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  style={{padding:'7px 14px',background:'#ff0000',color:'#fff',border:'none',borderRadius:'8px',fontSize:'12px',fontWeight:600,cursor:'pointer',display:'flex',alignItems:'center',gap:'6px',textDecoration:'none'}}>
+                                <button
+                                  onClick={() => window.open(`https://www.youtube.com/watch?v=${post.youtubeId}`, '_blank', 'noopener,noreferrer')}
+                                  style={{padding:'7px 14px',background:'#ff0000',color:'#fff',border:'none',borderRadius:'8px',fontSize:'12px',fontWeight:600,cursor:'pointer',display:'flex',alignItems:'center',gap:'6px'}}>
                                   ▶ Watch on YouTube
-                                </a>
+                                </button>
                               )}
                               {post.recipe && (
                                 <div style={{display:'flex',gap:'8px'}}>
@@ -1989,17 +1999,18 @@ const MealPrepApp = ({ pendingJoinCode }) => {
                   👥 Find People
                 </button>
               </div>
-              <div style={{display:'flex',justifyContent:'center',gap:'32px',marginBottom:'12px'}}>
-                  <button onClick={() => setShowFollowModal('following')} style={{background:'none',border:'none',cursor:'pointer',textAlign:'center',padding:0}}>
-                    <span style={{fontWeight:700,color:'#1c2820',fontSize:'14px'}}>{follows.size}</span>
-                    <span style={{color:'#9a9080',fontSize:'13px',marginLeft:'4px'}}>Following</span>
+              {/* Following filter pills */}
+              <div style={{display:'flex',gap:'8px',marginBottom:'12px'}}>
+                {['all','following'].map(f => (
+                  <button key={f} onClick={() => setCommunityFilter(f)}
+                    style={{padding:'6px 14px',borderRadius:'20px',border:`1px solid ${communityFilter===f?'#1c2820':'#d8d0c4'}`,cursor:'pointer',fontWeight:communityFilter===f?600:400,fontSize:'12px',
+                    background: communityFilter===f ? '#1c2820' : '#fefcf8',
+                    color: communityFilter===f ? '#f0ece4' : '#6a6050'}}>
+                    {f === 'all' ? 'All Recipes' : `Following (${follows.size})`}
                   </button>
-                  <button onClick={() => setShowFollowModal('followers')} style={{background:'none',border:'none',cursor:'pointer',textAlign:'center',padding:0}}>
-                    <span style={{fontWeight:700,color:'#1c2820',fontSize:'14px'}}>{followers.length}</span>
-                    <span style={{color:'#9a9080',fontSize:'13px',marginLeft:'4px'}}>Followers</span>
-                  </button>
+                ))}
               </div>
-              <p style={{color:'#6a6050',margin:0}}>{filterRecipes(followedRecipes).length} recipes</p>
+              <p style={{color:'#6a6050',margin:0}}>{filterRecipes(allCommunityRecipes).length} recipes</p>
             </div>
             {/* Community search bar */}
             <div style={{position:'relative',marginBottom:'16px'}}>
@@ -2018,17 +2029,19 @@ const MealPrepApp = ({ pendingJoinCode }) => {
             <FilterBar showAuthor />
             <div style={{display:'grid',gridTemplateColumns:isMobile?'1fr':'repeat(auto-fill, minmax(260px, 1fr))',gap:'18px'}}>
               {((() => {
-                let list = filterRecipes(followedRecipes);
-                if (communitySearch.trim()) list = list.filter(r => r.name.toLowerCase().includes(communitySearch.toLowerCase()) || (r.tags||[]).some(t => t.toLowerCase().includes(communitySearch.toLowerCase())) || (r.author||'').toLowerCase().includes(communitySearch.toLowerCase()));
+                let list = filterRecipes(allCommunityRecipes);
+                if (communityFilter === 'following') list = list.filter(r => r.user_id && follows.has(r.user_id));
+                if (communitySearch.trim()) list = list.filter(r => r.name.toLowerCase().includes(communitySearch.toLowerCase()) || (r.tags||[]).some(t => t.toLowerCase().includes(communitySearch.toLowerCase())) || r.author.toLowerCase().includes(communitySearch.toLowerCase()));
                 return list;
               })()).length === 0 ? (
                 <div style={{gridColumn:'1/-1',textAlign:'center',padding:'60px',background:'#fefcf8',borderRadius:'12px',border:'1px solid #e0d8cc'}}>
                   <p style={{fontSize:'32px',margin:'0 0 10px 0'}}>{communitySearch ? '🔍' : '🍽'}</p>
-                  <p style={{color:'#9a9080'}}>{communitySearch ? `No recipes match "${communitySearch}"` : follows.size === 0 ? 'Find and follow friends to see their recipes here.' : 'No recipes from people you follow yet'}</p>
+                  <p style={{color:'#9a9080'}}>{communitySearch ? `No recipes match "${communitySearch}"` : communityFilter === 'following' ? 'Follow some users to see their recipes here' : 'No recipes match your filters'}</p>
                 </div>
               ) : ((() => {
-                let list = filterRecipes(followedRecipes);
-                if (communitySearch.trim()) list = list.filter(r => r.name.toLowerCase().includes(communitySearch.toLowerCase()) || (r.tags||[]).some(t => t.toLowerCase().includes(communitySearch.toLowerCase())) || (r.author||'').toLowerCase().includes(communitySearch.toLowerCase()));
+                let list = filterRecipes(allCommunityRecipes);
+                if (communityFilter === 'following') list = list.filter(r => r.user_id && follows.has(r.user_id));
+                if (communitySearch.trim()) list = list.filter(r => r.name.toLowerCase().includes(communitySearch.toLowerCase()) || (r.tags||[]).some(t => t.toLowerCase().includes(communitySearch.toLowerCase())) || r.author.toLowerCase().includes(communitySearch.toLowerCase()));
                 return list;
               })()).map(recipe => (
                 <div key={recipe.id} style={{background:'#fefcf8',borderRadius:'12px',overflow:'hidden',border:'1px solid #e0d8cc'}}>
@@ -2041,19 +2054,31 @@ const MealPrepApp = ({ pendingJoinCode }) => {
                       {recipe.cookTime < 20 && <div style={{position:'absolute',top:'10px',left:'10px',background:'#5a9a6a',color:'#fff',padding:'3px 8px',borderRadius:'6px',fontSize:'11px',fontWeight:600,display:'flex',alignItems:'center',gap:'3px'}}><Clock size={11} /> Quick</div>}
                     </div>
                     <div style={{padding:'14px 14px 8px'}}>
-                      <div style={{display:'flex',alignItems:'center',gap:'8px',marginBottom:'8px'}}>
-                        <div onClick={async e => { e.stopPropagation(); const p = followingList.find(p => p.user_id === recipe._followedUserId); if (p) setViewingProfile(p); }}
-                          style={{display:'flex',alignItems:'center',gap:'7px',cursor:'pointer',flex:1,minWidth:0}}>
-                          <div style={{width:'26px',height:'26px',borderRadius:'50%',background:'#e0d8cc',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'12px',flexShrink:0,overflow:'hidden'}}>
-                            {(() => { const p = followingList.find(p => p.user_id === recipe._followedUserId); return p?.avatar_url ? <img src={p.avatar_url} style={{width:'100%',height:'100%',objectFit:'cover'}} /> : '👤'; })()}
+                      <div style={{display:'flex',alignItems:'center',gap:'8px',marginBottom:'6px'}}>
+                        <div onClick={async e => { e.stopPropagation(); if (recipe.user_id) { const {data} = await supabase.from('user_profiles_public').select('*').eq('user_id', recipe.user_id).single(); if (data) setViewingProfile(data); } }}
+                          style={{display:'flex',alignItems:'center',gap:'6px',cursor:recipe.user_id?'pointer':'default'}}>
+                          <div style={{width:'26px',height:'26px',borderRadius:'50%',background:'#fefcf8',display:'flex',alignItems:'center',justifyContent:'center',color:'#1c2820',fontSize:'10px',fontWeight:700,overflow:'hidden',flexShrink:0}}>
+                            {recipe.avatarUrl ? <img src={recipe.avatarUrl} style={{width:'100%',height:'100%',objectFit:'cover'}} /> : recipe.avatar}
                           </div>
-                          <span style={{fontSize:'12px',color:'#5a9a6a',fontWeight:600,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>
-                            {followingList.find(p => p.user_id === recipe._followedUserId)?.username || recipe.author || 'Unknown'}
-                          </span>
+                          <span style={{fontSize:'12px',color: recipe.user_id ? '#a78bfa' : '#666'}}>{recipe.author}</span>
                         </div>
+                        {recipe.user_id && recipe.user_id !== session?.user?.id && (
+                          <button onClick={e => { e.stopPropagation(); toggleFollow(recipe.user_id); }}
+                            style={{marginLeft:'auto',padding:'3px 8px',borderRadius:'20px',border:'none',cursor:'pointer',fontWeight:600,fontSize:'10px',
+                            background: follows.has(recipe.user_id) ? '#262626' : '#a78bfa',
+                            color: follows.has(recipe.user_id) ? '#666' : '#fff'}}>
+                            {follows.has(recipe.user_id) ? 'Following' : '+ Follow'}
+                          </button>
+                        )}
                       </div>
-                      <h3 style={{margin:'0 0 6px 0',fontSize:'15px',fontWeight:600,color:'#1c2820',fontFamily:"'Cormorant Garamond',serif"}}>{recipe.name}</h3>
-                      <p style={{margin:0,fontSize:'12px',color:'#9a9080'}}>{[recipe.prepTime, recipe.cookTime ? `${recipe.cookTime} min cook` : null].filter(Boolean).join(' · ') || ' '}</p>
+                      <h3 style={{margin:'0 0 4px 0',fontSize:'15px',fontWeight:600,color:'#1c2820',fontFamily:"'Cormorant Garamond',serif"}}>{recipe.name}</h3>
+                      <RatingDisplay recipeId={recipe.id} compact />
+                      <p style={{margin:'6px 0 8px 0',fontSize:'12px',color:'#9a9080'}}>{recipe.prepTime}</p>
+                      <div style={{display:'flex',gap:'14px',fontSize:'12px',color:'#6a6050'}}>
+                        <span style={{display:'flex',alignItems:'center',gap:'3px'}}><Heart size={11} /> {recipe.likes}</span>
+                        <span>{recipe.onMenu} on menu</span>
+                        <span style={{display:'flex',alignItems:'center',gap:'3px'}}><Archive size={11} /> {recipe.saves + (savedRecipes.has(recipe.id)?1:0)}</span>
+                      </div>
                     </div>
                   </div>
                   <div style={{padding:'8px 14px 14px',display:'flex',gap:'6px',flexWrap:'wrap'}}>
@@ -2086,27 +2111,12 @@ const MealPrepApp = ({ pendingJoinCode }) => {
             <div style={{marginBottom:'24px'}}>
               <h2 style={{fontSize:isMobile?'24px':'30px',fontWeight:600,color:'#1c2820',margin:'0 0 2px 0',fontFamily:"'Cormorant Garamond',serif",fontStyle:'italic'}}>Weekly Meal Plan</h2>
               <p style={{color:'#6a6050',margin:'0 0 10px 0',fontSize:'13px'}}>Drag meals to rearrange • Click to view details</p>
-              {autoFillWarning === 'duplicate' && (
-                <div style={{background:'#fff8e6',border:'1px solid #f0c040',borderRadius:'8px',padding:'10px 14px',marginBottom:'14px',display:'flex',alignItems:'flex-start',gap:'10px'}}>
-                  <span style={{fontSize:'16px',flexShrink:0}}>⚠️</span>
-                  <div>
-                    <p style={{margin:'0 0 2px 0',fontSize:'12px',fontWeight:700,color:'#7a5c00'}}>Not enough recipes to avoid repeats</p>
-                    <p style={{margin:0,fontSize:'12px',color:'#7a5c00',lineHeight:1.5}}>Your Recipe Book didn't have enough variety to fill your full week without duplicates. Try adding more recipes from the Discover tab, or increase the Community Meals slider in Auto-Fill settings.</p>
-                  </div>
-                  <button onClick={() => setAutoFillWarning('')} style={{background:'none',border:'none',cursor:'pointer',color:'#7a5c00',fontSize:'16px',flexShrink:0,padding:0,marginLeft:'auto'}}>×</button>
-                </div>
-              )}
               {showMealsTip && (
                 <div style={{background:'#f4f0ea',borderRadius:'8px',padding:'10px 14px',marginBottom:'14px',border:'1px solid #e8e0d4',position:'relative'}}>
                   <button onClick={() => { setShowMealsTip(false); localStorage.setItem('mealsTipDismissed', 'true'); }}
                     style={{position:'absolute',top:'8px',right:'10px',background:'none',border:'none',cursor:'pointer',color:'#9a9080',fontSize:'16px',lineHeight:1,padding:0}}>×</button>
-                  <p style={{margin:'0 0 8px 0',fontSize:'12px',fontWeight:700,color:'#1c2820',fontFamily:"'Jost',sans-serif",letterSpacing:'0.3px'}}>💡 How to plan your week</p>
-                  <div style={{display:'flex',flexDirection:'column',gap:'6px',paddingRight:'16px'}}>
-                    <p style={{margin:0,fontSize:'12px',color:'#6a6050',lineHeight:1.5}}><strong style={{color:'#1c2820'}}>Step 1 —</strong> Go to <button onClick={() => setCurrentView('settings')} style={{background:'none',border:'none',padding:0,color:'#2d5a3d',fontWeight:600,fontSize:'12px',cursor:'pointer',textDecoration:'underline',fontFamily:"'Jost',sans-serif"}}>Settings</button> to choose which meals and days you want to plan for. Remove any day you don’t need this week (eating out, leftovers, fasting, etc.).</p>
-                    <p style={{margin:0,fontSize:'12px',color:'#6a6050',lineHeight:1.5}}><strong style={{color:'#1c2820'}}>Step 2 —</strong> Tap the <strong>+</strong> in any slot to manually add recipes from your existing Recipe Book that you know you want to cook this week.</p>
-                    <p style={{margin:0,fontSize:'12px',color:'#6a6050',lineHeight:1.5}}><strong style={{color:'#1c2820'}}>Step 3 —</strong> Hit <strong>Auto-Fill</strong> to get suggestions for any remaining empty slots.</p>
-                    <p style={{margin:'4px 0 0 0',fontSize:'12px',color:'#6a6050',lineHeight:1.5,borderTop:'1px solid #e8e0d4',paddingTop:'8px'}}><strong style={{color:'#1c2820'}}>📚 Tip:</strong> To build out your Recipe Book, import your favorites and browse the <strong>Discover</strong> section in the Recipe Book tab for featured creators, or check the <strong>Community</strong> tab to see what your friends have saved.</p>
-                  </div>
+                  <p style={{margin:'0 0 4px 0',fontSize:'12px',fontWeight:700,color:'#1c2820',fontFamily:"'Jost',sans-serif",letterSpacing:'0.3px'}}>💡 How to add meals</p>
+                  <p style={{margin:0,fontSize:'12px',color:'#6a6050',lineHeight:1.6,paddingRight:'16px'}}>Tap the <strong>+</strong> in any meal slot to add a recipe from your <strong>Recipe Book</strong> or saved Community recipes. Use <strong>Auto-Fill</strong> to plan your whole week at once. Can't see your recipes? Make sure they're saved in the Recipe Book tab first.</p>
                 </div>
               )}
               <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'8px'}}>
@@ -2604,18 +2614,16 @@ const MealPrepApp = ({ pendingJoinCode }) => {
                   {/* Folder cards */}
                   {folders.map(folder => {
                     const folderRecipes = folder.recipes.map(rid => allMyRecipes.find(r => r.id === rid)).filter(Boolean);
-                    const folderThumbRecipes = folderRecipes.filter(r => r.image).slice(0, 4);
-                    const emptySlots = 4 - folderThumbRecipes.length;
                     return (
                       <div key={folder.id} style={{background:'#fefcf8',borderRadius:'16px',overflow:'hidden',border:'1px solid #e0d8cc',cursor:'pointer',transition:'border-color 0.15s',position:'relative'}}
                         onClick={() => setActiveFolder(folder.id)}>
                         <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gridTemplateRows:'1fr 1fr',height:'180px',gap:'2px',position:'relative'}}>
-                          {folderThumbRecipes.map((r,i) => (
-                            <div key={i} style={{backgroundImage:`url(${r.image})`,backgroundSize:'cover',backgroundPosition:'center'}} />
+                          {folderRecipes.slice(0,4).map((r,i) => (
+                            <div key={i} style={{backgroundImage:r.image?`url(${r.image})`:'none',backgroundSize:'cover',backgroundPosition:'center',background:r.image?'transparent':'#262626'}} />
                           ))}
-                          {emptySlots > 0 && Array.from({length: emptySlots}).map((_,i) => (
+                          {folderRecipes.length < 4 && Array.from({length: 4 - Math.min(folderRecipes.length,4)}).map((_,i) => (
                             <div key={i} style={{background:'#f0ece4',display:'flex',alignItems:'center',justifyContent:'center'}}>
-                              {folderThumbRecipes.length === 0 && i === 1 && <span style={{fontSize:'32px',opacity:0.3}}>{folder.emoji}</span>}
+                              {folderRecipes.length === 0 && i === 1 && <span style={{fontSize:'32px',opacity:0.3}}>{folder.emoji}</span>}
                             </div>
                           ))}
                         </div>
@@ -2672,20 +2680,10 @@ const MealPrepApp = ({ pendingJoinCode }) => {
                   <button onClick={() => setShowAddRecipeModal(true)} style={{padding:'10px 18px',background:'#fefcf8',border:'none',borderRadius:'8px',cursor:'pointer',display:'flex',alignItems:'center',gap:'6px',fontWeight:600,fontSize:'13px',color:'#1c2820'}}>
                     <Plus size={16} /> Add Recipe
                   </button>
-                  <button onClick={() => setReorderMode(r => !r)} style={{padding:'10px 18px',background:reorderMode?'#1c2820':'#fefcf8',border:'1px solid #e0d8cc',borderRadius:'8px',cursor:'pointer',fontWeight:600,fontSize:'13px',color:reorderMode?'#f0ece4':'#1c2820'}}>
-                    {reorderMode ? '✓ Done' : '⇅ Reorder'}
-                  </button>
                 </div>
 
                 {/* Filter bar for all recipes view */}
                 {activeFolder === 'all' && <FilterBar showTried />}
-
-                {/* Reorder hint */}
-                {reorderMode && (
-                  <div style={{background:'#f0ece4',borderRadius:'8px',padding:'10px 14px',marginBottom:'16px',fontSize:'13px',color:'#6a6050',display:'flex',alignItems:'center',gap:'8px'}}>
-                    ⇅ Drag recipes to reorder.{activeFolder !== 'all' && ' The first 4 with images set the folder cover photo.'}
-                  </div>
-                )}
 
                 {/* Recipe grid */}
                 {(() => {
@@ -2709,40 +2707,7 @@ const MealPrepApp = ({ pendingJoinCode }) => {
                         let pressTimer = null;
                         return (
                           <div key={recipe.id}
-                            draggable={reorderMode}
-                            onDragStart={() => { dragItem.current = recipesToShow.indexOf(recipe); }}
-                            onDragEnter={() => { dragOverItem.current = recipesToShow.indexOf(recipe); }}
-                            onDragEnd={() => {
-                              if (dragItem.current === null || dragOverItem.current === null || dragItem.current === dragOverItem.current) return;
-                              const fromId = recipesToShow[dragItem.current]?.id;
-                              const toId = recipesToShow[dragOverItem.current]?.id;
-                              if (!fromId || !toId) return;
-                              if (activeFolder === 'all') {
-                                // Reorder userRecipes directly
-                                const newOrder = [...userRecipes];
-                                const fromIdx = newOrder.findIndex(r => r.id === fromId);
-                                const toIdx = newOrder.findIndex(r => r.id === toId);
-                                if (fromIdx === -1 || toIdx === -1) return;
-                                const [moved] = newOrder.splice(fromIdx, 1);
-                                newOrder.splice(toIdx, 0, moved);
-                                setUserRecipes(newOrder);
-                                if (session?.user) supabase.from('user_recipes').upsert(newOrder.map((r, i) => ({ user_id: session.user.id, recipe: r, sort_order: i })), { onConflict: 'user_id,recipe->>id' });
-                              } else {
-                                const folder = folders.find(f => f.id === activeFolder);
-                                if (!folder) return;
-                                const newOrder = [...folder.recipes];
-                                const fromIdx = newOrder.indexOf(fromId);
-                                const toIdx = newOrder.indexOf(toId);
-                                if (fromIdx === -1 || toIdx === -1) return;
-                                newOrder.splice(fromIdx, 1);
-                                newOrder.splice(toIdx, 0, fromId);
-                                updateFolders(prev => prev.map(f => f.id === activeFolder ? {...f, recipes: newOrder} : f));
-                              }
-                              dragItem.current = null;
-                              dragOverItem.current = null;
-                            }}
-                            onDragOver={e => e.preventDefault()}
-                            style={{background:'#fefcf8',borderRadius:'12px',overflow:'hidden',border:`2px solid ${isSelected ? '#ff6b6b' : selectionMode ? '#333' : '#262626'}`,position:'relative',transition:'border-color 0.15s',transform:isSelected?'scale(0.97)':'scale(1)',cursor:reorderMode?'grab':'default',opacity:reorderMode?0.95:1}}
+                            style={{background:'#fefcf8',borderRadius:'12px',overflow:'hidden',border:`2px solid ${isSelected ? '#ff6b6b' : selectionMode ? '#333' : '#262626'}`,position:'relative',transition:'border-color 0.15s',transform:isSelected?'scale(0.97)':'scale(1)'}}
                             onMouseDown={() => { if (!selectionMode && isUserRecipe) { pressTimer = setTimeout(() => { setSelectionMode(true); setSelectedRecipeIds(new Set([recipe.id])); }, 500); } }}
                             onMouseUp={() => clearTimeout(pressTimer)}
                             onMouseLeave={() => clearTimeout(pressTimer)}
@@ -2825,8 +2790,8 @@ const MealPrepApp = ({ pendingJoinCode }) => {
                               if (!on) { setDisabledSlots(p => ({...p,[key]:true})); removeMealFromPlan(di, mt); }
                               else { setDisabledSlots(p => { const n={...p}; delete n[key]; return n; }); }
                             }} style={{opacity:0,width:0,height:0}} />
-                            <span style={{position:'absolute',inset:0,background:mealTypeSettings[di][mt]?'#2d5a3d':'#c0392b',borderRadius:'12px',transition:'0.3s'}}>
-                              <span style={{position:'absolute',height:'16px',width:'16px',left:mealTypeSettings[di][mt]?'24px':'4px',bottom:'4px',background:'#ffffff',borderRadius:'50%',transition:'0.3s'}} />
+                            <span style={{position:'absolute',inset:0,background:mealTypeSettings[di][mt]?'#ffffff':'#333',borderRadius:'12px',transition:'0.3s'}}>
+                              <span style={{position:'absolute',height:'16px',width:'16px',left:mealTypeSettings[di][mt]?'24px':'4px',bottom:'4px',background:mealTypeSettings[di][mt]?'#000':'#999',borderRadius:'50%',transition:'0.3s'}} />
                             </span>
                           </label>
                         </td>
@@ -2856,45 +2821,11 @@ const MealPrepApp = ({ pendingJoinCode }) => {
         )}
       </div>
 
-
-      {/* FOLLOWING / FOLLOWERS MODAL */}
-      {showFollowModal && (
-        <div onClick={() => setShowFollowModal(null)} style={{position:'fixed',inset:0,background:'rgba(20,30,22,0.9)',display:'flex',alignItems:'flex-start',justifyContent:'center',zIndex:1002,padding:'20px',paddingTop:'60px'}}>
-          <div onClick={e => e.stopPropagation()} style={{background:'#fefcf8',borderRadius:'16px',width:'100%',maxWidth:'420px',overflow:'hidden',border:'1px solid #e0d8cc'}}>
-            {/* Header with tabs */}
-            <div style={{display:'flex',borderBottom:'1px solid #e0d8cc'}}>
-              {['following','followers'].map(tab => (
-                <button key={tab} onClick={() => setShowFollowModal(tab)}
-                  style={{flex:1,padding:'16px',background:'none',border:'none',borderBottom:`2px solid ${showFollowModal===tab?'#1c2820':'transparent'}`,cursor:'pointer',fontWeight:showFollowModal===tab?700:400,fontSize:'14px',color:showFollowModal===tab?'#1c2820':'#9a9080',textTransform:'capitalize'}}>
-                  {tab === 'following' ? `Following (${follows.size})` : `Followers (${followers.length})`}
-                </button>
-              ))}
-              <button onClick={() => setShowFollowModal(null)} style={{padding:'16px',background:'none',border:'none',cursor:'pointer'}}><X size={18} color="#999" /></button>
-            </div>
-            {/* List */}
-            <div style={{maxHeight:'420px',overflowY:'auto',padding:'8px 0'}}>
-              {(showFollowModal === 'following' ? followingList : followers).length === 0 ? (
-                <p style={{textAlign:'center',color:'#9a9080',padding:'40px 20px',fontSize:'14px'}}>
-                  {showFollowModal === 'following' ? 'You aren\'t following anyone yet.' : 'No one is following you yet.'}
-                </p>
-              ) : (showFollowModal === 'following' ? followingList : followers).map(person => (
-                <div key={person.user_id} style={{display:'flex',alignItems:'center',gap:'12px',padding:'12px 20px'}}>
-                  <div style={{width:'44px',height:'44px',borderRadius:'50%',background:'#e0d8cc',flexShrink:0,overflow:'hidden',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'18px'}}>
-                    {person.avatar_url ? <img src={person.avatar_url} style={{width:'100%',height:'100%',objectFit:'cover'}} /> : '👤'}
-                  </div>
-                  <div style={{flex:1}}>
-                    <div style={{fontWeight:600,color:'#1c2820',fontSize:'14px'}}>{person.username || 'Unknown'}</div>
-                  </div>
-                  {showFollowModal === 'following' && (
-                    <button onClick={() => { toggleFollow(person.user_id); setFollowingList(prev => prev.filter(p => p.user_id !== person.user_id)); }}
-                      style={{padding:'7px 14px',borderRadius:'8px',border:'1px solid #d8d0c4',background:'#f0ece4',fontWeight:600,fontSize:'12px',cursor:'pointer',color:'#6a6050'}}>
-                      Unfollow
-                    </button>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
+      {/* LINK COPIED TOAST */}
+      {shareToast === 'copied' && (
+        <div style={{position:'fixed',bottom:'24px',left:'50%',transform:'translateX(-50%)',background:'#fefcf8',border:'1px solid #5a9a6a',borderRadius:'10px',padding:'12px 20px',zIndex:9999,display:'flex',alignItems:'center',gap:'8px',boxShadow:'0 4px 24px rgba(0,0,0,0.5)',whiteSpace:'nowrap'}}>
+          <span style={{fontSize:'16px'}}>✅</span>
+          <span style={{color:'#1c2820',fontWeight:600,fontSize:'14px'}}>Link copied to clipboard!</span>
         </div>
       )}
 
@@ -3430,17 +3361,6 @@ const MealPrepApp = ({ pendingJoinCode }) => {
                   </label>
                 </div>
                 <p style={{margin:0,fontSize:'12px',color:'#7a7060',textAlign:'center'}}>Tap the camera to change your photo</p>
-                {/* Following / Followers summary */}
-                <div style={{display:'flex',gap:'24px',marginTop:'4px'}}>
-                  <button onClick={() => setShowFollowModal('following')} style={{background:'none',border:'none',cursor:'pointer',textAlign:'center',padding:0}}>
-                    <div style={{fontSize:'18px',fontWeight:700,color:'#fefcf8'}}>{follows.size}</div>
-                    <div style={{fontSize:'11px',color:'#7a7060',textTransform:'uppercase',letterSpacing:'0.5px'}}>Following</div>
-                  </button>
-                  <button onClick={() => setShowFollowModal('followers')} style={{background:'none',border:'none',cursor:'pointer',textAlign:'center',padding:0}}>
-                    <div style={{fontSize:'18px',fontWeight:700,color:'#fefcf8'}}>{followers.length}</div>
-                    <div style={{fontSize:'11px',color:'#7a7060',textTransform:'uppercase',letterSpacing:'0.5px'}}>Followers</div>
-                  </button>
-                </div>
               </div>
 
               {/* Display name */}
@@ -4834,6 +4754,13 @@ Ingredients: ${(recipe.ingredients||[]).join(', ')}`
         </div>
       )}
 
+      {/* SHARE TOAST */}
+      {shareToast === 'copied' && (
+        <div style={{position:'fixed',bottom:'28px',left:'50%',transform:'translateX(-50%)',background:'#fefcf8',border:'1px solid #5a9a6a',borderRadius:'12px',padding:'12px 22px',zIndex:2000,display:'flex',alignItems:'center',gap:'8px',boxShadow:'0 8px 32px rgba(0,0,0,0.5)',animation:'fadeIn 0.2s ease'}}>
+          <span style={{color:'#5a9a6a',fontSize:'18px'}}>✓</span>
+          <span style={{color:'#1c2820',fontWeight:600,fontSize:'14px',whiteSpace:'nowrap'}}>Link copied to clipboard!</span>
+        </div>
+      )}
 
       {/* RECIPE DETAIL MODAL */}
       {selectedRecipe && (
@@ -4864,7 +4791,9 @@ Ingredients: ${(recipe.ingredients||[]).join(', ')}`
                   <button onClick={() => { setShowAddToCalendar(selectedRecipe); setSelectedRecipe(null); }} style={{padding:'7px 12px',background:'#fefcf8',border:'none',borderRadius:'8px',fontWeight:600,fontSize:'12px',cursor:'pointer',color:'#1c2820',whiteSpace:'nowrap'}}>
                     + Calendar
                   </button>
-
+                  <button onClick={() => shareRecipe(selectedRecipe)} style={{padding:'7px 12px',background:'#fefcf8',border:'1px solid #d8d0c4',borderRadius:'8px',fontWeight:600,fontSize:'12px',cursor:'pointer',color:'#a78bfa',whiteSpace:'nowrap'}}>
+                    {shareToast === 'copying' ? '...' : shareToast === 'copied' ? '✓ Copied!' : '🔗 Share'}
+                  </button>
                 </div>
               </div>
               {userRecipes.find(r => r.id === selectedRecipe.id) && (
@@ -4938,6 +4867,74 @@ Ingredients: ${(recipe.ingredients||[]).join(', ')}`
         </div>
       )}
 
+      {/* SHARE TOAST */}
+      {shareToast === 'copied' && (
+        <div style={{position:'fixed',bottom:'32px',left:'50%',transform:'translateX(-50%)',background:'#fefcf8',border:'1px solid #5a9a6a',borderRadius:'10px',padding:'12px 20px',zIndex:9999,display:'flex',alignItems:'center',gap:'8px',boxShadow:'0 8px 24px rgba(0,0,0,0.5)',whiteSpace:'nowrap'}}>
+          <span style={{fontSize:'18px'}}>✅</span>
+          <span style={{color:'#1c2820',fontWeight:600,fontSize:'14px'}}>Link copied to clipboard!</span>
+        </div>
+      )}
+    </div>
+  );
+};
+
+const ResetPasswordScreen = () => {
+  const [password, setPassword] = useState('');
+  const [confirm, setConfirm] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [done, setDone] = useState(false);
+
+  const handle = async (e) => {
+    e.preventDefault();
+    if (password !== confirm) { setError("Passwords don't match."); return; }
+    if (password.length < 6) { setError('Password must be at least 6 characters.'); return; }
+    setLoading(true); setError('');
+    const { error } = await supabase.auth.updateUser({ password });
+    if (error) { setError(error.message); setLoading(false); return; }
+    setDone(true);
+    setLoading(false);
+    // Clean the hash from the URL
+    window.history.replaceState({}, '', '/');
+    setTimeout(() => window.location.reload(), 2000);
+  };
+
+  return (
+    <div style={{minHeight:'100vh',background:'#f4f0ea',display:'flex',alignItems:'center',justifyContent:'center',padding:'20px',fontFamily:"'Jost',sans-serif"}}>
+      <div style={{width:'100%',maxWidth:'420px'}}>
+        <div style={{textAlign:'center',marginBottom:'32px'}}>
+          <img src="/logo.png" alt="Logo" style={{width:'64px',height:'64px',objectFit:'contain',marginBottom:'12px'}} />
+          <h1 style={{margin:0,fontSize:'22px',fontWeight:700,color:'#1c2820',fontFamily:"'Cormorant Garamond',serif"}}>Set a New Password</h1>
+          <p style={{margin:'6px 0 0',fontSize:'13px',color:'#6a6050'}}>Choose something you'll remember</p>
+        </div>
+        <div style={{background:'#fefcf8',borderRadius:'12px',padding:'32px',border:'1px solid #e0d8cc'}}>
+          {done ? (
+            <div style={{textAlign:'center'}}>
+              <div style={{fontSize:'40px',marginBottom:'12px'}}>✅</div>
+              <p style={{fontWeight:600,color:'#1c2820',marginBottom:'4px'}}>Password updated!</p>
+              <p style={{fontSize:'13px',color:'#6a6050',margin:0}}>Redirecting you back to the app...</p>
+            </div>
+          ) : (
+            <form onSubmit={handle}>
+              <div style={{marginBottom:'14px'}}>
+                <label style={{display:'block',marginBottom:'6px',fontWeight:600,color:'#1c2820',fontSize:'13px'}}>New Password</label>
+                <input type="password" value={password} onChange={e => setPassword(e.target.value)} required minLength={6} placeholder="Min 6 characters"
+                  style={{width:'100%',padding:'11px 14px',border:'1px solid #e0d8cc',borderRadius:'8px',fontSize:'14px',background:'#f4f0ea',color:'#1c2820',outline:'none',boxSizing:'border-box'}} />
+              </div>
+              <div style={{marginBottom:'20px'}}>
+                <label style={{display:'block',marginBottom:'6px',fontWeight:600,color:'#1c2820',fontSize:'13px'}}>Confirm Password</label>
+                <input type="password" value={confirm} onChange={e => setConfirm(e.target.value)} required minLength={6} placeholder="Same as above"
+                  style={{width:'100%',padding:'11px 14px',border:'1px solid #e0d8cc',borderRadius:'8px',fontSize:'14px',background:'#f4f0ea',color:'#1c2820',outline:'none',boxSizing:'border-box'}} />
+              </div>
+              {error && <div style={{background:'#2d1515',border:'1px solid #ff4444',borderRadius:'8px',padding:'12px',marginBottom:'16px',color:'#c46a3a',fontSize:'13px'}}>{error}</div>}
+              <button type="submit" disabled={loading}
+                style={{width:'100%',padding:'13px',background:'#1c2820',color:'#f0ece4',border:'none',borderRadius:'8px',fontSize:'15px',fontWeight:700,cursor:loading?'not-allowed':'pointer',opacity:loading?0.7:1}}>
+                {loading ? 'Saving...' : 'Set New Password'}
+              </button>
+            </form>
+          )}
+        </div>
+      </div>
     </div>
   );
 };
@@ -4948,6 +4945,12 @@ const App = () => {
   const joinCode = params.get('join');
   const krogerCode = params.get('code');
   const krogerState = params.get('state');
+
+  // Detect Supabase password recovery redirect (hash-based)
+  const hash = window.location.hash;
+  if (hash && hash.includes('type=recovery')) {
+    return <ResetPasswordScreen />;
+  }
 
   if (krogerCode && krogerState) {
     const savedState = sessionStorage.getItem('kroger_oauth_state');

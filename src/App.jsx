@@ -2619,7 +2619,7 @@ const MealPrepApp = ({ pendingJoinCode }) => {
                         onClick={() => setActiveFolder(folder.id)}>
                         <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gridTemplateRows:'1fr 1fr',height:'180px',gap:'2px',position:'relative'}}>
                           {folderRecipes.slice(0,4).map((r,i) => (
-                            <div key={i} style={{backgroundImage:r.image?`url(${r.image})`:'none',backgroundSize:'cover',backgroundPosition:'center',background:r.image?'transparent':'#262626'}} />
+                            <div key={i} style={{backgroundImage:r.image?`url(${r.image})`:'none',backgroundSize:'cover',backgroundPosition:'center',backgroundColor:r.image?'transparent':'#262626'}} />
                           ))}
                           {folderRecipes.length < 4 && Array.from({length: 4 - Math.min(folderRecipes.length,4)}).map((_,i) => (
                             <div key={i} style={{background:'#f0ece4',display:'flex',alignItems:'center',justifyContent:'center'}}>
